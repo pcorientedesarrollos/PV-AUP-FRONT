@@ -1,0 +1,526 @@
+<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full gap-4">
+
+  <!-- ══════════════════════════════════════════
+       ENCABEZADO + KPIs
+  ══════════════════════════════════════════ -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Catálogo de Productos</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Gestión de precios, stock y códigos de barras</p>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="flex gap-3 flex-wrap">
+      <!-- Total: limpia todos los filtros de stock -->
+      <button (click)="filtroStock.set('todos')" class="bg-white rounded-xl shadow-sm border px-4 py-2.5 flex flex-col min-w-[100px] text-left transition-all hover:shadow-md"
+              [ngClass]="filtroStock() === 'todos' ? 'border-slate-500 ring-2 ring-slate-400' : 'border-slate-200'">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
+        <span class="text-2xl font-black text-slate-800">{{ totalProductos() }}</span>
+      </button>
+      <!-- Stock Bajo -->
+      <button (click)="filtroStock.set(filtroStock() === 'stock-bajo' ? 'todos' : 'stock-bajo')" class="bg-white rounded-xl shadow-sm border px-4 py-2.5 flex flex-col min-w-[100px] text-left transition-all hover:shadow-md"
+              [ngClass]="filtroStock() === 'stock-bajo' ? 'border-amber-400 ring-2 ring-amber-300' : 'border-amber-200'">
+        <span class="text-[10px] font-bold text-amber-500 uppercase tracking-wider">Stock Bajo</span>
+        <span class="text-2xl font-black text-amber-600">{{ stockBajo() }}</span>
+      </button>
+      <!-- Sin Stock -->
+      <button (click)="filtroStock.set(filtroStock() === 'sin-stock' ? 'todos' : 'sin-stock')" class="bg-white rounded-xl shadow-sm border px-4 py-2.5 flex flex-col min-w-[100px] text-left transition-all hover:shadow-md"
+              [ngClass]="filtroStock() === 'sin-stock' ? 'border-red-400 ring-2 ring-red-300' : 'border-red-200'">
+        <span class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Sin Stock</span>
+        <span class="text-2xl font-black text-red-600">{{ sinStock() }}</span>
+      </button>
+      <!-- Disponible -->
+      <button (click)="filtroStock.set(filtroStock() === 'disponible' ? 'todos' : 'disponible')" class="bg-white rounded-xl shadow-sm border px-4 py-2.5 flex flex-col min-w-[100px] text-left transition-all hover:shadow-md"
+              [ngClass]="filtroStock() === 'disponible' ? 'border-emerald-400 ring-2 ring-emerald-300' : 'border-emerald-200'">
+        <span class="text-[10px] font-bold text-emerald-500 uppercase tracking-wider">Disponible</span>
+        <span class="text-2xl font-black text-emerald-600">{{ disponible() }}</span>
+      </button>
+      <!-- Visibles -->
+      <div class="bg-white rounded-xl shadow-sm border border-slate-200 px-4 py-2.5 flex flex-col min-w-[100px]">
+        <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Visibles</span>
+        <span class="text-2xl font-black text-slate-800">{{ productosFiltrados().length }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       FILTROS DE SOPORTE (GLOBALES)
+  ══════════════════════════════════════════ -->
+  @if (isSoporte()) {
+    <div class="flex gap-4 p-4 bg-slate-900 rounded-xl shadow-inner border border-slate-700">
+      <div class="flex items-center gap-3">
+        <label class="text-sm font-bold text-amber-500 uppercase tracking-wider">🏢 Empresa:</label>
+        <select [ngModel]="filtroEmpresa()" (ngModelChange)="filtroEmpresa.set($event)" class="bg-slate-800 border-slate-700 text-white rounded-lg px-3 py-1.5 focus:ring-amber-500 focus:border-amber-500">
+          <option value="todas">Todas</option>
+          @for (emp of empresas(); track emp.idEmpresa) {
+            <option [ngValue]="emp.idEmpresa">{{emp.nombre}}</option>
+          }
+        </select>
+      </div>
+      <div class="flex items-center gap-3">
+        <label class="text-sm font-bold text-amber-500 uppercase tracking-wider">🏪 Sucursal:</label>
+        <select [ngModel]="filtroSucursal()" (ngModelChange)="filtroSucursal.set($event)" class="bg-slate-800 border-slate-700 text-white rounded-lg px-3 py-1.5 focus:ring-amber-500 focus:border-amber-500">
+          <option value="todas">Todas</option>
+          @for (suc of sucursalesFiltradas(); track suc.idSucursal) {
+            <option [ngValue]="suc.idSucursal">{{suc.nombre}} ({{suc.empresa?.nombre}})</option>
+          }
+        </select>
+      </div>
+    </div>
+  }
+
+  <!-- ══════════════════════════════════════════
+       PESTAÑAS DE FAMILIA
+  ══════════════════════════════════════════ -->
+  <div class="flex gap-2 overflow-x-auto pb-1 custom-scrollbar">
+    <button
+      (click)="filtroFamilia.set('todas')"
+      class="px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap border focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 flex items-center gap-1.5"
+      [ngClass]="filtroFamilia() === 'todas'
+        ? 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-200'
+        : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'"
+    >
+      <span>🔖</span> Todos
+    </button>
+    
+    @for (cat of categoriasFiltradas(); track cat.idCategoria) {
+      <button
+        (click)="filtroFamilia.set(cat.idCategoria)"
+        class="px-4 py-2 rounded-lg font-semibold text-sm transition-all whitespace-nowrap border focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 flex items-center gap-1.5"
+        [ngClass]="filtroFamilia() === cat.idCategoria
+          ? 'bg-amber-500 border-amber-500 text-white shadow-md shadow-amber-200'
+          : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50 hover:border-slate-300'"
+      >
+        <span>{{ cat.icono || '🏷️' }}</span>
+        {{ cat.nombre }}
+      </button>
+    }
+  </div>
+
+  <!-- ══════════════════════════════════════════
+       BARRA DE HERRAMIENTAS
+  ══════════════════════════════════════════ -->
+  <article class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
+
+    <div class="p-4 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row gap-3 items-center justify-between">
+
+      <!-- Buscador -->
+      <div class="relative w-full md:max-w-sm">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <input type="search" [(ngModel)]="busqueda"
+               placeholder="Buscar por nombre, clave o código..."
+               class="pl-9 py-2 bg-white w-full rounded-lg border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 text-sm">
+      </div>
+
+      <!-- Acciones derechas -->
+      <div class="flex items-center gap-2 flex-wrap justify-end">
+
+        <!-- Toggle vista -->
+        <div class="flex items-center bg-slate-100 rounded-lg p-1 border border-slate-200">
+          <button (click)="vistaGrid.set(false)"
+                  class="p-1.5 rounded-md transition-colors"
+                  [ngClass]="!vistaGrid() ? 'bg-white shadow-sm text-amber-600' : 'text-slate-400 hover:text-slate-600'"
+                  title="Vista tabla">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+          </button>
+          <button (click)="vistaGrid.set(true)"
+                  class="p-1.5 rounded-md transition-colors"
+                  [ngClass]="vistaGrid() ? 'bg-white shadow-sm text-amber-600' : 'text-slate-400 hover:text-slate-600'"
+                  title="Vista tarjetas">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+          </button>
+        </div>
+
+        @if (isSoporte()) {
+          <button (click)="imprimirCodigosDePrueba()"
+                  class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-300 font-semibold text-sm transition-colors flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+            Imprimir Códigos
+          </button>
+        }
+
+        <!-- Botón + Nuevo Producto -->
+        @if (isAdmin()) {
+          <button (click)="abrirModalNuevo()"
+                  class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold text-sm transition-colors flex items-center gap-1.5 shadow-sm shadow-amber-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Producto
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- ══ VISTA TABLA ══ -->
+    @if (!vistaGrid()) {
+      <div class="flex-1 overflow-auto">
+        @if (cargando()) {
+          <div class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-amber-500"></div>
+          </div>
+        } @else {
+          <table class="w-full text-left text-sm text-slate-700">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+              <tr>
+                <th class="py-3 px-4 font-semibold w-20">Clave</th>
+                <th class="py-3 px-4 font-semibold">Producto</th>
+                <th class="py-3 px-4 font-semibold">Categoría</th>
+                <th class="py-3 px-4 font-semibold text-center">Código Barras</th>
+                <!-- Columna Stock: clicar cicla el filtro -->
+                <th class="py-3 px-4 font-semibold text-center cursor-pointer select-none group/stock" (click)="ciclarFiltroStock()">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <span [ngClass]="{
+                      'text-slate-200': filtroStock() === 'todos',
+                      'text-red-400':   filtroStock() === 'sin-stock',
+                      'text-amber-400': filtroStock() === 'stock-bajo',
+                      'text-emerald-400': filtroStock() === 'disponible'
+                    }">{{ getLabelFiltroStock() }}</span>
+                    <svg class="w-3 h-3 text-slate-400 group-hover/stock:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+                  </div>
+                </th>
+                <th class="py-3 px-4 font-semibold text-center">Estado</th>
+                <th class="py-3 px-4 font-semibold text-right">Precio Venta</th>
+                <th class="py-3 px-4 font-semibold text-center w-20">Editar</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (prod of productosFiltrados(); track prod.idProducto) {
+                <tr class="hover:bg-amber-50/50 transition-colors group">
+                  <td class="py-3 px-4 text-slate-400 font-mono text-xs">#{{ prod.idProducto }}</td>
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-3">
+                      @if (prod.imagenUrl) {
+                        <img [src]="'http://localhost:3000' + prod.imagenUrl"
+                             class="w-9 h-9 object-cover rounded-lg shadow-sm border border-slate-200 shrink-0">
+                      } @else {
+                        <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 border border-slate-200 shrink-0">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        </div>
+                      }
+                      <span class="font-semibold text-slate-800">{{ prod.nombre }}</span>
+                    </div>
+                  </td>
+                  <td class="py-3 px-4">
+                    <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">{{ getNombreCategoria(prod) }}</span>
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    @if (prod.codigoBarras) {
+                      <span (click)="codigoBarrasVisualizar.set(prod.codigoBarras)"
+                            class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 cursor-pointer hover:bg-amber-100 transition-colors">
+                        ||| {{ prod.codigoBarras }}
+                      </span>
+                    } @else {
+                      <span class="text-slate-300 text-xs italic">Sin código</span>
+                    }
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span class="font-black text-lg" [ngClass]="{
+                      'text-red-500': getStockClass(prod) === 'stock-cero',
+                      'text-amber-500': getStockClass(prod) === 'stock-bajo',
+                      'text-slate-800': getStockClass(prod) === 'stock-ok'
+                    }">{{ prod.stockActual | number:'1.0-0' }}</span>
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold" [ngClass]="{
+                      'bg-red-100 text-red-600': getStockClass(prod) === 'stock-cero',
+                      'bg-amber-100 text-amber-700': getStockClass(prod) === 'stock-bajo',
+                      'bg-emerald-100 text-emerald-700': getStockClass(prod) === 'stock-ok'
+                    }">{{ getStockLabel(prod) }}</span>
+                  </td>
+                  <td class="py-3 px-4 text-right font-black text-emerald-600">
+                    {{ prod.precioUnitario | currency }}
+                  </td>
+                  <td class="py-3 px-4 text-center">
+                    <button (click)="abrirModal(prod)"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors focus:outline-none">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="8" class="py-16 text-center">
+                    <div class="flex flex-col items-center gap-2 text-slate-400">
+                      <span class="text-5xl">🔍</span>
+                      <p class="font-semibold text-slate-500">No se encontraron productos</p>
+                      <p class="text-sm">Prueba con otro término de búsqueda o categoría</p>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    }
+
+    <!-- ══ VISTA TARJETAS (GRID) ══ -->
+    @if (vistaGrid()) {
+      <div class="flex-1 overflow-auto p-4">
+        @if (cargando()) {
+          <div class="flex justify-center items-center py-20">
+            <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-amber-500"></div>
+          </div>
+        } @else if (productosFiltrados().length === 0) {
+          <div class="flex flex-col items-center gap-2 text-slate-400 py-16">
+            <span class="text-5xl">🔍</span>
+            <p class="font-semibold text-slate-500">No se encontraron productos</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            @for (prod of productosFiltrados(); track prod.idProducto) {
+              <div class="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 group flex flex-col"
+                   [ngClass]="{
+                     'border-red-200': getStockClass(prod) === 'stock-cero',
+                     'border-amber-200': getStockClass(prod) === 'stock-bajo',
+                     'border-slate-200': getStockClass(prod) === 'stock-ok'
+                   }">
+                <!-- Imagen -->
+                <div class="relative bg-slate-50 flex items-center justify-center h-28">
+                  @if (prod.imagenUrl) {
+                    <img [src]="'http://localhost:3000' + prod.imagenUrl"
+                         class="h-full w-full object-cover">
+                  } @else {
+                    <div class="flex flex-col items-center gap-1 text-slate-300">
+                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      <span class="text-[9px]">Sin imagen</span>
+                    </div>
+                  }
+                  <!-- Badge estado stock -->
+                  <span class="absolute top-1.5 right-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-black" [ngClass]="{
+                    'bg-red-500 text-white': getStockClass(prod) === 'stock-cero',
+                    'bg-amber-400 text-white': getStockClass(prod) === 'stock-bajo',
+                    'bg-emerald-500 text-white': getStockClass(prod) === 'stock-ok'
+                  }">{{ prod.stockActual | number:'1.0-0' }}</span>
+                </div>
+                <!-- Info -->
+                <div class="p-2.5 flex flex-col flex-1">
+                  <p class="text-[11px] font-bold text-slate-800 leading-tight line-clamp-2 flex-1">{{ prod.nombre }}</p>
+                  <div class="mt-2 flex items-center justify-between">
+                    <span class="text-emerald-600 font-black text-xs">{{ prod.precioUnitario | currency }}</span>
+                    <button (click)="abrirModal(prod)"
+                            class="w-6 h-6 rounded bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors flex items-center justify-center">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </article>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     MODAL EDITAR PRODUCTO
+══════════════════════════════════════════ -->
+@if (mostrarModal()) {
+  <div class="modal-backdrop">
+    <div class="modal-panel flex flex-col slideInDown" style="max-width:560px">
+      <!-- Header -->
+      <div class="modal-header">
+        <div>
+        <h2 class="modal-title">{{ esNuevoProducto() ? '+ Nuevo Producto' : 'Editar Producto' }}</h2>
+        <p class="text-xs text-slate-500 mt-0.5">
+          @if (!esNuevoProducto()) { Clave #{{ nuevoProducto.idProducto }} &middot; {{ getNombreCategoria(nuevoProducto) }} }
+          @else { Completa los campos para dar de alta el producto. }
+        </p>
+      </div>
+        <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+      </div>
+
+      <div class="modal-body overflow-y-auto max-h-[70vh]">
+        <div class="space-y-5">
+
+          <!-- Imagen -->
+          <div class="flex gap-4 items-start">
+            <div class="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden">
+              @if (imagenPreview()) {
+                <img [src]="imagenPreview()!" class="w-full h-full object-cover rounded-xl">
+              } @else {
+                <span class="text-3xl">📷</span>
+              }
+            </div>
+            <div class="flex-1">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Imagen del Producto</label>
+              <input type="file" accept="image/*" (change)="onFileSelected($event)"
+                     class="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer">
+              <p class="text-xs text-slate-400 mt-1">PNG, JPG, WEBP. Recomendado: cuadrado.</p>
+            </div>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <!-- Nombre -->
+          <div>
+            <label class="block font-semibold text-slate-700 text-sm mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
+            <input type="text" [(ngModel)]="nuevoProducto.nombre"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+
+          <!-- Categoría (solo en nuevo) -->
+          @if (esNuevoProducto()) {
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Categoría</label>
+              <select [(ngModel)]="nuevoProducto.idCategoria"
+                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                <option [ngValue]="null">Sin categoría</option>
+                @for (cat of categoriasFiltradas(); track cat.idCategoria) {
+                  <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
+                }
+              </select>
+            </div>
+          }
+
+          <!-- Código de barras -->
+          <div>
+            <label class="block font-semibold text-slate-700 text-sm mb-1">Código de Barras</label>
+            <input type="text" [(ngModel)]="nuevoProducto.codigoBarras"
+                   placeholder="Escanea o escribe el código"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 font-mono">
+          </div>
+
+          <!-- SAT Catalog Fields -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div class="relative">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Clave SAT (Prod/Serv)</label>
+              <input type="text" [(ngModel)]="satProductQuery" 
+                     (input)="onSatProductSearch()" 
+                     (focus)="onSatProductSearch(true)"
+                     placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              
+              @if (satProductQuery.length > 0 && satProductQuery.length < 3) {
+                <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Escribe 3 o más caracteres para buscar en la base de datos del SAT (52,000+ claves).
+                </div>
+              }
+
+              @if (satProductsResults.length > 0) {
+                <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  @for (prod of satProductsResults; track prod.product_key) {
+                    <li (click)="selectSatProduct(prod)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
+                      <span class="font-bold text-amber-600">{{ prod.product_key }}</span> - {{ prod.description }}
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+            <div class="relative">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Clave de Unidad (SAT)</label>
+              <input type="text" [(ngModel)]="satUnitQuery" 
+                     (input)="onSatUnitSearch()"
+                     (focus)="onSatUnitSearch(true)"
+                     placeholder="🔍 Escribe para buscar entre 3,000+ unidades SAT..."
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              
+              @if (satUnitQuery.length > 0 && satUnitQuery.length < 2) {
+                <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Escribe 2 o más caracteres para buscar todas las unidades del SAT.
+                </div>
+              }
+
+              @if (satUnitsResults.length > 0) {
+                <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  @for (unit of satUnitsResults; track unit.unit_key) {
+                    <li (click)="selectSatUnit(unit)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
+                      <span class="font-bold text-amber-600">{{ unit.unit_key }}</span> - {{ unit.name }}
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+
+          <!-- Precios en grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio de Venta</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
+                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioUnitario"
+                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Mayoreo</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
+                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioMayoreo"
+                       placeholder="Opcional"
+                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Stock Mínimo</label>
+              <input type="number" min="0" [(ngModel)]="nuevoProducto.stockMinimo"
+                     placeholder="Ej. 5"
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+            </div>
+          </div>
+
+          <!-- Alerta visual de stock actual -->
+          <div class="rounded-xl p-3 flex items-center gap-3" [ngClass]="{
+            'bg-red-50 border border-red-200': getStockClass(nuevoProducto) === 'stock-cero',
+            'bg-amber-50 border border-amber-200': getStockClass(nuevoProducto) === 'stock-bajo',
+            'bg-emerald-50 border border-emerald-200': getStockClass(nuevoProducto) === 'stock-ok'
+          }">
+            <span class="text-2xl">
+              @if (getStockClass(nuevoProducto) === 'stock-cero') { 🚨 }
+              @else if (getStockClass(nuevoProducto) === 'stock-bajo') { ⚠️ }
+              @else { ✅ }
+            </span>
+            <div>
+              <p class="text-sm font-bold" [ngClass]="{
+                'text-red-700': getStockClass(nuevoProducto) === 'stock-cero',
+                'text-amber-700': getStockClass(nuevoProducto) === 'stock-bajo',
+                'text-emerald-700': getStockClass(nuevoProducto) === 'stock-ok'
+              }">{{ getStockLabel(nuevoProducto) }} — Stock actual: {{ nuevoProducto.stockActual | number:'1.0-0' }} unidades</p>
+              <p class="text-xs text-slate-500">Para agregar existencias, usa el módulo de <strong>Inventario</strong>.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="cerrarModal()" class="btn-secondary" [disabled]="guardando()">Cancelar</button>
+        <button (click)="guardarProducto()" class="btn-primary flex items-center gap-2" [disabled]="guardando()">
+          @if (guardando()) {
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+            Guardando...
+          } @else {
+            💾 Guardar Cambios
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+
+<!-- ══════════════════════════════════════════
+     MODAL CÓDIGO DE BARRAS
+══════════════════════════════════════════ -->
+@if (codigoBarrasVisualizar()) {
+  <div class="modal-backdrop flex items-center justify-center z-[100]" (click)="codigoBarrasVisualizar.set(null)">
+    <div class="bg-white rounded-2xl p-8 shadow-2xl relative max-w-sm w-full text-center slideInDown" (click)="$event.stopPropagation()">
+      <button (click)="codigoBarrasVisualizar.set(null)"
+              class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 w-8 h-8 rounded-full flex items-center justify-center font-bold transition-colors">✕</button>
+      <h3 class="font-black text-slate-900 mb-6 text-xl">Código de Barras</h3>
+      <div class="flex justify-center bg-white p-6 rounded-xl border-2 border-dashed border-slate-200">
+        <svg [appBarcode]="codigoBarrasVisualizar() || ''" class="w-full h-32"></svg>
+      </div>
+      <p class="text-xs text-slate-400 mt-4 font-mono bg-slate-50 rounded-lg py-2">{{ codigoBarrasVisualizar() }}</p>
+    </div>
+  </div>
+}

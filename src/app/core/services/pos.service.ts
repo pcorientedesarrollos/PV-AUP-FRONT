@@ -1,0 +1,327 @@
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { of, tap } from 'rxjs';
+import { SyncService } from './sync.service';
+import {
+  Producto,
+  Cliente,
+  ItemCarrito,
+  CheckoutPayload,
+  AltaRapidaPayload,
+  AbrirTurnoPayload,
+  VentaPausada
+} from '../interfaces';
+
+@Injectable({ providedIn: 'root' })
+export class PosService {
+  private readonly API = 'http://localhost:3000';
+
+  // ─── Estado del carrito con signals ──────────────────────────────────────────
+  private _carrito = signal<ItemCarrito[]>([]);
+  readonly carrito = this._carrito.asReadonly();
+
+  readonly totalItems = computed(() =>
+    this._carrito().reduce((acc, item) => acc + item.cantidad, 0)
+  );
+
+  readonly totalPagar = computed(() =>
+    this._carrito().reduce((acc, item) => {
+      const price = Number(item.producto.precioUnitario) || 0;
+      const qty = Number(item.cantidad) || 0;
+      return acc + (price * qty);
+    }, 0)
+  );
+
+  // Cliente seleccionado
+  private _clienteSeleccionado = signal<Cliente | null>(null);
+  readonly clienteSeleccionado = this._clienteSeleccionado.asReadonly();
+
+  private sync = inject(SyncService);
+
+  constructor(private http: HttpClient) {}
+
+  // ─── Catálogo ─────────────────────────────────────────────────────────────────
+  private _productos = signal<Producto[]>([]);
+  readonly productos = this._productos.asReadonly();
+
+  private _stockActual = signal<Record<number, number>>({});
+  readonly stockActual = this._stockActual.asReadonly();
+
+  getSucursales() {
+    return this.http.get<any[]>(`${this.API}/pos/sucursales`);
+  }
+
+  crearSucursal(payload: any) {
+    return this.http.post<any>(`${this.API}/pos/sucursales`, payload);
+  }
+
+  actualizarSucursal(id: number, payload: any) {
+    return this.http.put<any>(`${this.API}/pos/sucursales/${id}`, payload);
+  }
+
+  // ─── EMPRESAS ───────────────────────────────────────────────────
+  getEmpresas() {
+    return this.http.get<any[]>(`${this.API}/pos/empresas`);
+  }
+
+  crearEmpresa(payload: any) {
+    return this.http.post<any>(`${this.API}/pos/empresas`, payload);
+  }
+
+  actualizarEmpresa(id: number, payload: any) {
+    return this.http.put<any>(`${this.API}/pos/empresas/${id}`, payload);
+  }
+
+  // ─── CATEGORIAS ─────────────────────────────────────────────────
+  getCategorias() {
+    return this.http.get<any[]>(`${this.API}/pos/categorias`);
+  }
+
+  crearCategoria(payload: any) {
+    return this.http.post<any>(`${this.API}/pos/categorias`, payload);
+  }
+
+  actualizarCategoria(id: number, payload: any) {
+    return this.http.put<any>(`${this.API}/pos/categorias/${id}`, payload);
+  }
+
+  getUsuarios(idSucursal?: number) {
+    // Si queremos filtrar manual o usar el interceptor,
+    // el interceptor ya envia x-sucursal-id, pero lo podemos pedir.
+    return this.http.get<any[]>(`${this.API}/pos/usuarios`);
+  }
+
+  getUsuariosGlobal() {
+    return this.http.get<any[]>(`${this.API}/pos/usuarios/global`);
+  }
+
+  crearUsuario(payload: any) {
+    return this.http.post<any>(`${this.API}/pos/usuarios`, payload);
+  }
+
+  actualizarUsuario(id: number, payload: any) {
+    return this.http.patch<any>(`${this.API}/pos/usuarios/${id}`, payload);
+  }
+
+  getProductos() {
+    return this.http.get<any[]>(`${this.API}/pos/productos`).pipe(
+      tap((prods: any[]) => {
+        this._productos.set(prods);
+        const mapa: Record<number, number> = {};
+        prods.forEach(item => mapa[item.idProducto] = item.stockActual || 0);
+        this._stockActual.set(mapa);
+      })
+    );
+  }
+
+  // ─── Clientes ─────────────────────────────────────────────────────────────────
+  getClientes() {
+    return this.http.get<Cliente[]>(`${this.API}/pos/clientes`);
+  }
+
+  altaRapidaCliente(payload: AltaRapidaPayload) {
+    return this.http.post<Cliente>(`${this.API}/pos/clientes/alta-rapida`, payload);
+  }
+
+  seleccionarCliente(cliente: Cliente | null) {
+    this._clienteSeleccionado.set(cliente);
+  }
+
+  // ─── Carrito ──────────────────────────────────────────────────────────────────
+  agregarAlCarrito(producto: Producto, forzar: boolean = false, silent: boolean = false): boolean {
+    const stock = this.stockActual()[producto.idProducto] || 0;
+    const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === producto.idProducto);
+    const cantidadAumentada = (itemEnCarrito ? itemEnCarrito.cantidad : 0) + 1;
+
+    if (!forzar && cantidadAumentada > stock) {
+      if (stock <= 0) {
+        if (!silent) this.solicitarConfirmacionStock(producto, 'vacio');
+        return false;
+      }
+      if (!silent) this.solicitarConfirmacionStock(producto, 'excedido');
+      return false;
+    }
+
+    const price = Number(producto.precioUnitario) || 0;
+    this._carrito.update((items) => {
+      const idx = items.findIndex((i) => i.producto.idProducto === producto.idProducto);
+      if (idx >= 0) {
+        const updated = [...items];
+        updated[idx] = {
+          ...updated[idx],
+          cantidad: updated[idx].cantidad + 1,
+          subtotal: (updated[idx].cantidad + 1) * price,
+        };
+        return updated;
+      }
+      return [
+        { producto, cantidad: 1, subtotal: price },
+        ...items,
+      ];
+    });
+    return true;
+  }
+
+  cambiarCantidad(idProducto: number, delta: number, forzar: boolean = false): boolean {
+    if (delta > 0 && !forzar) {
+      const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === idProducto);
+      if (itemEnCarrito) {
+        const stock = this.stockActual()[idProducto] || 0;
+        if ((itemEnCarrito.cantidad + delta) > stock) {
+          if (stock <= 0) {
+            this.solicitarConfirmacionStock(itemEnCarrito.producto, 'vacio');
+            return false;
+          }
+          this.solicitarConfirmacionStock(itemEnCarrito.producto, 'excedido');
+          return false;
+        }
+      }
+    }
+
+    this._carrito.update((items) =>
+      items
+        .map((item) => {
+          if (item.producto.idProducto !== idProducto) return item;
+          const nuevaCantidad = item.cantidad + delta;
+          if (nuevaCantidad <= 0) return null;
+          const price = Number(item.producto.precioUnitario) || 0;
+          return {
+            ...item,
+            cantidad: nuevaCantidad,
+            subtotal: nuevaCantidad * price,
+          };
+        })
+        .filter((item): item is ItemCarrito => item !== null)
+    );
+    return true;
+  }
+
+  setCantidadExacta(idProducto: number, cantidad: number) {
+    if (cantidad === null || isNaN(cantidad) || cantidad <= 0) {
+      this.eliminarDelCarrito(idProducto);
+      return;
+    }
+
+    const stock = this.stockActual()[idProducto] || 0;
+    const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === idProducto);
+    if (!itemEnCarrito) return;
+
+    if (cantidad > stock) {
+      if (stock <= 0) {
+        this.solicitarConfirmacionStock(itemEnCarrito.producto, 'vacio');
+        return;
+      }
+      this.solicitarConfirmacionStock(itemEnCarrito.producto, 'excedido');
+      return;
+    }
+
+    this._carrito.update((items) =>
+      items.map((item) => {
+        if (item.producto.idProducto !== idProducto) return item;
+        const price = Number(item.producto.precioUnitario) || 0;
+        return {
+          ...item,
+          cantidad: Number(cantidad),
+          subtotal: Number(cantidad) * price,
+        };
+      })
+    );
+  }
+
+  eliminarDelCarrito(idProducto: number) {
+    this._carrito.update((items) =>
+      items.filter((i) => i.producto.idProducto !== idProducto)
+    );
+  }
+
+  limpiarCarrito() {
+    this._carrito.set([]);
+    this._clienteSeleccionado.set(null);
+  }
+
+  // ─── Ventas Pausadas ──────────────────────────────────────────────────────────
+  private _ventasPausadas = signal<VentaPausada[]>([]);
+  readonly ventasPausadas = this._ventasPausadas.asReadonly();
+
+  pausarVenta() {
+    if (this._carrito().length === 0) return;
+
+    const nuevaPausa: VentaPausada = {
+      id: Date.now(),
+      timestamp: new Date(),
+      cliente: this._clienteSeleccionado(),
+      carrito: [...this._carrito()]
+    };
+
+    this._ventasPausadas.update(vp => [...vp, nuevaPausa]);
+    this.limpiarCarrito();
+  }
+
+  recuperarVenta(id: number) {
+    const venta = this._ventasPausadas().find(v => v.id === id);
+    if (!venta) return;
+
+    // Si hay un carrito actual con productos, no deberíamos sobrescribirlo sin avisar
+    // Pero asumiremos que la UI controla esto (limpiar antes o advertir)
+    this._carrito.set([...venta.carrito]);
+    this._clienteSeleccionado.set(venta.cliente);
+    
+    // Eliminar de las pausadas
+    this.eliminarVentaPausada(id);
+  }
+
+  eliminarVentaPausada(id: number) {
+    this._ventasPausadas.update(vp => vp.filter(v => v.id !== id));
+  }
+
+  // ─── Control de Modal de Stock ────────────────────────────────────────────────
+  private _productoAdvertenciaStock = signal<{ producto: Producto; tipo: 'vacio' | 'excedido' } | null>(null);
+  readonly productoAdvertenciaStock = this._productoAdvertenciaStock.asReadonly();
+
+  solicitarConfirmacionStock(producto: Producto, tipo: 'vacio' | 'excedido') {
+    this._productoAdvertenciaStock.set({ producto, tipo });
+  }
+
+  confirmarVentaSinStock() {
+    const adv = this._productoAdvertenciaStock();
+    if (adv) {
+      // Como el modal cubre todo, forzamos agregarAlCarrito para no re-disparar el check
+      this.agregarAlCarrito(adv.producto, true);
+      this._productoAdvertenciaStock.set(null);
+    }
+  }
+
+  cancelarVentaSinStock() {
+    this._productoAdvertenciaStock.set(null);
+  }
+
+  // ─── Caja ─────────────────────────────────────────────────────────────────────
+  getTurnoActivo(idUsuario: number) {
+    return this.http.get<any>(`${this.API}/pos/turno-activo/${idUsuario}`);
+  }
+
+  abrirTurno(payload: AbrirTurnoPayload) {
+    return this.http.post(`${this.API}/pos/abrir-turno`, payload);
+  }
+
+  checkout(payload: CheckoutPayload) {
+    if (!this.sync.isOnline()) {
+      // Guardar localmente
+      this.sync.guardarVentaPendiente(payload);
+      return of({
+        success: true,
+        mensaje: 'Venta guardada en modo offline. Se sincronizará automáticamente.',
+        offline: true
+      });
+    }
+    return this.http.post(`${this.API}/pos/checkout`, payload);
+  }
+
+  getCorteDeCaja(idUsuario: number) {
+    return this.http.get<any>(`${this.API}/pos/corte-actual/${idUsuario}`);
+  }
+  
+  cerrarTurno(payload: { idCorte: number, efectivoEscaner: number }) {
+    return this.http.post(`${this.API}/pos/corte`, payload);
+  }
+}

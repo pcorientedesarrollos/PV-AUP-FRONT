@@ -1,3 +1,184 @@
-/* You can add global styles to this file, and also import other style files */
-
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-lato: 'Lato', system-ui, -apple-system, sans-serif;
+}
+
+/* ── Fuente global ─────────────────────────────── */
+* {
+  font-family: var(--font-lato);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Formularios e Inputs (Global) ──────────────── */
+@layer base {
+  input[type='text']:not([role='combobox']),
+  input[type='email'],
+  input[type='password'],
+  input[type='tel'],
+  input[type='date'],
+  input[type='number'],
+  input[type='search'],
+  input[type='month'],
+  select,
+  textarea {
+    @apply border rounded w-full py-2 px-4 text-gray-700 focus:outline-none focus:shadow transition-shadow;
+  }
+}
+
+/* ── UI Estandarizada (Modales y Alertas) ──────── */
+@layer components {
+  /* Modales Globales */
+  .modal-backdrop {
+    @apply fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 transition-opacity;
+  }
+  .modal-panel {
+    @apply bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden transform transition-all;
+  }
+  .modal-panel-sm {
+    @apply max-w-sm;
+  }
+  .modal-panel-xl {
+    @apply max-w-4xl;
+  }
+  .modal-header {
+    @apply px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50;
+  }
+  .modal-title {
+    @apply text-lg font-bold text-slate-800;
+  }
+  .modal-body {
+    @apply p-6;
+  }
+  .modal-footer {
+    @apply px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3;
+  }
+
+  /* Botones Estandarizados */
+  .btn-primary {
+    background-color: var(--color-primario, #f59e0b);
+    color: var(--texto-on-primario, #ffffff);
+    @apply font-bold py-2 px-4 rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50;
+  }
+  .btn-primary:hover:not(:disabled) {
+    filter: brightness(0.9);
+  }
+  .btn-secondary {
+    @apply bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 font-bold py-2 px-4 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-slate-200 focus:ring-offset-2 disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 px-4 rounded-lg shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 disabled:opacity-50;
+  }
+  .input-field {
+    @apply px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-colors w-full;
+  }
+}
+
+/* ── Animaciones personalizadas ────────────────── */
+.slideInDown {
+  animation-name: slideInDown;
+  animation-duration: .3s;
+  animation-fill-mode: both;
+}
+@keyframes slideInDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+.slideInRight {
+  animation-name: slideInRight;
+  animation-duration: .3s;
+  animation-fill-mode: both;
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.animate__shake {
+  animation: horizontal-shaking .4s;
+}
+@keyframes horizontal-shaking {
+  0%   { transform: translateX(0); }
+  33%  { transform: translateX(8px); }
+  66%  { transform: translateX(-8px); }
+  100% { transform: translateX(0px); }
+}
+
+/* ── Scroll suave y móvil ──────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+input, button, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+body, html {
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ── Estilos de Impresión ──────────────────────── */
+.page {
+  background: white;
+  display: block;
+  margin: 0 auto;
+  margin-bottom: 0.5cm;
+  box-shadow: 0 0 0.5cm rgba(0, 0, 0, 0.5);
+}
+.page.a4 {
+  width: 21cm;
+  min-height: 29.7cm;
+  padding: 32px;
+}
+.width-a4 { width: 21cm; }
+
+.page.ticket {
+  max-width: 80mm;
+  width: 80mm;
+  padding: 4mm;
+}
+.ticket__printable_area {
+  max-width: 72mm;
+  width: 100%;
+}
+.page.ticket table {
+  font-size: 12px;
+}
+.page.ticket table tr {
+  border-bottom: .5px solid;
+}
+.page.ticket table tr th {
+  text-align: left;
+  padding: 0 4px;
+}
+.page.ticket table tr td {
+  padding: 4px;
+  line-height: 1.1;
+}
+
+@media print {
+  @page {
+    margin: 0;
+  }
+  
+  body, html {
+    background: transparent !important;
+  }
+  
+  .page { margin: 0; box-shadow: none; }
+  .page.ticket { 
+    padding: 0; 
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+  
+  /* Ocultar elementos globales de UI */
+  header, nav, aside, .sidebar { display: none !important; }
+  
+  /* Utilidad para ocultar cosas específicas en impresión */
+  .no-print { display: none !important; }
+}

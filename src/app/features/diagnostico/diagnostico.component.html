@@ -1,0 +1,80 @@
+<div class="h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+  
+  <!-- Encabezado -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+      <span class="text-amber-500">🛠️</span> Diagnóstico y Red
+    </h1>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Herramientas avanzadas para el equipo de soporte. Úsalas con precaución.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    
+    <!-- Estado de Sincronización -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <span>🔄</span> Sincronización
+        </h2>
+      </div>
+      
+      <div class="p-6 flex-1 flex flex-col gap-6">
+        <div class="flex items-center justify-between p-4 rounded-xl border" [ngClass]="sync.isOnline() ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 border-rose-200 dark:border-rose-800'">
+          <div>
+            <p class="text-sm font-bold" [ngClass]="sync.isOnline() ? 'text-emerald-800 dark:text-emerald-400' : 'text-rose-800 dark:text-rose-400'">Estado Actual</p>
+            <p class="text-xs mt-1" [ngClass]="sync.isOnline() ? 'text-emerald-600 dark:text-emerald-500' : 'text-rose-600 dark:text-rose-500'">
+              {{ sync.isOnline() ? 'Conectado al servidor principal' : 'Modo Offline (Trabajando localmente)' }}
+            </p>
+          </div>
+          <span class="w-4 h-4 rounded-full" [ngClass]="sync.isOnline() ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.5)]'"></span>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Ventas Pendientes por Subir</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tickets que se generaron sin internet</p>
+          </div>
+          <span class="text-2xl font-black" [ngClass]="sync.ventasPendientes().length > 0 ? 'text-amber-500' : 'text-slate-400'">
+            {{ sync.ventasPendientes().length }}
+          </span>
+        </div>
+
+        <div class="mt-auto pt-4 flex gap-3">
+          <button (click)="pingServer()" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-bold py-2.5 rounded-lg transition-colors border border-slate-200 dark:border-slate-700">
+            Probar Conexión
+          </button>
+          <button (click)="forzarSincronizacion()" [disabled]="sync.ventasPendientes().length === 0" class="flex-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold py-2.5 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            Forzar Sinc.
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Herramientas Locales -->
+    <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        <h2 class="text-lg font-bold text-slate-800 dark:text-white flex items-center gap-2">
+          <span>🧹</span> Mantenimiento Local
+        </h2>
+      </div>
+      
+      <div class="p-6 flex-1 flex flex-col gap-6">
+        <div class="p-4 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-xl">
+          <h3 class="text-sm font-bold text-amber-800 dark:text-amber-500 flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Caché del Navegador
+          </h3>
+          <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-2">
+            El sistema guarda datos en la memoria local (LocalStorage) para que funcione más rápido. Si hay problemas visuales o configuraciones que no se aplican, limpiar la caché puede solucionarlo.
+          </p>
+        </div>
+
+        <button (click)="limpiarCacheLocal()" class="w-full bg-rose-50 dark:bg-rose-900/20 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-600 dark:text-rose-400 font-bold py-3 rounded-lg transition-colors border border-rose-200 dark:border-rose-800/50 mt-auto flex items-center justify-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+          Limpiar Caché y Reiniciar
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>

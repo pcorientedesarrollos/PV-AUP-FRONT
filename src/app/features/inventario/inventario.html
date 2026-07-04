@@ -1,0 +1,491 @@
+<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
+  
+  <!-- Encabezado y Acciones -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+    <div class="flex items-center gap-3">
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+        Control de Inventario
+      </h1>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+      <button (click)="irAProductos()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+        <span>+</span> Producto
+      </button>
+      <button (click)="abrirModalEntrada()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+        <span>+</span> Registrar Entrada
+      </button>
+      <button (click)="abrirModalAjuste()" class="bg-slate-700 hover:bg-slate-800 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+        Ajuste de Stock
+      </button>
+      <button (click)="abrirModalMerma()" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+        🗑️ Registrar Merma
+      </button>
+      
+      <!-- Tarjetas de resumen -->
+      <article class="bg-white rounded-lg shadow px-4 py-2 flex flex-col min-w-[120px] w-full sm:w-auto">
+        <span class="text-xs font-medium text-slate-500 uppercase tracking-wider">Movimientos</span>
+        <span class="text-2xl font-bold text-slate-800">{{ registros().length }}</span>
+      </article>
+    </div>
+  </div>
+
+  <!-- Pestañas (Tabs) estilo Enterprise -->
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-2 custom-scrollbar">
+    @for (cat of pestanas(); track cat.idCategoria) {
+      <button 
+        (click)="cambiarPestana(cat.idCategoria)"
+        class="px-5 py-2 rounded-md font-medium text-sm transition-colors whitespace-nowrap border focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1"
+        [ngClass]="pestanaActiva() === cat.idCategoria ? 'bg-amber-50 border-amber-200 text-amber-700 shadow-sm' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'"
+      >
+        <span *ngIf="cat.idCategoria !== 'todos'">Almacén</span> {{ cat.nombre }}
+      </button>
+    }
+  </div>
+
+  <!-- Selector de Vistas -->
+  <div class="flex bg-slate-100 p-1 rounded-lg w-fit mb-4">
+    <button (click)="vistaActiva.set('stock')"
+            class="px-4 py-2 rounded-md font-medium text-sm transition-colors flex items-center gap-2"
+            [ngClass]="vistaActiva() === 'stock' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'">
+      📦 Existencias (Stock)
+    </button>
+    <button (click)="vistaActiva.set('movimientos')"
+            class="px-4 py-2 rounded-md font-medium text-sm transition-colors flex items-center gap-2"
+            [ngClass]="vistaActiva() === 'movimientos' ? 'bg-white shadow text-slate-800' : 'text-slate-500 hover:text-slate-700'">
+      📋 Movimientos (Historial)
+    </button>
+  </div>
+
+  <!-- Contenido Principal: Card -->
+  <article class="flex-1 bg-white rounded-lg shadow flex flex-col overflow-hidden border border-slate-200">
+    
+    <!-- Barra de Filtros -->
+    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between bg-slate-50">
+      <div class="relative w-full md:max-w-md">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+          </svg>
+        </div>
+        <input type="search" [(ngModel)]="busqueda" placeholder="Buscar por nombre, clave o código..." class="pl-9 bg-white w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+      </div>
+      
+      @if (vistaActiva() === 'movimientos') {
+        <div class="flex items-center gap-2 w-full md:w-auto mt-3 md:mt-0">
+          <select [(ngModel)]="filtroTipo" class="bg-white min-w-[150px] rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
+            <option value="todos">Todos los Tipos</option>
+            <option value="entrada">Entradas</option>
+            <option value="salida">Salidas</option>
+            <option value="compra">Compras</option>
+            <option value="devolucion">Devoluciones</option>
+            <option value="ajuste">Ajustes</option>
+          </select>
+        </div>
+      }
+    </div>
+
+    <!-- Tablas -->
+    <div class="flex-1 overflow-auto bg-white">
+      @if (vistaActiva() === 'stock') {
+        <!-- VISTA DE STOCK (EXISTENCIAS) -->
+        @if (productosStockFiltrados().length === 0) {
+          <div class="flex flex-col items-center justify-center h-full text-slate-400 text-center py-20">
+            <span class="text-6xl mb-4">📦</span>
+            <p class="font-medium text-lg text-slate-600">Sin Productos</p>
+            <p class="text-sm mt-1">No hay productos en este almacén.</p>
+          </div>
+        } @else {
+          <table class="w-full text-left text-sm text-slate-700">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+              <tr>
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">Código</th>
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">Producto</th>
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">Categoría</th>
+                <th class="py-3 px-4 font-semibold text-right whitespace-nowrap">Precio</th>
+                <th class="py-3 px-4 font-semibold text-right whitespace-nowrap">Stock Mínimo</th>
+                <th class="py-3 px-4 font-semibold text-right whitespace-nowrap">Stock Actual</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (prod of productosStockFiltrados(); track prod.idProducto) {
+                <tr class="hover:bg-slate-50 transition-colors group">
+                  <td class="py-3 px-4 font-mono text-slate-500 text-xs">{{ prod.codigoBarras || 'S/N' }}</td>
+                  <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[200px] break-words">{{ prod.nombre }}</td>
+                  <td class="py-3 px-4 text-slate-600">{{ prod.categoria?.nombre || 'General' }}</td>
+                  <td class="py-3 px-4 font-bold text-emerald-600 text-right whitespace-nowrap">${{ prod.precioUnitario | number:'1.2-2' }}</td>
+                  <td class="py-3 px-4 text-slate-500 text-right whitespace-nowrap">{{ prod.stockMinimo || 0 }}</td>
+                  <td class="py-3 px-4 font-bold text-right whitespace-nowrap" [ngClass]="(prod.stockActual || 0) <= (prod.stockMinimo || 0) ? 'text-red-500' : 'text-slate-800'">
+                    {{ prod.stockActual || 0 }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      } @else {
+        <!-- VISTA DE MOVIMIENTOS (HISTORIAL) -->
+        @if (cargando()) {
+          <div class="flex justify-center items-center h-full">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div>
+          </div>
+        } @else if (registrosFiltrados().length === 0) {
+          <div class="flex flex-col items-center justify-center h-full text-slate-400 text-center py-20">
+            <span class="text-6xl mb-4">📋</span>
+            <p class="font-medium text-lg text-slate-600">Historial Vacío</p>
+            <p class="text-sm mt-1">No hay movimientos registrados.</p>
+          </div>
+        } @else {
+          <table class="w-full text-left text-sm text-slate-700">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+              <tr>
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">Concepto</th>
+                <th class="py-3 px-4 font-semibold whitespace-nowrap">Descripción</th>
+                <th class="py-3 px-4 font-semibold text-right whitespace-nowrap">Cantidad</th>
+                <th class="py-3 px-4 font-semibold text-center whitespace-nowrap">Tipo</th>
+                <th class="py-3 px-4 font-semibold text-center w-24 whitespace-nowrap">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              @for (item of registrosFiltrados(); track $index) {
+                <tr class="hover:bg-slate-50 transition-colors group">
+                  <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[150px] max-w-[250px] break-words">{{ item.concepto || 'Sin concepto' }}</td>
+                  <td class="py-3 px-4 text-slate-600 whitespace-normal min-w-[200px] max-w-[400px] break-words">{{ item.descripcion || item.subcuenta || 'Sin descripción' }}</td>
+                  <td class="py-3 px-4 font-bold text-slate-800 text-right whitespace-nowrap">{{ item.cantidad || item.entradas || 0 }}</td>
+                  <td class="py-3 px-4 text-center whitespace-nowrap">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold"
+                          [ngClass]="getBadgeColor(item.movimiento)">
+                      {{ item.movimiento || 'Entrada' }}
+                    </span>
+                  </td>
+                <td class="py-3 px-4 text-center relative whitespace-nowrap">
+                  <div class="flex items-center justify-center">
+                    <button (click)="toggleMenu(item); $event.stopPropagation()" class="text-slate-400 hover:text-slate-600 p-1 rounded transition-colors focus:outline-none">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                      </svg>
+                    </button>
+                    <!-- Dropdown Menú -->
+                    @if (menuAbiertoId() === getId(item)) {
+                      <div class="absolute right-8 top-10 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-slate-200 overflow-hidden text-left">
+                        <button (click)="abrirEditar(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                          <span>✏️</span> Editar Movimiento
+                        </button>
+                        <button (click)="imprimirVale(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                          <span>📄</span> Imprimir Vale
+                        </button>
+                        <button (click)="abrirDetalles(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                          <span>🔍</span> Ver Detalles
+                        </button>
+                        <button (click)="irAlCatalogo()" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                          <span>📦</span> Ir al Catálogo
+                        </button>
+                        <div class="border-t border-slate-100"></div>
+                        <button (click)="eliminarMovimiento(item)" class="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left flex items-center gap-2 font-medium">
+                          <span>🚫</span> Anular / Eliminar
+                        </button>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+      }
+    </div>
+  </article>
+
+  <!-- Modal Registrar Entrada -->
+  @if (mostrarModal()) {
+    <div class="modal-backdrop">
+      <div class="modal-panel flex flex-col slideInDown">
+        <div class="modal-header">
+          <h2 class="modal-title">Registrar Entrada</h2>
+          <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+        </div>
+        
+        <div class="modal-body overflow-y-auto max-h-[70vh] space-y-4">
+            
+            <!-- Producto -->
+            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+              <label class="block font-medium text-slate-700 text-sm mb-1">Buscar Producto</label>
+              <div class="relative mb-3">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</span>
+                <input type="text" [(ngModel)]="busquedaProductoModal" placeholder="Escribe para filtrar o escanea el código..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm">
+              </div>
+              
+              <label class="block font-medium text-slate-700 text-sm mb-1">Seleccionar Producto *</label>
+              <select [(ngModel)]="nuevaEntrada.idProducto" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500">
+                <option [ngValue]="null" disabled>Elige el producto...</option>
+                @for (prod of getProductosModalFiltrados(); track prod.idProducto) {
+                  <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Detalles del Movimiento (Grid 2 Columnas) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-medium text-slate-700 text-sm mb-1">Tipo de Movimiento *</label>
+                <select [(ngModel)]="nuevaEntrada.tipoMovimiento" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500">
+                  @for (tipo of tiposEntrada; track tipo) {
+                    <option [value]="tipo">{{ tipo }}</option>
+                  }
+                </select>
+              </div>
+              <div>
+                <label class="block font-medium text-slate-700 text-sm mb-1">Cantidad *</label>
+                <input type="number" [(ngModel)]="nuevaEntrada.cantidad" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. 100">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block font-medium text-slate-700 text-sm mb-1">Costo Unitario (Opcional)</label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">$</span>
+                  <input type="number" [(ngModel)]="nuevaEntrada.costoUnitario" class="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm" placeholder="0.00">
+                </div>
+              </div>
+              <div class="bg-indigo-50 border border-indigo-100 rounded-md p-2 flex flex-col justify-center items-center">
+                <span class="text-xs text-indigo-500 font-bold uppercase tracking-wider">Costo Total</span>
+                <span class="text-xl font-black text-indigo-700 mt-1">
+                  {{ ((nuevaEntrada.cantidad || 0) * (nuevaEntrada.costoUnitario || 0)) | currency:'MXN':'symbol':'1.2-2' }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Actualizar Catálogo -->
+            <div class="flex items-center gap-2 mt-2">
+              <input type="checkbox" id="actualizarCosto" [(ngModel)]="nuevaEntrada.actualizarCosto" class="rounded text-amber-500 focus:ring-amber-500 w-4 h-4 cursor-pointer">
+              <label for="actualizarCosto" class="text-sm font-medium text-slate-700 cursor-pointer select-none">Actualizar costo del producto en el catálogo base</label>
+            </div>
+
+            <!-- Concepto / Comentarios -->
+            <div>
+              <label class="block font-medium text-slate-700 text-sm mb-1">Comentarios / Factura / Origen (Opcional)</label>
+              <input type="text" [(ngModel)]="nuevaEntrada.proveedor" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. Compra Factura #1234">
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button (click)="cerrarModal()" class="btn-secondary">
+            Cancelar
+          </button>
+          <button (click)="guardarEntrada()" class="btn-primary">
+            Registrar
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Editar -->
+  @if (mostrarModalEditar()) {
+    <div class="modal-backdrop">
+      <div class="modal-panel flex flex-col slideInDown">
+        <div class="modal-header">
+          <h2 class="modal-title">Editar Movimiento</h2>
+          <button (click)="cerrarModalEditar()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+        </div>
+        <div class="modal-body space-y-4">
+          <div class="flex gap-4">
+            <div class="w-1/2">
+              <label class="block font-medium text-slate-700 text-sm mb-1">Cantidad</label>
+              <input type="number" [(ngModel)]="itemAEditar.cantidad" class="w-full border-slate-300 rounded-md">
+            </div>
+            <div class="w-1/2">
+              <label class="block font-medium text-slate-700 text-sm mb-1">Costo Unitario ($)</label>
+              <input type="number" step="0.01" [(ngModel)]="itemAEditar.costoUnitario" class="w-full border-slate-300 rounded-md">
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium text-slate-700 text-sm mb-1">Concepto / Referencia</label>
+            <input type="text" [(ngModel)]="itemAEditar.concepto" class="w-full border-slate-300 rounded-md">
+          </div>
+          <p class="text-xs text-amber-600 font-medium">Nota: El importe total se recalculará automáticamente o requerirá actualización manual según el almacén.</p>
+        </div>
+        <div class="modal-footer">
+          <button (click)="cerrarModalEditar()" class="btn-secondary">Cancelar</button>
+          <button (click)="guardarEdicion()" class="btn-primary">Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Detalles -->
+  @if (mostrarModalDetalles()) {
+    <div class="modal-backdrop">
+      <div class="modal-panel flex flex-col slideInDown">
+        <div class="modal-header">
+          <h2 class="modal-title">Detalles del Movimiento</h2>
+          <button (click)="cerrarModalDetalles()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+        </div>
+        <div class="modal-body">
+          <ul class="space-y-2 text-sm text-slate-700">
+            <li><strong>ID Interno:</strong> {{ getId(itemDetalles) }}</li>
+            <li><strong>Concepto:</strong> {{ itemDetalles.concepto || 'N/A' }}</li>
+            <li><strong>Descripción:</strong> {{ itemDetalles.descripcion || itemDetalles.subcuenta }}</li>
+            <li><strong>Cantidad:</strong> {{ itemDetalles.cantidad || itemDetalles.entradas }}</li>
+            <li><strong>Tipo de Movimiento:</strong> {{ itemDetalles.movimiento || 'Entrada/Salida' }}</li>
+          </ul>
+        </div>
+        <div class="modal-footer">
+          <button (click)="cerrarModalDetalles()" class="btn-secondary">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- ══ MODAL AJUSTE DE STOCK ══ -->
+@if (mostrarModalAjuste()) {
+  <div class="modal-backdrop">
+    <div class="modal-panel flex flex-col slideInDown">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">⚖️ Ajuste de Stock</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Corrige el conteo físico real de un producto</p>
+        </div>
+        <button (click)="cerrarModalAjuste()" class="text-slate-400 hover:text-slate-600 focus:outline-none">✕</button>
+      </div>
+
+      <div class="modal-body space-y-4">
+        <!-- Buscador de producto -->
+        <div class="space-y-2">
+          <label class="block font-semibold text-slate-700 text-sm">Buscar Producto</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</span>
+            <input type="text" [(ngModel)]="busquedaAjuste" placeholder="Escribe para filtrar..."
+                   class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm">
+          </div>
+          <select [(ngModel)]="ajuste.idProducto" (ngModelChange)="onProductoAjusteChange($event)"
+                  class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+            <option [ngValue]="null" disabled>Selecciona un producto...</option>
+            @for (prod of getProductosAjusteFiltrados(); track prod.idProducto) {
+              <option [ngValue]="prod.idProducto">{{ prod.nombre }} (Stock actual: {{ prod.stockActual }})</option>
+            }
+          </select>
+        </div>
+
+        <!-- Stock actual vs nuevo -->
+        @if (ajuste.idProducto) {
+          <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
+            <div class="flex items-center justify-between">
+              <span class="text-sm text-slate-600 font-medium">Stock actual en sistema:</span>
+              <span class="text-xl font-black text-slate-800">{{ ajuste.stockActual }}</span>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Stock Real (conteo físico) <span class="text-red-500">*</span></label>
+              <input type="number" min="0" [(ngModel)]="ajuste.stockReal" placeholder="Ingresa la cantidad real"
+                     class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+            </div>
+            @if (ajuste.stockReal !== null && ajuste.stockReal !== undefined) {
+              <div class="flex items-center gap-2 text-sm font-bold" [ngClass]="{
+                'text-emerald-600': (ajuste.stockReal - ajuste.stockActual) > 0,
+                'text-red-600': (ajuste.stockReal - ajuste.stockActual) < 0,
+                'text-slate-500': (ajuste.stockReal - ajuste.stockActual) === 0
+              }">
+                <span>Diferencia:</span>
+                <span>{{ (ajuste.stockReal - ajuste.stockActual) > 0 ? '+' : '' }}{{ ajuste.stockReal - ajuste.stockActual }} unidades</span>
+              </div>
+            }
+          </div>
+        }
+
+        <div>
+          <label class="block font-semibold text-slate-700 text-sm mb-1">Motivo del Ajuste</label>
+          <input type="text" [(ngModel)]="ajuste.motivo" placeholder="Ej: Conteo físico del mes, merma, error de captura..."
+                 class="w-full border border-slate-300 rounded-md px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button (click)="cerrarModalAjuste()" class="btn-secondary">Cancelar</button>
+        <button (click)="guardarAjuste()" class="btn-primary flex items-center gap-2" [disabled]="guardandoAjuste()">
+          @if (guardandoAjuste()) {
+            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div> Guardando...
+          } @else {
+            ✅ Aplicar Ajuste
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- 🗑️ MODAL MERMA 🗑️ -->
+@if (mostrarModalMerma()) {
+  <div class="modal-backdrop z-50">
+    <div class="modal-panel flex flex-col slideInDown max-w-md w-full">
+      <div class="modal-header bg-red-50 border-b border-red-100 p-4">
+        <div>
+          <h2 class="modal-title text-red-700 font-black text-xl flex items-center gap-2">🗑️ Registrar Merma</h2>
+          <p class="text-xs text-red-500 mt-0.5">Registra mercancía dañada, robada o caducada.</p>
+        </div>
+        <button (click)="cerrarModalMerma()" class="text-red-400 hover:text-red-600 focus:outline-none">✖</button>
+      </div>
+
+      <div class="modal-body p-5 space-y-4">
+        <!-- Buscador -->
+        <div>
+          <label class="block text-sm font-bold text-slate-700 mb-1">Buscar Producto</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">🔍</span>
+            <input type="text" [(ngModel)]="busquedaMerma" placeholder="Nombre del producto..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:ring-red-500 focus:border-red-500">
+          </div>
+        </div>
+
+        <!-- Resultados de Búsqueda -->
+        @if (busquedaMerma.length > 0) {
+          <ul class="border border-slate-200 rounded-md divide-y divide-slate-100 max-h-40 overflow-y-auto">
+            @for (prod of getProductosMermaFiltrados(); track prod.idProducto) {
+              <li class="p-2 hover:bg-red-50 cursor-pointer flex justify-between items-center text-sm" (click)="onProductoMermaChange(prod.idProducto); busquedaMerma = ''">
+                <span class="font-medium text-slate-700">{{ prod.nombre }}</span>
+                <span class="text-slate-500 text-xs bg-slate-100 px-2 rounded">Stock: {{ prod.stockActual }}</span>
+              </li>
+            }
+          </ul>
+        }
+
+        <!-- Formulario de Merma (si hay producto seleccionado) -->
+        @if (merma.idProducto) {
+          <div class="bg-red-50 p-4 rounded-xl border border-red-100 space-y-4">
+            <p class="text-sm text-red-800 font-bold border-b border-red-100 pb-2">Datos de la Merma</p>
+            
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-red-700 uppercase mb-1">Stock Actual</label>
+                <input type="text" [value]="merma.stockActual" disabled class="w-full bg-red-100 text-red-800 font-bold border-transparent rounded-md text-center p-2">
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-red-700 uppercase mb-1">Cant. Perdida</label>
+                <input type="number" [(ngModel)]="merma.cantidad" class="w-full border-red-200 rounded-md p-2 text-center focus:border-red-400 focus:ring-red-400" min="1">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-red-700 uppercase mb-1">Motivo</label>
+              <select [(ngModel)]="merma.motivo" class="w-full border-red-200 rounded-md p-2 focus:border-red-400 focus:ring-red-400">
+                @for (motivo of motivosMerma; track motivo) {
+                  <option [value]="motivo">{{ motivo }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer p-4 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-xl">
+        <button (click)="cerrarModalMerma()" class="px-4 py-2 text-slate-600 hover:text-slate-800 font-medium">Cancelar</button>
+        <button (click)="guardarMerma()" [disabled]="!merma.idProducto || guardandoMerma()" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-bold shadow-md shadow-red-600/20 disabled:opacity-50 flex items-center gap-2">
+          {{ guardandoMerma() ? 'Registrando...' : 'Confirmar Merma' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

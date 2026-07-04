@@ -1,0 +1,197 @@
+<div class="h-full flex flex-col bg-slate-900 text-white">
+  
+  <!-- Encabezado -->
+  <div class="bg-slate-800 px-8 py-6 border-b border-slate-700 flex justify-between items-center shrink-0 shadow-sm z-10">
+    <div>
+      <h1 class="text-2xl font-black text-slate-100 tracking-tight flex items-center gap-2">
+        <span>💰</span> Corte de Caja (Cierre Z)
+      </h1>
+      <p class="text-slate-400 text-sm mt-1 font-medium">Realiza el arqueo y cierre del turno actual</p>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2 bg-slate-900 px-4 py-2 rounded-xl border border-slate-700">
+        <label class="text-sm font-bold text-slate-400">Fecha:</label>
+        <input type="date" [(ngModel)]="fechaCorte" (change)="cargarCorte()"
+               class="bg-transparent border-none text-slate-200 font-bold outline-none cursor-pointer">
+      </div>
+      <button (click)="cargarCorte()" class="bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 px-4 py-2 rounded-xl font-bold transition-colors">
+        Recalcular
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista de Impresión del Corte (Oculta en pantalla normal) -->
+  <div class="hidden print:block printable-section bg-white text-black font-mono p-4" style="width: 80mm; margin: 0 auto;">
+    <div class="text-center mb-4">
+      <!-- Contenido del Ticket aquí -->
+    </div>
+  </div>
+
+  <!-- Contenido -->
+  <div class="flex-1 overflow-y-auto p-8">
+    @if (cargando()) {
+      <div class="flex items-center justify-center h-full">
+        <div class="animate-spin rounded-full h-12 w-12 border-4 border-amber-200/20 border-t-amber-500"></div>
+      </div>
+    } @else if (datosCorte()) {
+      @if (!datosCorte().abierta) {
+        <!-- Modo Apertura -->
+        <div class="max-w-md mx-auto bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-700 flex flex-col mt-10">
+          <div class="text-center mb-6">
+            <span class="text-5xl mb-4 block">🔓</span>
+            <h2 class="text-2xl font-black text-slate-100">Abrir Turno</h2>
+            <p class="text-slate-400 mt-2">La caja aún no ha sido abierta hoy. Ingresa el fondo inicial para comenzar.</p>
+          </div>
+          
+          <div class="flex-1 space-y-4">
+            <div>
+              <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Nombre del Cajero</label>
+              <input type="text" [(ngModel)]="nombreCajero"
+                     class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 px-4 text-lg font-bold text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Monto de Apertura (Fondo Fijo)</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xl">$</span>
+                <input type="number" [(ngModel)]="montoApertura"
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-10 pr-4 text-2xl font-black text-emerald-500 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                       placeholder="0.00">
+              </div>
+            </div>
+          </div>
+          
+          <button (click)="abrirCaja()" 
+                  class="w-full mt-8 bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl transition-colors shadow-sm text-lg">
+            Abrir Caja
+          </button>
+        </div>
+      } @else {
+        <!-- Modo Corte Z -->
+        <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+          
+          <!-- Columna Izquierda: Datos del Sistema -->
+          <div class="flex flex-col gap-6">
+            <div class="bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700">
+              <h2 class="text-lg font-black text-slate-200 mb-4 border-b border-slate-700 pb-2">Valores Teóricos (Sistema)</h2>
+              
+              <div class="space-y-4">
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-900/50">
+                  <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Fondo Inicial</span>
+                  <span class="text-lg font-black text-slate-200">{{ datosCorte().fondoCaja | currency }}</span>
+                </div>
+                
+                <div class="flex justify-between items-center p-3 rounded-xl bg-slate-900/50">
+                  <span class="text-sm font-bold text-slate-400 uppercase tracking-widest">Ventas ({{ datosCorte().numeroVentas }})</span>
+                  <span class="text-lg font-black text-emerald-400">+ {{ datosCorte().totalVentas | currency }}</span>
+                </div>
+                
+                <div class="border-t border-dashed border-slate-600 my-2"></div>
+                
+                <div class="flex justify-between items-center p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                  <span class="text-sm font-black text-amber-500 uppercase tracking-widest">Total Esperado</span>
+                  <span class="text-2xl font-black text-amber-400">{{ datosCorte().totalTeorico | currency }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Si el corte ya se hizo, mostramos el botón de imprimir -->
+            @if (corteRealizado()) {
+              <div class="bg-emerald-500/10 rounded-3xl p-6 border border-emerald-500/20 flex flex-col items-center text-center">
+                <span class="text-4xl mb-2">✅</span>
+                <h3 class="text-emerald-400 font-black text-lg">Corte Generado</h3>
+                <p class="text-emerald-500/80 text-sm mb-4">El arqueo se ha guardado correctamente.</p>
+                
+                <button (click)="imprimirReporteZ()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+                  <span>🖨️</span> Imprimir Reporte Z
+                </button>
+              </div>
+            }
+          </div>
+
+          <!-- Columna Derecha: Arqueo Físico -->
+          <div class="bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700 flex flex-col">
+            <h2 class="text-lg font-black text-slate-200 mb-4 border-b border-slate-700 pb-2">Arqueo Físico</h2>
+            
+            <div class="flex-1">
+              <label class="block text-sm font-bold text-slate-400 uppercase tracking-widest mb-2">Efectivo Total en Cajón</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold text-xl">$</span>
+                <input type="number" [(ngModel)]="efectivoContado" [disabled]="corteRealizado()"
+                       class="w-full bg-slate-900 border border-slate-700 rounded-xl py-4 pl-10 pr-4 text-2xl font-black text-slate-200 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all disabled:opacity-50"
+                       placeholder="0.00">
+              </div>
+              
+              @if (efectivoContado() !== null) {
+                <div class="mt-6 p-4 rounded-2xl border" 
+                     [ngClass]="calcularDiferencia() === 0 ? 'bg-emerald-500/10 border-emerald-500/20' : (calcularDiferencia() > 0 ? 'bg-amber-500/10 border-amber-500/20' : 'bg-rose-500/10 border-rose-500/20')">
+                  <p class="text-xs font-bold uppercase tracking-widest text-center mb-1"
+                     [ngClass]="calcularDiferencia() === 0 ? 'text-emerald-400' : (calcularDiferencia() > 0 ? 'text-amber-400' : 'text-rose-400')">
+                    {{ calcularDiferencia() === 0 ? 'Caja Cuadrada' : (calcularDiferencia() > 0 ? 'Sobrante' : 'Faltante') }}
+                  </p>
+                  <p class="text-3xl font-black text-center"
+                     [ngClass]="calcularDiferencia() === 0 ? 'text-emerald-500' : (calcularDiferencia() > 0 ? 'text-amber-500' : 'text-rose-500')">
+                    {{ calcularDiferencia() | currency }}
+                  </p>
+                </div>
+              }
+            </div>
+
+            @if (!corteRealizado()) {
+              <button (click)="realizarCorte()" 
+                      [disabled]="efectivoContado() === null"
+                      class="w-full mt-6 bg-amber-500 hover:bg-amber-600 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl transition-colors shadow-sm text-lg">
+                Confirmar Cierre de Caja
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Historial de Turnos (Solo Admins) -->
+    @if (isAdmin()) {
+      <div class="max-w-4xl mx-auto mt-8 bg-slate-800 rounded-3xl p-6 shadow-sm border border-slate-700">
+        <h2 class="text-lg font-black text-slate-200 mb-4 border-b border-slate-700 pb-2">Historial de Turnos (Todas las Sesiones)</h2>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm text-slate-300">
+            <thead class="bg-slate-900/50 text-slate-400">
+              <tr>
+                <th class="p-3 font-semibold rounded-tl-lg">ID Turno</th>
+                <th class="p-3 font-semibold">Cajero</th>
+                <th class="p-3 font-semibold">Fondo Inicial</th>
+                <th class="p-3 font-semibold">Apertura</th>
+                <th class="p-3 font-semibold">Cierre</th>
+                <th class="p-3 font-semibold rounded-tr-lg">Estatus</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-700/50">
+              @for (corte of historialCortes(); track corte.idCorte) {
+                <tr class="hover:bg-slate-700/30 transition-colors">
+                  <td class="p-3 font-medium">#{{ corte.idCorte }}</td>
+                  <td class="p-3 font-medium text-slate-200">{{ corte.usuario?.nombreUsuario }}</td>
+                  <td class="p-3">{{ corte.fondoInicial | currency }}</td>
+                  <td class="p-3">{{ corte.fechaApertura | date:'short' }}</td>
+                  <td class="p-3">{{ corte.fechaCierre ? (corte.fechaCierre | date:'short') : '-' }}</td>
+                  <td class="p-3">
+                    <span class="px-2 py-1 rounded text-xs font-bold" 
+                          [ngClass]="corte.estatus === 'Abierto' ? 'bg-amber-500/20 text-amber-500' : 'bg-emerald-500/20 text-emerald-500'">
+                      {{ corte.estatus }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="6" class="p-8 text-center text-slate-500 italic">No hay historial de turnos en la base de datos.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+  </div>
+</div>

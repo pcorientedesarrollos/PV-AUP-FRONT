@@ -1,0 +1,53 @@
+<div class="h-full flex flex-col bg-slate-50 relative p-4 sm:p-6 lg:p-8 animate-fade-in custom-scrollbar overflow-y-auto">
+  <div class="max-w-7xl mx-auto w-full space-y-6">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+          <span class="text-3xl">📦</span> Historial de Compras
+        </h1>
+        <p class="text-slate-500 mt-1">Control de mercancía y relación con proveedores</p>
+      </div>
+
+      <button (click)="irANuevaCompra()" class="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all">
+        <span class="text-lg">+</span> Nueva Orden de Compra
+      </button>
+    </div>
+
+    <!-- Lista de Compras -->
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-700">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+            <tr>
+              <th class="py-3 px-4 font-semibold">Folio</th>
+              <th class="py-3 px-4 font-semibold">Fecha</th>
+              <th class="py-3 px-4 font-semibold">Proveedor</th>
+              <th class="py-3 px-4 font-semibold">Factura Prov.</th>
+              <th class="py-3 px-4 font-semibold text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (compra of compras(); track compra.idCompra) {
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="p-4 font-bold text-slate-800">{{ compra.folio }}</td>
+                <td class="p-4 text-slate-600">{{ compra.fechaCompra | date:'medium' }}</td>
+                <td class="p-4 text-slate-700 font-medium">{{ compra.proveedor?.nombre || 'Sin Proveedor' }}</td>
+                <td class="p-4 text-slate-500">{{ compra.folioFacturaProveedor || '-' }}</td>
+                <td class="p-4 text-right font-black text-indigo-600">{{ compra.total | currency:'MXN':'symbol':'1.2-2' }}</td>
+              </tr>
+            }
+            @if (compras().length === 0) {
+              <tr>
+                <td colspan="5" class="p-8 text-center text-slate-400">
+                  No hay compras registradas. Haz clic en "Nueva Orden de Compra" para comenzar.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,107 @@
+<div class="h-full flex flex-col p-4 md:p-8 overflow-y-auto">
+  <div class="max-w-4xl w-full mx-auto space-y-6">
+    
+    <!-- Header -->
+    <div>
+      <h1 class="text-2xl font-black text-slate-800 dark:text-white flex items-center gap-2">
+        <svg class="w-7 h-7 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+        Configuración de Empresa
+      </h1>
+      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Personaliza el logo, colores y datos fiscales. Los cambios se reflejarán inmediatamente en todo el sistema.</p>
+    </div>
+
+    <!-- Formulario Principal -->
+    <form [formGroup]="configForm" (ngSubmit)="guardar()" class="space-y-6">
+      
+      <!-- Sección: Identidad Visual -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <h2 class="text-lg font-bold text-slate-800 dark:text-white">Identidad Visual</h2>
+        </div>
+        
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Logo de la Empresa</label>
+            <div class="flex items-center gap-3">
+              <button type="button" (click)="fileInput.click()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-white font-semibold rounded-lg transition-colors flex items-center gap-2 border border-slate-300 dark:border-slate-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                Seleccionar Archivo
+              </button>
+              <input #fileInput type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)">
+              @if (configForm.get('logoUrl')?.value && configForm.get('logoUrl')?.value !== '/logo.png') {
+                 <button type="button" (click)="removerLogo()" class="text-xs text-rose-500 font-bold hover:underline focus:outline-none">Quitar Logo</button>
+              }
+            </div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Sube una imagen (PNG, JPG). Se guardará localmente.</p>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div class="w-24 h-24 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-center overflow-hidden p-2">
+              @if (configForm.get('logoUrl')?.value) {
+                <img [src]="configForm.get('logoUrl')?.value" class="w-full h-full object-contain" alt="Logo Preview">
+              } @else {
+                <span class="text-xs text-slate-400 font-medium">Sin Logo</span>
+              }
+            </div>
+            <div class="flex-1">
+              <p class="text-sm font-bold text-slate-700 dark:text-slate-300">Vista Previa</p>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Así se verá el logo en el Menú y Punto de Venta.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección: Datos Fiscales y Contacto -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <h2 class="text-lg font-bold text-slate-800 dark:text-white">Datos de la Empresa</h2>
+        </div>
+
+        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-2 md:col-span-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Nombre Comercial o Razón Social *</label>
+            <input type="text" formControlName="empresaNombre" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="Mi Empresa S.A. de C.V.">
+            @if (configForm.get('empresaNombre')?.invalid && configForm.get('empresaNombre')?.touched) {
+              <p class="text-xs text-rose-500 font-medium mt-1">El nombre es requerido.</p>
+            }
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">RFC *</label>
+            <input type="text" formControlName="rfc" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors uppercase" placeholder="XAXX010101000">
+            @if (configForm.get('rfc')?.invalid && configForm.get('rfc')?.touched) {
+              <p class="text-xs text-rose-500 font-medium mt-1">El RFC es requerido.</p>
+            }
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Teléfono</label>
+            <input type="text" formControlName="telefono" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="555-123-4567">
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Correo Electrónico</label>
+            <input type="email" formControlName="email" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="contacto@empresa.com">
+          </div>
+
+          <div class="space-y-2 md:col-span-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Dirección</label>
+            <input type="text" formControlName="direccion" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="Calle, Número, Colonia, Ciudad, Estado, CP">
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="flex items-center justify-between pt-4 pb-10">
+        <button type="button" (click)="restaurarPredeterminados()" class="px-5 py-2.5 text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors focus:outline-none">
+          Restaurar Predeterminados
+        </button>
+        
+        <button type="submit" class="px-8 py-3 bg-amber-500 text-white font-bold rounded-lg shadow-lg shadow-amber-500/30 hover:bg-amber-400 active:scale-95 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900">
+          Guardar Configuración
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

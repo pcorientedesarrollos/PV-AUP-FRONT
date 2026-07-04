@@ -1,0 +1,142 @@
+<div class="h-full flex flex-col bg-slate-50 relative p-4 sm:p-6 lg:p-8 animate-fade-in custom-scrollbar overflow-y-auto">
+  <div class="max-w-7xl mx-auto w-full space-y-6">
+    
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+          <button (click)="cancelar()" class="text-slate-400 hover:text-slate-700">⬅</button>
+          Nueva Orden de Compra
+        </h1>
+        <p class="text-slate-500 mt-1">Registra la entrada de mercancía y los costos del proveedor</p>
+      </div>
+      <div class="bg-indigo-50 border border-indigo-100 rounded-lg px-6 py-2">
+        <p class="text-xs text-indigo-500 font-bold uppercase">Total Compra</p>
+        <p class="text-2xl font-black text-indigo-700">{{ totalCompra() | currency:'MXN' }}</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Lado Izquierdo: Datos Generales -->
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+          <h2 class="font-bold text-slate-700 text-lg border-b pb-2">1. Datos del Proveedor</h2>
+          
+          <div>
+            <label class="block font-medium text-slate-700 text-sm mb-1">Proveedor *</label>
+            <select [(ngModel)]="idProveedor" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500">
+              <option [ngValue]="null" disabled>Selecciona a quién le compras...</option>
+              @for (prov of proveedores(); track prov.idProveedor) {
+                <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-medium text-slate-700 text-sm mb-1">Folio / Ticket / Factura (Opcional)</label>
+            <input type="text" [(ngModel)]="folioFactura" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. A-5492">
+          </div>
+
+          <div>
+            <label class="block font-medium text-slate-700 text-sm mb-1">Notas / Concepto (Opcional)</label>
+            <textarea [(ngModel)]="notas" rows="2" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. Lote de reposición mensual..."></textarea>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
+          <h2 class="font-bold text-slate-700 text-lg border-b pb-2">2. Agregar Productos</h2>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</span>
+            <input type="text" [(ngModel)]="busquedaProducto" placeholder="Busca producto por nombre o código..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm">
+          </div>
+          
+          @if (busquedaProducto().length > 0) {
+            <ul class="border border-slate-200 rounded-md divide-y divide-slate-100 max-h-48 overflow-y-auto bg-slate-50">
+              @for (prod of productosFiltrados(); track prod.idProducto) {
+                <li (click)="agregarAlCarrito(prod)" class="p-2 hover:bg-amber-50 cursor-pointer flex justify-between items-center text-sm transition-colors">
+                  <span class="font-medium text-slate-700">{{ prod.nombre }}</span>
+                  <span class="text-slate-500 text-xs">Costo act: {{ prod.precioUnitario | currency }}</span>
+                </li>
+              }
+              @if (productosFiltrados().length === 0) {
+                <li class="p-2 text-slate-400 text-sm text-center">No se encontraron productos</li>
+              }
+            </ul>
+          }
+        </div>
+      </div>
+
+      <!-- Lado Derecho: Carrito de Compras -->
+      <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
+          <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+            <h2 class="font-bold text-slate-700 text-lg">3. Productos a Ingresar</h2>
+            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">{{ carrito().length }} artículos</span>
+          </div>
+
+          <div class="flex-1 overflow-x-auto p-0">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="bg-slate-50 border-b border-slate-200">
+                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Producto</th>
+                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Cantidad</th>
+                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Costo Unit.</th>
+                  <th class="p-3 text-xs font-bold text-slate-500 uppercase" title="Actualizar catálogo">Act. Catál.</th>
+                  <th class="p-3 text-xs font-bold text-slate-500 uppercase text-right">Subtotal</th>
+                  <th class="p-3 w-10"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (item of carrito(); track item.idProducto) {
+                  <tr>
+                    <td class="p-3 text-sm font-medium text-slate-700">{{ item.nombre }}</td>
+                    <td class="p-3">
+                      <input type="number" [(ngModel)]="item.cantidad" class="w-20 border-slate-300 rounded p-1 text-sm focus:ring-amber-500" min="1">
+                    </td>
+                    <td class="p-3">
+                      <div class="flex items-center">
+                        <span class="text-slate-400 mr-1">$</span>
+                        <input type="number" [(ngModel)]="item.precioCosto" class="w-24 border-slate-300 rounded p-1 text-sm focus:ring-amber-500" min="0" step="0.01">
+                      </div>
+                    </td>
+                    <td class="p-3 text-center">
+                      <input type="checkbox" [(ngModel)]="item.actualizarCosto" class="rounded text-amber-500 focus:ring-amber-500 cursor-pointer" title="Actualiza el costo base del producto con este nuevo costo">
+                    </td>
+                    <td class="p-3 text-right font-bold text-indigo-600 text-sm">
+                      {{ (item.cantidad * item.precioCosto) | currency:'MXN' }}
+                    </td>
+                    <td class="p-3 text-center">
+                      <button (click)="removerDelCarrito(item.idProducto)" class="text-red-400 hover:text-red-600 focus:outline-none" title="Remover">
+                        🗑️
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (carrito().length === 0) {
+                  <tr>
+                    <td colspan="6" class="p-10 text-center text-slate-400 text-sm">
+                      Tu carrito de compras está vacío.<br>Busca y agrega productos desde el panel izquierdo.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-between items-center">
+            <button (click)="cancelar()" class="text-slate-500 hover:text-slate-700 font-medium px-4 py-2 transition-colors">Cancelar</button>
+            <button (click)="finalizarCompra()" [disabled]="guardando() || carrito().length === 0 || !idProveedor()" 
+                    class="btn-primary px-8 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold shadow-md shadow-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+              @if (guardando()) {
+                <span class="animate-spin text-lg">↻</span> Guardando...
+              } @else {
+                <span>✔️</span> Finalizar e Ingresar al Inventario
+              }
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

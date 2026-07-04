@@ -1,0 +1,236 @@
+<div class="p-6 h-full flex flex-col bg-slate-50 relative overflow-hidden">
+  
+  <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 relative z-10">
+    <div>
+      <h1 class="text-3xl font-black text-slate-800 tracking-tight">Facturas (CFDI 4.0)</h1>
+      <p class="text-slate-500 font-medium">Gestiona y emite facturas reales a través del SAT.</p>
+    </div>
+    <button 
+      (click)="abrirModalFactura()"
+      class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-bold shadow-lg shadow-indigo-600/30 flex items-center gap-2 transition-all active:scale-95"
+    >
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+      Nueva Factura
+    </button>
+  </div>
+
+  @if (cargando()) {
+    <div class="flex-1 flex flex-col items-center justify-center text-slate-400">
+      <svg class="animate-spin w-10 h-10 mb-4 text-indigo-500" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <p class="font-medium">Cargando historial de facturas...</p>
+    </div>
+  } @else {
+    <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative z-10">
+      <div class="overflow-x-auto h-full custom-scrollbar">
+        <table class="w-full text-left text-sm text-slate-700">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+            <tr>
+              <th class="py-3 px-4 font-semibold w-1/4">Folio / UUID</th>
+              <th class="py-3 px-4 font-semibold hidden md:table-cell">Fecha</th>
+              <th class="py-3 px-4 font-semibold">Cliente</th>
+              <th class="py-3 px-4 font-semibold text-right">Total</th>
+              <th class="py-3 px-4 font-semibold text-center">Estatus</th>
+              <th class="py-3 px-4 font-semibold text-center w-32">Archivos</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 text-sm">
+            @for (f of facturas(); track f.idFactura) {
+              <tr class="hover:bg-slate-50/80 transition-colors">
+                <td class="px-4 py-3">
+                  <div class="font-bold text-slate-800">{{ f.uuid ? f.uuid.substring(0, 13) + '...' : 'Generando...' }}</div>
+                  <div class="text-xs text-slate-400">Venta ID: {{ f.venta?.idVenta }}</div>
+                </td>
+                <td class="px-4 py-3 text-slate-600 hidden md:table-cell">{{ f.fechaEmision | date:'dd/MMM/yyyy HH:mm' }}</td>
+                <td class="px-4 py-3">
+                  <div class="font-semibold text-slate-700">{{ f.nombreCliente }}</div>
+                  <div class="text-xs text-slate-400">{{ f.rfcCliente }}</div>
+                </td>
+                <td class="px-4 py-3 font-bold text-emerald-600 text-right">${{ f.total }}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class="px-2 py-1 bg-emerald-50 text-emerald-600 border border-emerald-200 text-xs font-bold rounded">
+                    {{ f.estatus }}
+                  </span>
+                </td>
+                <td class="px-4 py-3 text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    @if (f.urlPdf) {
+                      <button (click)="descargarPdf(f.urlPdf)" class="text-xs text-rose-500 hover:text-rose-700 font-bold px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 transition-colors border border-rose-200" title="Descargar PDF Real">PDF</button>
+                    }
+                    @if (f.urlXml) {
+                      <button (click)="descargarXml(f.urlXml)" class="text-xs text-blue-500 hover:text-blue-700 font-bold px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200" title="Descargar XML Real">XML</button>
+                    }
+                    @if (!f.urlPdf && !f.urlXml) {
+                      <span class="text-xs text-slate-400">Procesando</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="p-12 text-center text-slate-400">
+                  <svg class="w-16 h-16 mx-auto text-slate-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  <p class="font-medium text-lg">No hay facturas emitidas</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- Modal Nueva Factura -->
+  @if (mostrarModal()) {
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        
+        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+          <div>
+            <h2 class="text-xl font-black text-slate-800">Emitir Factura (CFDI 4.0)</h2>
+            <p class="text-xs text-slate-500 font-medium">Facturapi - Sandbox Mode</p>
+          </div>
+          <button (click)="cerrarModal()" class="text-slate-400 hover:text-slate-600 bg-white rounded-lg p-2 shadow-sm border border-slate-200 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <div class="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6">
+          
+          @if (errorFactura()) {
+            <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
+              {{ errorFactura() }}
+            </div>
+          }
+
+          <!-- 1. Buscar Venta -->
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">1. Folio de la Venta a Facturar</label>
+            <div class="flex gap-2">
+              <input type="text" [(ngModel)]="folioVenta" placeholder="Ej. V-0012" class="flex-1 bg-white border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+              <button (click)="buscarVentaPorFolio()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700">Buscar</button>
+            </div>
+            @if (idVenta()) {
+              <div class="mt-2 text-emerald-600 text-sm font-bold flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Venta ID: {{ idVenta() }} encontrada y lista.
+              </div>
+            }
+          </div>
+
+          <!-- 2. Credenciales -->
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">2. Facturapi Test Secret Key <span class="text-red-500">*</span></label>
+            <input type="password" [(ngModel)]="formData.apiKey" placeholder="sk_test_..." class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none bg-indigo-50/50">
+            <p class="text-[10px] text-slate-400 mt-1">Tu llave secreta de pruebas del dashboard de Facturapi.</p>
+          </div>
+
+          <!-- 3. Datos del Cliente -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [class.opacity-50]="!idVenta()" [class.pointer-events-none]="!idVenta()">
+            <div class="col-span-1 md:col-span-2">
+              <h3 class="font-bold text-slate-700 border-b pb-2 mb-2">3. Datos Fiscales del Cliente (Receptor)</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                <!-- Select Cliente -->
+                <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
+                  <h4 class="text-sm font-bold text-indigo-800 mb-2">Autocompletar con Cliente Guardado</h4>
+                  <select (change)="seleccionarCliente($event)" class="w-full border border-indigo-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                    <option value="">-- Seleccionar Cliente --</option>
+                    @for (cli of clientesGuardados(); track cli.idCliente) {
+                      <option [value]="cli.idCliente">{{ cli.nombreCompleto }} ({{ cli.rfc }})</option>
+                    }
+                  </select>
+                </div>
+
+                <!-- Botón CSF -->
+                <div class="bg-blue-50 border border-blue-100 rounded-lg p-4">
+                  <h4 class="text-sm font-bold text-blue-800 mb-2">Autocompletar con Cédula Fiscal</h4>
+                  <div class="flex items-center gap-4">
+                    <input type="file" accept="application/pdf" #fileInput (change)="onCsfSelected($event)" class="hidden">
+                    <button type="button" (click)="fileInput.click()" [disabled]="subiendoCsf()"
+                            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                      </svg>
+                      {{ subiendoCsf() ? 'Procesando...' : 'Subir Cédula (PDF)' }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">RFC</label>
+              <input type="text" [(ngModel)]="formData.rfc" placeholder="EKU9003173C9" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Código Postal</label>
+              <input type="text" [(ngModel)]="formData.cp" placeholder="00000" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Razón Social (Exacta como en Constancia)</label>
+              <input type="text" [(ngModel)]="formData.razonSocial" placeholder="ESCUELA KEMPER URATE" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none uppercase">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Régimen Fiscal</label>
+              <select [(ngModel)]="formData.regimen" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                @for (r of regimenes; track r.id) {
+                  <option [value]="r.id">{{ r.id }} - {{ r.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Uso de CFDI</label>
+              <select [(ngModel)]="formData.usoCfdi" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                @for (u of usos; track u.id) {
+                  <option [value]="u.id">{{ u.id }} - {{ u.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Forma de Pago</label>
+              <select [(ngModel)]="formData.formaPago" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                @for (fp of formasPago; track fp.id) {
+                  <option [value]="fp.id">{{ fp.id }} - {{ fp.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Método de Pago</label>
+              <select [(ngModel)]="formData.metodoPago" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm">
+                @for (mp of metodosPago; track mp.id) {
+                  <option [value]="mp.id">{{ mp.id }} - {{ mp.nombre }}</option>
+                }
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+          <button (click)="cerrarModal()" class="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
+          <button 
+            (click)="emitirFactura()" 
+            [disabled]="facturando() || !idVenta() || !formData.apiKey"
+            class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            @if (facturando()) {
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              Timbrando con el SAT...
+            } @else {
+              Timbrar Factura
+            }
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,382 @@
+<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
+
+  <!-- Encabezado -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">🏭 Proveedores</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Gestiona tus proveedores y el historial de compras</p>
+    </div>
+    <div class="flex gap-2">
+      <button (click)="cargarProveedores()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        Actualizar
+      </button>
+      <button (click)="abrirModalCrear()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Nuevo Proveedor
+      </button>
+    </div>
+  </div>
+
+  <!-- Buscador -->
+  <div class="mb-4">
+    <input type="text" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)"
+           placeholder="🔍 Buscar por nombre, RFC o contacto..."
+           class="w-full max-w-md border border-slate-300 rounded-lg px-4 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+  </div>
+
+  <!-- Loading -->
+  @if (cargando()) {
+    <div class="flex justify-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-amber-500"></div>
+    </div>
+  } @else {
+
+    <!-- Tabla -->
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      @if (proveedoresFiltrados().length === 0) {
+        <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+          <span class="text-5xl mb-3">🏭</span>
+          <p class="font-semibold">Sin proveedores registrados</p>
+          <p class="text-sm">Haz clic en "Nuevo Proveedor" para agregar uno</p>
+        </div>
+      } @else {
+        <table class="w-full text-left text-sm text-slate-700">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+            <tr>
+              <th class="py-3 px-4 font-semibold w-1/4">Nombre</th>
+              <th class="py-3 px-4 font-semibold hidden sm:table-cell">RFC</th>
+              <th class="py-3 px-4 font-semibold hidden md:table-cell">Contacto</th>
+              <th class="py-3 px-4 font-semibold hidden md:table-cell">Teléfono</th>
+              <th class="py-3 px-4 font-semibold text-center w-32">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (p of proveedoresFiltrados(); track p.idProveedor) {
+              <tr class="hover:bg-slate-50 transition-colors">
+                <td class="px-4 py-3">
+                  <p class="font-semibold text-slate-800 text-sm">{{ p.nombre }}</p>
+                  <p class="text-xs text-slate-400">{{ p.correo || '—' }}</p>
+                </td>
+                <td class="px-4 py-3 hidden sm:table-cell">
+                  <span class="font-mono text-xs bg-slate-100 text-slate-600 px-2 py-1 rounded">{{ p.rfc || '—' }}</span>
+                </td>
+                <td class="px-4 py-3 text-sm text-slate-600 hidden md:table-cell">{{ p.contacto || '—' }}</td>
+                <td class="px-4 py-3 text-sm text-slate-600 hidden md:table-cell">{{ p.telefono || '—' }}</td>
+                <td class="px-4 py-3">
+                  <div class="flex items-center justify-center gap-2">
+                    <button (click)="cargarComprasDeProveedor(p)"
+                            class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                      📦 Compras
+                    </button>
+                    <button (click)="abrirModalEditar(p)"
+                            class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                      ✏️ Editar
+                    </button>
+                    <button (click)="eliminarProveedor(p)"
+                            class="text-xs bg-red-50 hover:bg-red-100 text-red-700 font-semibold px-3 py-1.5 rounded-lg transition-colors">
+                      🗑️
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  }
+</div>
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- MODAL PROVEEDOR                                         -->
+<!-- ════════════════════════════════════════════════════════ -->
+@if (mostrarModalProveedor()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="mostrarModalProveedor.set(false)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
+      <div class="p-6 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-slate-800">{{ modoProveedor() === 'crear' ? 'Nuevo Proveedor' : 'Editar Proveedor' }}</h2>
+      </div>
+      <div class="p-6 space-y-4">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre / Razón Social *</label>
+          <input type="text" [(ngModel)]="proveedorActual.nombre" placeholder="Distribuidora XYZ S.A. de C.V."
+                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">RFC</label>
+            <input type="text" [(ngModel)]="proveedorActual.rfc" placeholder="XYZS010101ABC"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Teléfono</label>
+            <input type="text" [(ngModel)]="proveedorActual.telefono" placeholder="55 1234 5678"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre de Contacto</label>
+            <input type="text" [(ngModel)]="proveedorActual.contacto" placeholder="Juan López"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Correo</label>
+            <input type="email" [(ngModel)]="proveedorActual.correo" placeholder="ventas@proveedor.com"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Dirección</label>
+          <input type="text" [(ngModel)]="proveedorActual.direccion" placeholder="Calle, No., Colonia, Ciudad"
+                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        </div>
+      </div>
+      <div class="px-6 pb-6 flex justify-end gap-3">
+        <button (click)="mostrarModalProveedor.set(false)" class="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Cancelar</button>
+        <button (click)="guardarProveedor()" class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors">Guardar</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- PANEL COMPRAS LATERAL                                   -->
+<!-- ════════════════════════════════════════════════════════ -->
+@if (mostrarPanelCompras()) {
+  <div class="fixed inset-0 bg-black/50 z-50 flex justify-end" (click)="mostrarPanelCompras.set(false)">
+    <div class="bg-white w-full max-w-2xl h-full flex flex-col shadow-2xl" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">📦 Compras — {{ proveedorSeleccionado()?.nombre }}</h2>
+          <p class="text-sm text-slate-500">Total acumulado: <span class="font-bold text-emerald-600">{{ totalCompras() | currency:'MXN':'$':'1.2-2' }}</span></p>
+        </div>
+        <div class="flex gap-2">
+          <button (click)="abrirModalCompra()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+            + Nueva Compra
+          </button>
+          <button (click)="mostrarPanelCompras.set(false)" class="text-slate-400 hover:text-slate-700">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+      </div>
+      <!-- Cuerpo -->
+      <div class="flex-1 overflow-y-auto p-5 space-y-3">
+        @if (cargandoCompras()) {
+          <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div></div>
+        } @else if (compras().length === 0) {
+          <div class="flex flex-col items-center justify-center py-20 text-slate-400">
+            <span class="text-4xl mb-2">📂</span>
+            <p>Sin compras registradas para este proveedor</p>
+          </div>
+        } @else {
+          @for (c of compras(); track c.idCompra) {
+            <div class="bg-slate-50 rounded-xl border border-slate-200 p-4 hover:border-amber-300 transition-colors">
+              <div class="flex items-start justify-between">
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="font-bold text-slate-800 text-sm">{{ c.folio }}</span>
+                    @if (c.urlFacturaPdf || c.urlFacturaXml) {
+                      <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">📎 Factura</span>
+                    }
+                  </div>
+                  <p class="text-xs text-slate-500">{{ c.fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
+                  @if (c.folioFacturaProveedor) {
+                    <p class="text-xs text-slate-500 mt-0.5">Factura proveedor: <span class="font-mono font-bold">{{ c.folioFacturaProveedor }}</span></p>
+                  }
+                  <p class="text-xs text-slate-400 mt-1">{{ c.detalles?.length || 0 }} producto(s)</p>
+                </div>
+                <div class="text-right">
+                  <p class="font-black text-lg text-slate-800">{{ c.total | currency:'MXN':'$':'1.2-2' }}</p>
+                  <button (click)="verDetalleCompra(c)" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold mt-1">Ver detalle →</button>
+                </div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- MODAL NUEVA COMPRA                                      -->
+<!-- ════════════════════════════════════════════════════════ -->
+@if (mostrarModalCompra()) {
+  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" (click)="mostrarModalCompra.set(false)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+      <div class="p-5 border-b border-slate-100">
+        <h2 class="text-lg font-bold text-slate-800">+ Nueva Compra</h2>
+        <p class="text-sm text-slate-500">Proveedor: <strong>{{ proveedorSeleccionado()?.nombre }}</strong></p>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5 space-y-5">
+
+        <!-- Info factura proveedor -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Folio / No. Factura del Proveedor</label>
+            <input type="text" [(ngModel)]="compraActual.folioFacturaProveedor" placeholder="Ej: A-00123"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700 mb-1">Notas</label>
+            <input type="text" [(ngModel)]="compraActual.notas" placeholder="Observaciones opcionales"
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          </div>
+        </div>
+
+        <!-- Adjuntar Factura -->
+        <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
+          <p class="text-sm font-bold text-indigo-800 mb-3">📎 Adjuntar Factura del Proveedor <span class="font-normal text-indigo-500">(opcional)</span></p>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-lg p-3 cursor-pointer hover:bg-indigo-100 transition-colors">
+              <span class="text-2xl">📄</span>
+              <span class="text-xs font-semibold text-indigo-700">{{ archivoPdf ? archivoPdf.name : 'Subir PDF' }}</span>
+              <input type="file" accept=".pdf" (change)="onArchivoPdf($event)" class="hidden">
+            </label>
+            <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-lg p-3 cursor-pointer hover:bg-indigo-100 transition-colors">
+              <span class="text-2xl">📋</span>
+              <span class="text-xs font-semibold text-indigo-700">{{ archivoXml ? archivoXml.name : 'Subir XML' }}</span>
+              <input type="file" accept=".xml" (change)="onArchivoXml($event)" class="hidden">
+            </label>
+          </div>
+        </div>
+
+        <!-- Buscar producto -->
+        <div class="relative">
+          <label class="block text-sm font-semibold text-slate-700 mb-1">Agregar Productos</label>
+          <input type="text" [(ngModel)]="busquedaProducto" placeholder="🔍 Buscar producto por nombre o código..."
+                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          @if (busquedaProducto.length > 0 && productosFiltrados().length > 0) {
+            <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-xl mt-1 max-h-44 overflow-y-auto">
+              @for (prod of productosFiltrados().slice(0, 10); track prod.idProducto) {
+                <li (click)="agregarProducto(prod)" class="px-4 py-2.5 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0 flex justify-between items-center">
+                  <span class="font-medium text-slate-800">{{ prod.nombre }}</span>
+                  <span class="text-xs text-slate-400">Stock: {{ prod.stockActual }}</span>
+                </li>
+              }
+            </ul>
+          }
+        </div>
+
+        <!-- Tabla de detalles -->
+        @if (detallesCompra.length > 0) {
+          <div class="border border-slate-200 rounded-xl overflow-hidden">
+            <table class="min-w-full divide-y divide-slate-200">
+              <thead class="bg-slate-50">
+                <tr>
+                  <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
+                  <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
+                  <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Costo Unit.</th>
+                  <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Subtotal</th>
+                  <th class="px-3 py-2"></th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                @for (d of detallesCompra; track d.idProducto; let i = $index) {
+                  <tr>
+                    <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.nombre }}</td>
+                    <td class="px-3 py-2">
+                      <input type="number" [(ngModel)]="d.cantidad" (ngModelChange)="recalcularTotal()" min="1"
+                             class="w-16 text-center border border-slate-300 rounded px-1 py-1 text-sm">
+                    </td>
+                    <td class="px-3 py-2">
+                      <input type="number" [(ngModel)]="d.precioCosto" (ngModelChange)="recalcularTotal()" min="0" step="0.01"
+                             placeholder="$0.00" class="w-24 text-center border border-slate-300 rounded px-1 py-1 text-sm">
+                    </td>
+                    <td class="px-3 py-2 text-right text-sm font-bold text-slate-700">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
+                    <td class="px-3 py-2 text-center">
+                      <button (click)="quitarProducto(i)" class="text-red-400 hover:text-red-600">✕</button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+            <div class="bg-slate-50 px-4 py-3 flex justify-end">
+              <span class="font-black text-lg text-slate-800">Total: {{ (compraActual.total || 0) | currency:'MXN':'$':'1.2-2' }}</span>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="px-5 py-4 border-t border-slate-100 flex justify-end gap-3">
+        <button (click)="mostrarModalCompra.set(false)" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">Cancelar</button>
+        <button (click)="guardarCompra()" [disabled]="guardandoCompra()"
+                class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2">
+          @if (guardandoCompra()) { <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> }
+          Guardar Compra
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!-- MODAL DETALLE COMPRA                                    -->
+<!-- ════════════════════════════════════════════════════════ -->
+@if (mostrarDetalle() && compraDetalle()) {
+  <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4" (click)="mostrarDetalle.set(false)">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
+      <div class="p-5 border-b border-slate-100 flex justify-between items-start">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">{{ compraDetalle().folio }}</h2>
+          <p class="text-sm text-slate-500">{{ compraDetalle().fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
+        </div>
+        <button (click)="mostrarDetalle.set(false)" class="text-slate-400 hover:text-slate-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div class="flex-1 overflow-y-auto p-5 space-y-4">
+        <!-- Factura adjunta -->
+        @if (compraDetalle().urlFacturaPdf || compraDetalle().urlFacturaXml) {
+          <div class="bg-emerald-50 rounded-xl p-3 border border-emerald-200 flex gap-3 items-center flex-wrap">
+            <span class="text-sm font-semibold text-emerald-800">📎 Factura del proveedor adjunta:</span>
+            @if (compraDetalle().urlFacturaPdf) {
+              <a [href]="'http://localhost:3000' + compraDetalle().urlFacturaPdf" target="_blank"
+                 class="text-sm bg-white border border-emerald-300 text-emerald-700 font-semibold px-3 py-1 rounded-lg hover:bg-emerald-50 transition-colors">
+                📄 Ver PDF
+              </a>
+            }
+            @if (compraDetalle().urlFacturaXml) {
+              <a [href]="'http://localhost:3000' + compraDetalle().urlFacturaXml" target="_blank" download
+                 class="text-sm bg-white border border-indigo-300 text-indigo-700 font-semibold px-3 py-1 rounded-lg hover:bg-indigo-50 transition-colors">
+                ⬇ XML
+              </a>
+            }
+          </div>
+        }
+        @if (compraDetalle().folioFacturaProveedor) {
+          <p class="text-sm text-slate-600">Factura proveedor: <span class="font-mono font-bold">{{ compraDetalle().folioFacturaProveedor }}</span></p>
+        }
+        @if (compraDetalle().notas) {
+          <p class="text-sm text-slate-500 italic">📝 {{ compraDetalle().notas }}</p>
+        }
+        <!-- Detalle productos -->
+        <table class="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-xl overflow-hidden">
+          <thead class="bg-slate-50">
+            <tr>
+              <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
+              <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
+              <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Costo</th>
+              <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Subtotal</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            @for (d of compraDetalle().detalles; track d.idDetalleCompra) {
+              <tr>
+                <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.producto?.nombre || '—' }}</td>
+                <td class="px-3 py-2 text-sm text-center text-slate-600">{{ d.cantidad }}</td>
+                <td class="px-3 py-2 text-sm text-right text-slate-600">{{ d.precioCosto | currency:'MXN':'$':'1.2-2' }}</td>
+                <td class="px-3 py-2 text-sm text-right font-bold text-slate-800">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="flex justify-end">
+          <span class="font-black text-lg text-slate-800">Total: {{ compraDetalle().total | currency:'MXN':'$':'1.2-2' }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}
