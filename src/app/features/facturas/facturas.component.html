@@ -120,12 +120,6 @@
             }
           </div>
 
-          <!-- 2. Credenciales -->
-          <div>
-            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">2. Facturapi Test Secret Key <span class="text-red-500">*</span></label>
-            <input type="password" [(ngModel)]="formData.apiKey" placeholder="sk_test_..." class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none bg-indigo-50/50">
-            <p class="text-[10px] text-slate-400 mt-1">Tu llave secreta de pruebas del dashboard de Facturapi.</p>
-          </div>
 
           <!-- 3. Datos del Cliente -->
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4" [class.opacity-50]="!idVenta()" [class.pointer-events-none]="!idVenta()">
@@ -219,7 +213,7 @@
           <button (click)="cerrarModal()" class="px-5 py-2.5 text-slate-600 font-bold hover:bg-slate-200 rounded-xl transition-colors">Cancelar</button>
           <button 
             (click)="emitirFactura()" 
-            [disabled]="facturando() || !idVenta() || !formData.apiKey"
+            [disabled]="facturando() || !idVenta()"
             class="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             @if (facturando()) {

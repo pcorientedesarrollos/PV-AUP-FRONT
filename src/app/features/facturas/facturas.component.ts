@@ -63,8 +63,7 @@ export class FacturasComponent implements OnInit {
     regimen: '601',
     usoCfdi: 'G03',
     formaPago: '01',
-    metodoPago: 'PUE',
-    apiKey: '' // La llave de Facturapi de prueba
+    metodoPago: 'PUE'
   };
 
   regimenes = [
@@ -203,11 +202,6 @@ export class FacturasComponent implements OnInit {
 
     if (this.formData.rfc.length < 12 || this.formData.rfc.length > 13) {
       this.errorFactura.set('El RFC debe tener 12 o 13 caracteres');
-      return;
-    }
-
-    if (!this.formData.apiKey) {
-      this.errorFactura.set('Debes proporcionar la API Key de Facturapi para timbrar.');
       return;
     }
 
