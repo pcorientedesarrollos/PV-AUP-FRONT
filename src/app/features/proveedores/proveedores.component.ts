@@ -93,9 +93,9 @@ export class ProveedoresComponent implements OnInit {
     this.proveedorSeleccionado.set(proveedor);
     this.mostrarPanelCompras.set(true);
     this.cargandoCompras.set(true);
-    this.http.get<any[]>(`${this.API}/compras`, { headers: this.headers }).subscribe({
+    this.http.get<any[]>(`${this.API}/compras?idProveedor=${proveedor.idProveedor}`, { headers: this.headers }).subscribe({
       next: (data) => {
-        this.compras.set(data.filter((c: any) => c.proveedor?.idProveedor === proveedor.idProveedor));
+        this.compras.set(data);
         this.cargandoCompras.set(false);
       },
       error: () => this.cargandoCompras.set(false)
@@ -165,6 +165,11 @@ export class ProveedoresComponent implements OnInit {
 
   async guardarCompra() {
     if (!this.detallesCompra.length) { alert('Agrega al menos un producto'); return; }
+    // Validar cantidad y costo validos
+    if (this.detallesCompra.some(d => !d.cantidad || d.cantidad <= 0 || (d as any).precioCosto < 0)) {
+      alert('Verifica que todas las cantidades y costos sean válidos');
+      return;
+    }
     this.guardandoCompra.set(true);
     const payload = { ...this.compraActual, detalles: this.detallesCompra };
     this.http.post<any>(`${this.API}/compras`, payload, { headers: this.headers }).subscribe({

@@ -165,17 +165,12 @@ export class FacturasComponent implements OnInit {
 
   buscarVentaPorFolio() {
     if (!this.folioVenta()) return;
-    this.http.get<any[]>(`http://localhost:3000/pos/ventas`, {
+    const query = this.folioVenta().trim();
+    this.http.get<any[]>(`http://localhost:3000/pos/ventas?folio=${query}`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (ventas) => {
-        const query = this.folioVenta().trim().toLowerCase();
-        const v = ventas.find(v => 
-          v.folio.toLowerCase() === query || 
-          v.idVenta.toString() === query || 
-          `srv-${v.idVenta}` === query ||
-          `vta-${v.idVenta}` === query
-        );
+        const v = ventas.length > 0 ? ventas[0] : null;
         if (v) {
           this.idVenta.set(v.idVenta);
           this.errorFactura.set('');
@@ -200,6 +195,17 @@ export class FacturasComponent implements OnInit {
 
   emitirFactura() {
     if (!this.idVenta()) return;
+    
+    if (!this.formData.rfc || !this.formData.razonSocial || !this.formData.cp || !this.formData.regimen || !this.formData.usoCfdi) {
+      this.errorFactura.set('Todos los campos del cliente son obligatorios para la factura 4.0');
+      return;
+    }
+
+    if (this.formData.rfc.length < 12 || this.formData.rfc.length > 13) {
+      this.errorFactura.set('El RFC debe tener 12 o 13 caracteres');
+      return;
+    }
+
     if (!this.formData.apiKey) {
       this.errorFactura.set('Debes proporcionar la API Key de Facturapi para timbrar.');
       return;
