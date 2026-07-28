@@ -3,6 +3,19 @@
   <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4 relative z-10">
     <div>
       <h1 class="text-3xl font-black text-slate-800 tracking-tight">Facturas (CFDI 4.0)</h1>
+<div class="mt-2 flex gap-2 no-print">
+      <div class="flex items-center gap-2">
+        <button (click)="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Excel
+        </button>
+        <button (click)="exportarPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          PDF
+        </button>
+      </div>
+</div>
+
       <p class="text-slate-500 font-medium">Gestiona y emite facturas reales a través del SAT.</p>
     </div>
     <button 
@@ -23,10 +36,10 @@
       <p class="font-medium">Cargando historial de facturas...</p>
     </div>
   } @else {
-    <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden relative z-10">
-      <div class="overflow-x-auto h-full custom-scrollbar">
-        <table class="w-full text-left text-sm text-slate-700">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+    <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden relative z-10">
+      <div class="overflow-auto flex-1  custom-scrollbar">
+        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
             <tr>
               <th class="py-3 px-4 font-semibold w-1/4">Folio / UUID</th>
               <th class="py-3 px-4 font-semibold hidden md:table-cell">Fecha</th>
@@ -37,8 +50,8 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm">
-            @for (f of facturas(); track f.idFactura) {
-              <tr class="hover:bg-slate-50/80 transition-colors">
+            @for (f of facturasPaginadas(); track f.idFactura) {
+              <tr class="hover:bg-slate-50/80 transition-colors/80 transition-colors">
                 <td class="px-4 py-3">
                   <div class="font-bold text-slate-800">{{ f.uuid ? f.uuid.substring(0, 13) + '...' : 'Generando...' }}</div>
                   <div class="text-xs text-slate-400">Venta ID: {{ f.venta?.idVenta }}</div>
@@ -79,6 +92,7 @@
           </tbody>
         </table>
       </div>
+      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="facturas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
     </div>
   }
 

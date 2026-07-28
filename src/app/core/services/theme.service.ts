@@ -1,41 +1,47 @@
-import { Injectable, signal, effect } from '@angular/core';
+import { Injectable, signal, PLATFORM_ID, Inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ThemeService {
-  isDarkMode = signal<boolean>(false);
+  private readonly THEME_KEY = 'pos_theme';
+  isDarkMode = signal(false);
 
-  constructor() {
-    this.initTheme();
-    
-    // Automatically apply class to body/html
-    effect(() => {
-      const isDark = this.isDarkMode();
-      if (typeof window !== 'undefined') {
-        if (isDark) {
-          document.documentElement.classList.add('dark');
-          localStorage.setItem('theme', 'dark');
-        } else {
-          document.documentElement.classList.remove('dark');
-          localStorage.setItem('theme', 'light');
-        }
-      }
-    });
-  }
-
-  private initTheme() {
-    if (typeof window !== 'undefined') {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        this.isDarkMode.set(true);
-      } else {
-        this.isDarkMode.set(false);
-      }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.loadTheme();
     }
   }
 
-  toggle() {
-    this.isDarkMode.update(dark => !dark);
+  toggleTheme() {
+    this.isDarkMode.set(!this.isDarkMode());
+    this.applyTheme();
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.THEME_KEY, this.isDarkMode() ? 'dark' : 'light');
+    }
+  }
+
+  private loadTheme() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    const saved = localStorage.getItem(this.THEME_KEY);
+    if (saved === 'dark') {
+      this.isDarkMode.set(true);
+    } else if (saved === 'light') {
+      this.isDarkMode.set(false);
+    } else {
+      // Default to light mode for now
+      this.isDarkMode.set(false);
+    }
+    this.applyTheme();
+  }
+
+  private applyTheme() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    if (this.isDarkMode()) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   }
 }

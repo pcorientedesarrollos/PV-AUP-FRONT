@@ -1,16 +1,17 @@
-﻿import { environment } from '../../../environments/environment';
-import { Component, signal, OnInit } from '@angular/core';
+import { environment } from '../../../environments/environment';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TicketPrinterService } from '../../core/services/ticket-printer.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 
 @Component({
   selector: 'app-corte-caja',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './corte-caja.component.html',
 })
 export class CorteCajaComponent implements OnInit {
@@ -30,6 +31,17 @@ export class CorteCajaComponent implements OnInit {
 
   // Para el historial (solo admins)
   historialCortes = signal<any[]>([]);
+  
+  paginaActual = signal(1);
+  tamanoPagina = signal(10);
+  
+  totalPaginas = computed(() => Math.ceil(this.historialCortes().length / this.tamanoPagina()) || 1);
+
+  cortesPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.historialCortes().slice(inicio, fin);
+  });
 
   constructor(
     private http: HttpClient, 

@@ -59,8 +59,8 @@
           <p class="text-sm">Haz clic en "Nuevo Proveedor" para agregar uno</p>
         </div>
       } @else {
-        <table class="w-full text-left text-sm text-slate-700">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
             <tr>
               <th class="py-3 px-4 font-semibold whitespace-nowrap">Proveedor</th>
               <th class="py-3 px-4 font-semibold whitespace-nowrap">RFC</th>
@@ -71,9 +71,9 @@
               <th class="py-3 px-4 font-semibold text-center w-32 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 text-sm">
             @for (p of proveedoresPaginados(); track p.idProveedor) {
-              <tr class="hover:bg-slate-50 transition-colors">
+              <tr class="hover:bg-slate-50/80 transition-colors transition-colors">
                 <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ p.nombre }}</td>
                 <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
                   @if (p.rfc) {
@@ -125,10 +125,10 @@
                 </td>
               </tr>
             }
-          </tbody>
         </table>
       }
     </div>
+    <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="proveedoresFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
   </article>
 </div>
 
@@ -161,7 +161,7 @@
           @if (coincidenciasNombre().length > 0) {
             <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
               @for (item of coincidenciasNombre(); track item.idProveedor) {
-                <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50">
+                <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
                   {{ item.nombre }}
                 </li>
               }
@@ -179,7 +179,7 @@
             @if (coincidenciasRfc().length > 0) {
               <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
                 @for (item of coincidenciasRfc(); track item.idProveedor) {
-                  <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50">
+                  <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
                     <span class="font-mono text-amber-600 font-semibold">{{ item.rfc }}</span> &mdash; {{ item.nombre }}
                   </li>
                 }
@@ -257,7 +257,7 @@
         </div>
       </div>
       <div class="px-6 pb-6 flex justify-end gap-3">
-        <button (click)="mostrarModalProveedor.set(false)" class="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Cancelar</button>
+        <button (click)="mostrarModalProveedor.set(false)" class="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50/80 transition-colors">Cancelar</button>
         <button (click)="guardarProveedor()" class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors">Guardar</button>
       </div>
     </div>
@@ -387,8 +387,8 @@
         <!-- Tabla de detalles -->
         @if (detallesCompra.length > 0) {
           <div class="border border-slate-200 rounded-xl overflow-hidden">
-            <table class="min-w-full divide-y divide-slate-200">
-              <thead class="bg-slate-50">
+            <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+              <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
                 <tr>
                   <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
                   <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
@@ -397,7 +397,7 @@
                   <th class="px-3 py-2"></th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100">
+              <tbody class="divide-y divide-slate-100 text-sm">
                 @for (d of detallesCompra; track d.idProducto; let i = $index) {
                   <tr>
                     <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.nombre }}</td>
@@ -424,7 +424,7 @@
         }
       </div>
       <div class="px-5 py-4 border-t border-slate-100 flex justify-end gap-3">
-        <button (click)="mostrarModalCompra.set(false)" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50">Cancelar</button>
+        <button (click)="mostrarModalCompra.set(false)" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50/80 transition-colors">Cancelar</button>
         <button (click)="guardarCompra()" [disabled]="guardandoCompra()"
                 class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2">
           @if (guardandoCompra()) { <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> }
@@ -517,8 +517,8 @@
           <p class="text-sm text-slate-500 italic">📝 {{ compraDetalle().notas }}</p>
         }
         <!-- Detalle productos -->
-        <table class="min-w-full divide-y divide-slate-200 border border-slate-200 rounded-xl overflow-hidden">
-          <thead class="bg-slate-50">
+        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
             <tr>
               <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
               <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
@@ -526,7 +526,7 @@
               <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Subtotal</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 text-sm">
             @for (d of compraDetalle().detalles; track d.idDetalleCompra) {
               <tr>
                 <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.producto?.nombre || '—' }}</td>

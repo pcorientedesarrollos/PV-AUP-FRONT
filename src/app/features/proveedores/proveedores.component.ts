@@ -1,5 +1,6 @@
 import { environment } from '../../../environments/environment';
 import { Component, signal, computed, effect, OnInit, inject } from '@angular/core';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -10,7 +11,7 @@ import { ImportarModalComponent } from '../../shared/components/importar-modal/i
 @Component({
   selector: 'app-proveedores',
   standalone: true,
-  imports: [CommonModule, FormsModule, ImportarModalComponent],
+  imports: [CommonModule, FormsModule, ImportarModalComponent, PaginacionComponent],
   templateUrl: './proveedores.component.html',
 })
 export class ProveedoresComponent implements OnInit {
@@ -51,7 +52,7 @@ export class ProveedoresComponent implements OnInit {
 
   // --- PAGINACIÓN ---
   paginaActual = signal(1);
-  tamanoPagina = signal(50);
+  tamanoPagina = signal(10);
   
   totalPaginas = computed(() => {
     return Math.max(1, Math.ceil(this.proveedoresFiltrados().length / this.tamanoPagina()));
@@ -186,7 +187,7 @@ export class ProveedoresComponent implements OnInit {
     effect(() => {
       this.busqueda();
       this.paginaActual.set(1);
-    }, { allowSignalWrites: true });
+    });
   }
 
   ngOnInit() {

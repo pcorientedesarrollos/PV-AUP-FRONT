@@ -1,5 +1,7 @@
 import { environment } from '../../../environments/environment';
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Router, RouterModule } from '@angular/router';
@@ -8,10 +10,25 @@ import { FormsModule } from '@angular/forms';
 @Component({
   selector: 'app-compras',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, PaginacionComponent],
   templateUrl: './compras.component.html'
 })
 export class ComprasComponent implements OnInit {
+
+  tamanoPagina = signal(10);
+  paginaActual = signal(1);
+
+  totalPaginas = computed(() => {
+    const list = this.vistaActual() === 'facturas' ? this.comprasFiltradas() : this.conceptosFiltrados();
+    return Math.ceil(list.length / this.tamanoPagina()) || 1;
+  });
+  
+  registrosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const list = this.vistaActual() === 'facturas' ? this.comprasFiltradas() : this.conceptosFiltrados();
+    return list.slice(inicio, inicio + this.tamanoPagina());
+  });
+
   compras = signal<any[]>([]);
   busqueda = signal('');
   compraDetalle = signal<any | null>(null);
@@ -64,7 +81,7 @@ export class ComprasComponent implements OnInit {
     return this.conceptosFiltrados().reduce((sum, c) => sum + (Number(c.cantidad) * Number(c.precioCosto)), 0);
   });
 
-  constructor(private http: HttpClient, private router: Router) {}
+  constructor(private http: HttpClient, private router: Router, public exportService: ExportService) {}
 
   ngOnInit() {
     this.cargarCompras();
@@ -106,5 +123,30 @@ export class ComprasComponent implements OnInit {
 
   get totalItems(): number {
     return (this.compraDetalle()?.detalles || []).reduce((s: number, d: any) => s + Number(d.cantidad || 0), 0);
+  }
+
+  exportarExcel() {
+    const data = this.comprasFiltradas().map((c: any) => ({
+      'ID Compra': c.idCompra,
+      'Fecha': new Date(c.fecha).toLocaleString(),
+      'Proveedor': c.proveedor?.nombre || 'N/A',
+      'Total': c.total,
+      'Estatus': c.estatus,
+      'Factura': c.folioFactura || 'N/A'
+    }));
+    this.exportService.exportToExcel(data, 'Compras');
+  }
+
+  exportarPDF() {
+    const headers = ['ID', 'Fecha', 'Proveedor', 'Total', 'Estatus', 'Factura'];
+    const data = this.comprasFiltradas().map((c: any) => [
+      c.idCompra.toString(),
+      new Date(c.fecha).toLocaleString(),
+      c.proveedor?.nombre || 'N/A',
+      `$${c.total}`,
+      c.estatus,
+      c.folioFactura || 'N/A'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Reporte de Compras', 'Compras', 'l');
   }
 }

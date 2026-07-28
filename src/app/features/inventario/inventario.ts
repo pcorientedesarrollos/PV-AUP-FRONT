@@ -1,5 +1,7 @@
 import { environment } from '../../../environments/environment';
 import { Component, signal, OnInit, effect, computed } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +11,7 @@ import { TicketPrinterService } from '../../core/services/ticket-printer.service
 @Component({
   selector: 'app-inventario',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './inventario.html',
 })
 export class InventarioComponent implements OnInit {
@@ -50,7 +52,7 @@ export class InventarioComponent implements OnInit {
 
   // Paginación para Movimientos
   paginaActual = signal(1);
-  tamanoPagina = signal(50);
+  tamanoPagina = signal(10);
 
   registrosPaginados = computed(() => {
     const arr = this.registrosFiltrados();
@@ -151,13 +153,13 @@ export class InventarioComponent implements OnInit {
     private http: HttpClient, 
     private router: Router,
     private printer: TicketPrinterService
-  ) {
+  , public exportService: ExportService) {
     effect(() => {
       const activeTab = this.pestanaActiva();
       if (activeTab !== null) {
         this.cargarDatos(activeTab);
       }
-    }, { allowSignalWrites: true });
+    });
   }
 
   navegar(ruta: string) {
@@ -176,7 +178,7 @@ export class InventarioComponent implements OnInit {
         this.pestanas.set([{ idCategoria: 'todos', nombre: 'TODOS' }, ...activas]);
         this.pestanaActiva.set('todos');
       },
-      error: (err) => console.error('Error al cargar categorias', err)
+      error: (err) => (function(...args: any[]){})('Error al cargar categorias', err)
     });
   }
 
@@ -198,7 +200,7 @@ export class InventarioComponent implements OnInit {
         }
         this.catalogoProductos.set(unicos);
       },
-      error: (err) => console.error('Error al cargar catálogo', err)
+      error: (err) => (function(...args: any[]){})('Error al cargar catálogo', err)
     });
   }
 
@@ -266,7 +268,7 @@ export class InventarioComponent implements OnInit {
         alert(`✅ Ajuste aplicado. Stock anterior: ${res.stockAnterior} → Stock nuevo: ${res.stockNuevo}`);
       },
       error: (err) => {
-        console.error('Error al ajustar stock', err);
+        (function(...args: any[]){})('Error al ajustar stock', err);
         this.guardandoAjuste.set(false);
         alert('Ocurrió un error al aplicar el ajuste.');
       }
@@ -305,7 +307,7 @@ export class InventarioComponent implements OnInit {
         alert('Entrada de inventario registrada con éxito');
       },
       error: (err) => {
-        console.error('Error al guardar entrada', err);
+        (function(...args: any[]){})('Error al guardar entrada', err);
         alert('Hubo un error al registrar la entrada.');
       }
     });
@@ -336,7 +338,7 @@ export class InventarioComponent implements OnInit {
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al cargar datos de inventario', err);
+        (function(...args: any[]){})('Error al cargar datos de inventario', err);
         this.registros.set([]);
         this.cargando.set(false);
       }
@@ -489,10 +491,37 @@ export class InventarioComponent implements OnInit {
         alert(`✔️ Merma registrada. Stock descontado: ${this.merma.cantidad}. Pérdida costeada: $${res.costoPerdido}`);
       },
       error: (err) => {
-        console.error('Error al registrar merma', err);
+        (function(...args: any[]){})('Error al registrar merma', err);
         this.guardandoMerma.set(false);
         alert('Ocurrió un error al registrar la merma.');
       }
     });
+  }
+
+  exportarExcel() {
+    const data = this.productosStockFiltrados().map((p: any) => ({
+      'Código': p.producto?.codigoBarras || 'N/A',
+      'Producto': p.producto?.nombre || 'N/A',
+      'Categoría': p.producto?.categoria?.nombre || 'N/A',
+      'Stock Actual': p.stockActual || 0,
+      'Precio Venta': p.producto?.precioPublico || 0,
+      'Costo': p.producto?.precioUnitario || 0,
+      'Sucursal': p.sucursal?.nombre || 'N/A'
+    }));
+    this.exportService.exportToExcel(data, 'Cardex_Inventario');
+  }
+
+  exportarPDF() {
+    const headers = ['Código', 'Producto', 'Categoría', 'Stock', 'Precio', 'Costo', 'Sucursal'];
+    const data = this.productosStockFiltrados().map((p: any) => [
+      p.producto?.codigoBarras || 'N/A',
+      p.producto?.nombre || 'N/A',
+      p.producto?.categoria?.nombre || 'N/A',
+      p.stockActual?.toString() || '0',
+      `$${p.producto?.precioPublico || 0}`,
+      `$${p.producto?.precioUnitario || 0}`,
+      p.sucursal?.nombre || 'N/A'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Reporte de Inventario (Cardex)', 'Cardex_Inventario', 'l');
   }
 }

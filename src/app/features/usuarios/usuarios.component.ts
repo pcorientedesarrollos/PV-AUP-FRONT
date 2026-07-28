@@ -1,5 +1,6 @@
 ﻿import { environment } from '../../../environments/environment';
 import { Component, signal, computed, OnInit } from '@angular/core';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -16,10 +17,20 @@ interface Usuario {
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './usuarios.component.html',
 })
 export class UsuariosComponent implements OnInit {
+
+  tamanoPagina = signal(10);
+  paginaActual = signal(1);
+  totalPaginas = computed(() => Math.ceil(this.usuariosFiltrados().length / this.tamanoPagina()) || 1);
+  
+  registrosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    return this.usuariosFiltrados().slice(inicio, inicio + this.tamanoPagina());
+  });
+
   usuarios = signal<Usuario[]>([]);
   cargando = signal(true);
   

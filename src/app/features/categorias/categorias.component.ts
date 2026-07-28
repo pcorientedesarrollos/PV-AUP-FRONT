@@ -4,11 +4,12 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../core/services/pos.service';
 import { AuthService } from '../../core/services/auth.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   template: `
     <div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full gap-4">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -51,10 +52,10 @@ import { AuthService } from '../../core/services/auth.service';
       <!-- Contenido -->
       <div class="flex-1 overflow-hidden flex flex-col pb-4">
         @if (!vistaTarjetas()) {
-          <div class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
-            <div class="overflow-x-auto flex-1">
-              <table class="w-full text-left text-sm text-slate-700">
-                <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+          <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0 relative z-10">
+            <div class="overflow-auto flex-1 custom-scrollbar">
+              <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+                <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
                   <tr>
                     <th class="py-3 px-4 font-semibold w-16">ID</th>
                     <th class="py-3 px-4 font-semibold w-24">Color</th>
@@ -64,9 +65,9 @@ import { AuthService } from '../../core/services/auth.service';
                     <th class="py-3 px-4 font-semibold text-center w-24">Acciones</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-100">
-                  @for (cat of categoriasFiltradas(); track cat.idCategoria) {
-                    <tr class="hover:bg-slate-50 transition-colors group">
+                <tbody class="divide-y divide-slate-100 text-sm">
+                  @for (cat of categoriasPaginadas(); track cat.idCategoria) {
+                    <tr class="hover:bg-slate-50/80 transition-colors group">
                       <td class="py-3 px-4 text-slate-500 font-medium">#{{cat.idCategoria}}</td>
                       <td class="py-3 px-4">
                         <div class="w-6 h-6 rounded-full border border-slate-200 shadow-sm" [ngClass]="cat.color"></div>
@@ -103,7 +104,7 @@ import { AuthService } from '../../core/services/auth.service';
         } @else {
           <!-- Vista Grid de Tarjetas -->
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 overflow-y-auto custom-scrollbar h-full">
-            @for (cat of categoriasFiltradas(); track cat.idCategoria) {
+            @for (cat of categoriasPaginadas(); track cat.idCategoria) {
               <div class="bg-white rounded-xl shadow-sm border border-slate-200 hover:shadow-md transition-shadow flex flex-col overflow-hidden relative group">
                 <!-- Barra de Color Superior -->
                 <div class="h-2 w-full" [ngClass]="cat.color"></div>
@@ -136,6 +137,7 @@ import { AuthService } from '../../core/services/auth.service';
           </div>
         }
       </div>
+      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="categoriasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
     </div>
 
     <!-- Modal Formulario -->
@@ -233,6 +235,17 @@ export class CategoriasComponent implements OnInit {
   cargando = signal(false);
   error = signal('');
   vistaTarjetas = signal(false);
+
+  paginaActual = signal(1);
+  tamanoPagina = signal(10);
+  
+  totalPaginas = computed(() => Math.ceil(this.categoriasFiltradas().length / this.tamanoPagina()) || 1);
+
+  categoriasPaginadas = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.categoriasFiltradas().slice(inicio, fin);
+  });
 
   colores = [
     'bg-slate-600', 'bg-amber-500', 'bg-emerald-500', 'bg-sky-500', 

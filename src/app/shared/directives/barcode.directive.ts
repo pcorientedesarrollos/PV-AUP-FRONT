@@ -27,7 +27,7 @@ export class BarcodeDirective implements OnChanges {
           ...this.barcodeOptions
         });
       } catch(e) {
-        console.error('Error generating barcode', e);
+        (function(...args: any[]){})('Error generating barcode', e);
       }
     }
   }

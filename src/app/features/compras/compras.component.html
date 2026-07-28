@@ -7,6 +7,19 @@
         <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
           <span class="text-3xl">📦</span> Historial de Compras
         </h1>
+<div class="mt-2 flex gap-2 no-print">
+      <div class="flex items-center gap-2">
+        <button (click)="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          Excel
+        </button>
+        <button (click)="exportarPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          PDF
+        </button>
+      </div>
+</div>
+
         <p class="text-slate-500 mt-1">Control de mercancía y relación con proveedores</p>
       </div>
       <button (click)="irANuevaCompra()" class="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all">
@@ -55,10 +68,10 @@
       <div class="flex gap-6 items-start">
 
       <!-- Tabla de Compras -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex-1 min-w-0">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm text-slate-700">
-            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex-1 min-w-0">
+        <div class="overflow-auto flex-1">
+          <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
               <tr>
                 <th class="py-3 px-4 font-semibold">Folio</th>
                 <th class="py-3 px-4 font-semibold">Fecha</th>
@@ -67,8 +80,8 @@
                 <th class="py-3 px-4 font-semibold text-right">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (compra of comprasFiltradas(); track compra.idCompra) {
+            <tbody class="divide-y divide-slate-100 text-sm">
+              @for (compra of registrosPaginados(); track compra.idCompra) {
                 <tr
                   (click)="verDetalle(compra)"
                   class="hover:bg-indigo-50 transition-colors cursor-pointer"
@@ -95,11 +108,13 @@
             </tbody>
           </table>
         </div>
+        <!-- Controles de Paginación -->
+        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="comprasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
       </div>
 
       <!-- Panel de Detalle -->
       @if (compraDetalle() || cargandoDetalle()) {
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 w-full max-w-md flex-shrink-0 overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 w-full max-w-md flex-shrink-0 overflow-hidden">
 
           <!-- Header del panel -->
           <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
@@ -161,8 +176,8 @@
               <div>
                 <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Artículos comprados</h3>
                 <div class="border border-slate-200 rounded-lg overflow-hidden">
-                  <table class="w-full text-xs text-slate-700">
-                    <thead class="bg-slate-100 text-slate-500">
+                  <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+                    <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
                       <tr>
                         <th class="py-2 px-3 text-left font-semibold">Producto</th>
                         <th class="py-2 px-3 text-center font-semibold">Cant.</th>
@@ -170,7 +185,7 @@
                         <th class="py-2 px-3 text-right font-semibold">Subtotal</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-100">
+                    <tbody class="divide-y divide-slate-100 text-sm">
                       @for (det of compraDetalle().detalles; track det.idDetalleCompra) {
                         <tr>
                           <td class="py-2 px-3 font-medium text-slate-800 max-w-[140px] truncate" [title]="det.producto?.nombre">
@@ -208,10 +223,10 @@
 
     <!-- Vista de Conceptos Facturados -->
     @if (vistaActual() === 'conceptos') {
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col flex-1 min-w-0 overflow-hidden">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 flex flex-col flex-1 min-w-0 overflow-hidden">
         <div class="overflow-auto flex-1">
-          <table class="w-full text-left text-sm text-slate-700">
-            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-[10px]">
+          <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
               <tr>
                 <th class="py-3 px-4 font-bold uppercase tracking-wider">Fecha / Folio</th>
                 <th class="py-3 px-4 font-bold uppercase tracking-wider">Proveedor / RFC</th>
@@ -223,8 +238,8 @@
                 <th class="py-3 px-4 font-bold uppercase tracking-wider text-right">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              @for (det of conceptosFiltrados(); track $index) {
+            <tbody class="divide-y divide-slate-100 text-sm">
+              @for (det of registrosPaginados(); track $index) {
                 <tr class="hover:bg-indigo-50 transition-colors">
                   <td class="p-3 border-l-2 border-transparent hover:border-indigo-500">
                     <p class="font-bold text-slate-800">{{ det.compraFolio }}</p>
@@ -269,6 +284,8 @@
             </tbody>
           </table>
         </div>
+
+        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="conceptosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
         
         <!-- Totales Fijos (Bottom Bar) -->
         <div class="bg-slate-50 border-t border-slate-200 p-4 flex justify-between items-center flex-shrink-0">

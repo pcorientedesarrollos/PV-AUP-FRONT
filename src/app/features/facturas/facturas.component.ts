@@ -1,4 +1,6 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -7,13 +9,30 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-facturas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './facturas.component.html',
   host: { 
     class: 'block w-full h-full min-w-full'
   }
 })
 export class FacturasComponent implements OnInit {
+
+  paginaActual = signal(1);
+  tamanoPagina = signal(10);
+  
+  totalPaginas = computed(() => Math.ceil(this.facturas().length / this.tamanoPagina()) || 1);
+
+  facturasPaginadas = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.facturas().slice(inicio, fin);
+  });
+  
+  registrosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    return this.facturas().slice(inicio, inicio + this.tamanoPagina());
+  });
+
   facturas = signal<any[]>([]);
   cargando = signal(false);
   idSucursalSesion = 0;
@@ -97,7 +116,7 @@ export class FacturasComponent implements OnInit {
 
   clientesGuardados = signal<any[]>([]);
 
-  constructor(private http: HttpClient, public auth: AuthService) {}
+  constructor(private http: HttpClient, public auth: AuthService, public exportService: ExportService) {}
 
   ngOnInit() {
     const ses = this.auth.sesion();
@@ -254,5 +273,30 @@ export class FacturasComponent implements OnInit {
         }
       });
     }
+  }
+
+  exportarExcel() {
+    const data = this.facturas().map((f: any) => ({
+      'UUID': f.uuid,
+      'Fecha': new Date(f.fecha).toLocaleString(),
+      'Total': f.total,
+      'RFC Receptor': f.rfcReceptor,
+      'Estatus': f.estatus,
+      'ID Venta': f.venta?.idVenta || 'N/A'
+    }));
+    this.exportService.exportToExcel(data, 'Facturas');
+  }
+
+  exportarPDF() {
+    const headers = ['UUID', 'Fecha', 'Total', 'RFC', 'Estatus', 'ID Venta'];
+    const data = this.facturas().map((f: any) => [
+      f.uuid || 'N/A',
+      new Date(f.fecha).toLocaleString(),
+      `$${f.total}`,
+      f.rfcReceptor,
+      f.estatus,
+      f.venta?.idVenta?.toString() || 'N/A'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Reporte de Facturas', 'Facturas', 'l');
   }
 }

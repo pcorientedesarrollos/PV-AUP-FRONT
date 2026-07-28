@@ -37,15 +37,15 @@
     </div>
   }
 
-  <div class="flex-1 relative bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
+  <div class="flex-1 relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col">
     @if (cargando()) {
       <div class="flex items-center justify-center h-full min-h-[300px]">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-amber-200 border-t-amber-500"></div>
       </div>
     } @else {
-      <div class="overflow-x-auto flex-1">
-        <table class="w-full text-left border-collapse">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+      <div class="overflow-auto flex-1 flex-1">
+        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
             <tr>
               <th class="py-3 px-4 font-semibold w-24 text-center whitespace-nowrap">ID</th>
               <th class="py-3 px-4 font-semibold whitespace-nowrap">Nombre de Usuario</th>
@@ -56,9 +56,9 @@
               <th class="py-3 px-4 font-semibold text-center w-24 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 text-sm">
             @for (usr of usuariosFiltrados(); track usr.idUsuario) {
-              <tr class="hover:bg-slate-50 transition-colors group">
+              <tr class="hover:bg-slate-50/80 transition-colors transition-colors group">
                 <td class="py-3 px-4 text-center text-slate-500 font-medium whitespace-nowrap">#{{ usr.idUsuario }}</td>
                 <td class="py-3 px-4 font-medium text-slate-900 whitespace-nowrap">
                   {{ usr.usuario }}
@@ -122,6 +122,7 @@
           </tbody>
         </table>
       </div>
+      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="usuariosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
     }
   </div>
 

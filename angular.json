@@ -28,7 +28,9 @@
                 "glob": "**/*.json",
                 "input": "src",
                 "output": "/",
-                "ignore": ["app/**"]
+                "ignore": [
+                  "app/**"
+                ]
               }
             ],
             "styles": [
@@ -42,7 +44,10 @@
             "ssr": {
               "entry": "src/server.ts"
             },
-            "serviceWorker": "src/ngsw-config.json"
+            "serviceWorker": "src/ngsw-config.json",
+            "allowedCommonJsDependencies": [
+              "jsbarcode"
+            ]
           },
           "configurations": {
             "production": {

@@ -5,10 +5,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
 
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
+
 @Component({
   selector: 'app-devoluciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './devoluciones.component.html',
 })
 export class DevolucionesComponent implements OnInit {
@@ -27,6 +29,17 @@ export class DevolucionesComponent implements OnInit {
       d.motivo?.toLowerCase().includes(q) ||
       d.tipo?.toLowerCase().includes(q)
     );
+  });
+
+  paginaActual = signal(1);
+  tamanoPagina = signal(10);
+  
+  totalPaginas = computed(() => Math.ceil(this.devolucionesFiltradas().length / this.tamanoPagina()) || 1);
+
+  devolucionesPaginadas = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.devolucionesFiltradas().slice(inicio, fin);
   });
 
   get headers() {

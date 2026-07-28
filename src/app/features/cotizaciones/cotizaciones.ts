@@ -1,4 +1,5 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
+import { Component, OnInit, signal, inject, computed } from '@angular/core';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,10 +9,20 @@ import { ToastService } from '../../core/services/toast.service';
 @Component({
   selector: 'app-cotizaciones',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './cotizaciones.html',
 })
 export class CotizacionesComponent implements OnInit {
+
+  tamanoPagina = signal(10);
+  paginaActual = signal(1);
+  totalPaginas = computed(() => Math.ceil(this.cotizaciones().length / this.tamanoPagina()) || 1);
+  
+  registrosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    return this.cotizaciones().slice(inicio, inicio + this.tamanoPagina());
+  });
+
   private router = inject(Router);
   private posService = inject(PosService);
   private toast = inject(ToastService);

@@ -1,4 +1,6 @@
 import { Component, signal, computed, OnInit, effect, inject } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -11,7 +13,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-clientes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './clientes.component.html',
 })
 export class ClientesComponent implements OnInit {
@@ -69,7 +71,7 @@ export class ClientesComponent implements OnInit {
 
   // --- PAGINACIÓN ---
   paginaActual = signal(1);
-  tamanoPagina = signal(50);
+  tamanoPagina = signal(10);
   
   totalPaginas = computed(() => {
     return Math.max(1, Math.ceil(this.clientesFiltrados().length / this.tamanoPagina()));
@@ -81,7 +83,7 @@ export class ClientesComponent implements OnInit {
     return this.clientesFiltrados().slice(inicio, fin);
   });
 
-  constructor(private http: HttpClient, private router: Router, public auth: AuthService) {
+  constructor(private http: HttpClient, private router: Router, public auth: AuthService, public exportService: ExportService) {
     // Resetear a página 1 cuando cambia algún filtro
     effect(() => {
       this.busqueda();
@@ -89,7 +91,7 @@ export class ClientesComponent implements OnInit {
       this.filtroEmpresa();
       this.filtroSucursal();
       this.paginaActual.set(1);
-    }, { allowSignalWrites: true });
+    });
   }
 
   // Modal
@@ -223,7 +225,7 @@ export class ClientesComponent implements OnInit {
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al cargar clientes', err);
+        (function(...args: any[]){})('Error al cargar clientes', err);
         this.cargando.set(false);
       }
     });
@@ -426,7 +428,7 @@ export class ClientesComponent implements OnInit {
       this.http.delete(`http://localhost:3000/pos/clientes/${id}`).subscribe({
         next: () => this.cargarClientes(),
         error: (err) => {
-          console.error('Error desactivando', err);
+          (function(...args: any[]){})('Error desactivando', err);
           alert('No se pudo desactivar el cliente.');
         }
       });
@@ -453,5 +455,28 @@ export class ClientesComponent implements OnInit {
       'P01': 'P01 - Por definir'
     };
     return usos[codigo] || codigo;
+  }
+
+  exportarExcel() {
+    const data = this.clientesFiltrados().map((c: any) => ({
+      'Nombre': c.nombre,
+      'RFC': c.rfc || 'N/A',
+      'Teléfono': c.telefono || 'N/A',
+      'Email': c.email || 'N/A',
+      'Régimen Fiscal': c.regimenFiscal || 'N/A'
+    }));
+    this.exportService.exportToExcel(data, 'Clientes');
+  }
+
+  exportarPDF() {
+    const headers = ['Nombre', 'RFC', 'Teléfono', 'Email', 'Régimen'];
+    const data = this.clientesFiltrados().map((c: any) => [
+      c.nombre,
+      c.rfc || 'N/A',
+      c.telefono || 'N/A',
+      c.email || 'N/A',
+      c.regimenFiscal || 'N/A'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Catálogo de Clientes', 'Clientes', 'p');
   }
 }

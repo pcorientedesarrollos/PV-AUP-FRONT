@@ -1,4 +1,6 @@
 import { Component, signal, computed, OnInit } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -10,7 +12,7 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-historial',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginacionComponent],
   templateUrl: './historial.component.html',
 })
 export class HistorialComponent implements OnInit {
@@ -53,7 +55,7 @@ export class HistorialComponent implements OnInit {
 
   // Paginación
   paginaActual = signal(1);
-  tamanoPagina = signal(50);
+  tamanoPagina = signal(10);
 
   ventasPaginadas = computed(() => {
     const arr = this.ventasFiltradas();
@@ -93,7 +95,7 @@ export class HistorialComponent implements OnInit {
     private router: Router, 
     public auth: AuthService,
     private printer: TicketPrinterService
-  ) {}
+  , public exportService: ExportService) {}
 
   isAdmin() {
     return this.auth.sesion()?.idPerfil === 1 || this.auth.sesion()?.idPerfil === 3;
@@ -541,6 +543,33 @@ export class HistorialComponent implements OnInit {
         alert('Error al registrar la devolución: ' + (err.error?.message || 'Error desconocido'));
       }
     });
+  }
+
+  exportarExcel() {
+    const data = this.ventasFiltradas().map((v: any) => ({
+      'ID Venta': v.idVenta,
+      'Fecha': new Date(v.fecha).toLocaleString(),
+      'Total': v.total,
+      'Método Pago': v.metodoPago,
+      'Estatus': v.estatus,
+      'Cajero': v.usuario?.nombre || 'N/A',
+      'Cliente': v.cliente?.nombre || 'Público en General'
+    }));
+    this.exportService.exportToExcel(data, 'Historial_Ventas');
+  }
+
+  exportarPDF() {
+    const headers = ['ID', 'Fecha', 'Total', 'Pago', 'Estatus', 'Cajero', 'Cliente'];
+    const data = this.ventasFiltradas().map((v: any) => [
+      v.idVenta.toString(),
+      new Date(v.fecha).toLocaleString(),
+      `$${v.total}`,
+      v.metodoPago,
+      v.estatus,
+      v.usuario?.nombre || 'N/A',
+      v.cliente?.nombre || 'Público'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Historial de Ventas', 'Historial_Ventas', 'l');
   }
 }
 

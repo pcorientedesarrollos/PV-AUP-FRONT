@@ -42,12 +42,12 @@ export class ConfiguracionTicketComponent implements OnInit {
     public auth: AuthService,
     private cdr: ChangeDetectorRef
   ) {
-    console.log('ConfiguracionTicketComponent instanciado');
+    (function(...args: any[]){})('ConfiguracionTicketComponent instanciado');
   }
 
   ngOnInit() {
     try {
-      console.log('ConfiguracionTicketComponent ngOnInit');
+      (function(...args: any[]){})('ConfiguracionTicketComponent ngOnInit');
       const ses = this.auth.sesion();
       if (!ses) {
         this.cargando = false;
@@ -64,7 +64,7 @@ export class ConfiguracionTicketComponent implements OnInit {
         this.cargando = false;
       }
     } catch(e) {
-      console.error('Error en ngOnInit de ConfiguracionTicketComponent', e);
+      (function(...args: any[]){})('Error en ngOnInit de ConfiguracionTicketComponent', e);
       this.cargando = false;
       this.mensajeError = 'Error interno al inicializar: ' + e;
     }
@@ -94,7 +94,7 @@ export class ConfiguracionTicketComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error cargando configuración:', err);
+        (function(...args: any[]){})('Error cargando configuración:', err);
         this.configSucursal.idSucursal = idSucursal;
         this.updatePreview();
         this.cargando = false;
@@ -128,7 +128,7 @@ export class ConfiguracionTicketComponent implements OnInit {
       }, cfg);
       this.previewHtmlStr = this.sanitizer.bypassSecurityTrustHtml(htmlStr);
     } catch (e) {
-      console.error(e);
+      (function(...args: any[]){})(e);
       this.previewHtmlStr = this.sanitizer.bypassSecurityTrustHtml(
         '<p style="color:#94a3b8;font-size:11px;text-align:center;">Vista previa no disponible</p>'
       );
@@ -153,7 +153,7 @@ export class ConfiguracionTicketComponent implements OnInit {
         this.cdr.detectChanges();
       },
       error: (err) => { 
-        console.error(err);
+        (function(...args: any[]){})(err);
         this.guardando = false; 
         this.mensajeError = 'Hubo un error al intentar guardar la configuración del ticket. Por favor revisa la conexión.';
         this.cdr.detectChanges();

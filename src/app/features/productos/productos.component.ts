@@ -1,4 +1,6 @@
 import { Component, signal, computed, effect, OnInit } from '@angular/core';
+import { ExportService } from '../../core/services/export.service';
+import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -12,7 +14,7 @@ import { ImportarModalComponent } from '../../shared/components/importar-modal/i
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, BarcodeDirective, ImportarModalComponent],
+  imports: [CommonModule, FormsModule, BarcodeDirective, ImportarModalComponent, PaginacionComponent],
   templateUrl: './productos.component.html',
 })
 export class ProductosComponent implements OnInit {
@@ -96,7 +98,7 @@ export class ProductosComponent implements OnInit {
 
   // --- PAGINACIÓN ---
   paginaActual = signal(1);
-  tamanoPagina = signal(50);
+  tamanoPagina = signal(10);
   
   totalPaginas = computed(() => {
     return Math.max(1, Math.ceil(this.productosFiltrados().length / this.tamanoPagina()));
@@ -113,7 +115,7 @@ export class ProductosComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     public auth: AuthService
-  ) {
+  , public exportService: ExportService) {
     // Resetear a página 1 cuando cambia algún filtro
     effect(() => {
       this.busqueda();
@@ -122,7 +124,7 @@ export class ProductosComponent implements OnInit {
       this.filtroEmpresa();
       this.filtroSucursal();
       this.paginaActual.set(1);
-    }, { allowSignalWrites: true });
+    });
   }
 
   // Estadísticas (siempre sobre todos los productos, no el filtro)
@@ -286,7 +288,7 @@ export class ProductosComponent implements OnInit {
   cargarCategorias() {
     this.http.get<any[]>(`${environment.apiUrl}/pos/categorias`).subscribe({
       next: (data) => this.categorias.set(data),
-      error: (err) => console.error('Error cargando categorias', err)
+      error: (err) => (function(...args: any[]){})('Error cargando categorias', err)
     });
   }
 
@@ -294,7 +296,7 @@ export class ProductosComponent implements OnInit {
     this.cargando.set(true);
     this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
       next: (data) => { this.productos.set(data); this.cargando.set(false); },
-      error: (err) => { console.error('Error al cargar productos:', err); this.cargando.set(false); }
+      error: (err) => { (function(...args: any[]){})('Error al cargar productos:', err); this.cargando.set(false); }
     });
   }
 
@@ -419,7 +421,7 @@ export class ProductosComponent implements OnInit {
         this.cerrarModal();
       },
       error: (err) => {
-        console.error('Error al guardar:', err);
+        (function(...args: any[]){})('Error al guardar:', err);
         this.guardando.set(false);
       }
     });
@@ -446,7 +448,7 @@ export class ProductosComponent implements OnInit {
       if (imagenUrl) payload.imagenUrl = imagenUrl;
       this.http.post(`${environment.apiUrl}/pos/productos`, payload).subscribe({
         next: () => { this.guardando.set(false); this.cargarProductos(); this.cerrarModal(); },
-        error: (err) => { console.error('Error al crear producto:', err); this.guardando.set(false); }
+        error: (err) => { (function(...args: any[]){})('Error al crear producto:', err); this.guardando.set(false); }
       });
     };
 
@@ -490,7 +492,7 @@ export class ProductosComponent implements OnInit {
         JsBarcode(svg, p.codigoBarras, { format: "CODE128", displayValue: true, height: 40, width: 1.5, margin: 0, fontSize: 14 });
         const svgString = new XMLSerializer().serializeToString(svg);
         htmlContent += `<div class="item"><div class="name">${p.nombre}</div><div>${svgString}</div></div>`;
-      } catch (e) { console.error(e); }
+      } catch (e) { (function(...args: any[]){})(e); }
     });
 
     htmlContent += `</div><script>window.onload = () => { setTimeout(() => { window.print(); window.close(); }, 500); };</script></body></html>`;
@@ -513,7 +515,7 @@ export class ProductosComponent implements OnInit {
     this.searchTimeout = setTimeout(() => {
       this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${encodeURIComponent(this.satProductQuery)}`).subscribe({
         next: (data) => this.satProductsResults = data || [],
-        error: (err) => console.error('Error searching SAT products', err)
+        error: (err) => (function(...args: any[]){})('Error searching SAT products', err)
       });
     }, 500);
   }
@@ -537,7 +539,7 @@ export class ProductosComponent implements OnInit {
     this.searchTimeout = setTimeout(() => {
       this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${encodeURIComponent(this.satUnitQuery)}`).subscribe({
         next: (data) => this.satUnitsResults = data || [],
-        error: (err) => console.error('Error searching SAT units', err)
+        error: (err) => (function(...args: any[]){})('Error searching SAT units', err)
       });
     }, 500);
   }
@@ -546,5 +548,32 @@ export class ProductosComponent implements OnInit {
     this.nuevoProducto.claveUnidad = unit.unit_key;
     this.satUnitQuery = unit.unit_key + ' - ' + unit.name;
     this.satUnitsResults = [];
+  }
+
+  exportarExcel() {
+    const data = this.productosFiltrados().map((p: any) => ({
+      'Código': p.codigoBarras || 'N/A',
+      'Nombre': p.nombre,
+      'Categoría': p.categoria?.nombre || 'N/A',
+      'Stock Actual': p.stockActual,
+      'Stock Mínimo': p.stockMinimo,
+      'Precio Venta': p.precioPublico || 0,
+      'Costo': p.precioUnitario || 0
+    }));
+    this.exportService.exportToExcel(data, 'Productos');
+  }
+
+  exportarPDF() {
+    const headers = ['Código', 'Nombre', 'Categoría', 'Stock', 'Mínimo', 'Precio', 'Costo'];
+    const data = this.productosFiltrados().map((p: any) => [
+      p.codigoBarras || 'N/A',
+      p.nombre,
+      p.categoria?.nombre || 'N/A',
+      p.stockActual?.toString() || '0',
+      p.stockMinimo?.toString() || '0',
+      `$${p.precioPublico || 0}`,
+      `$${p.precioUnitario || 0}`
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Catálogo de Productos', 'Productos', 'l');
   }
 }

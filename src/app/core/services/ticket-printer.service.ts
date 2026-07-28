@@ -353,20 +353,36 @@ export class TicketPrinterService {
   }
 
   private abrirVentanaEImprimir(html: string) {
-    const printWindow = window.open('', '_blank', 'width=400,height=600');
-    if (printWindow) {
-      printWindow.document.open();
-      printWindow.document.write(html);
-      printWindow.document.close();
-      
+    if (typeof document === 'undefined') return;
+
+    // Crear un iframe oculto en lugar de abrir un popup
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = '0';
+    document.body.appendChild(iframe);
+
+    const doc = iframe.contentWindow?.document;
+    if (doc) {
+      doc.open();
+      doc.write(html);
+      doc.close();
+
       // Esperar a que rendericen fuentes y logo
       setTimeout(() => {
-        printWindow.focus();
-        printWindow.print();
-        printWindow.onafterprint = () => printWindow.close();
+        iframe.contentWindow?.focus();
+        iframe.contentWindow?.print();
+        
+        // Limpiar el iframe del DOM poco después de abrir el cuadro de impresión
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }, 2000);
       }, 500);
-    } else {
-      alert('Por favor permite las ventanas emergentes (pop-ups) para poder imprimir el ticket.');
     }
   }
 }

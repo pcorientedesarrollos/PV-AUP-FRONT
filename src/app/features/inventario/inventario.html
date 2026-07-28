@@ -4,13 +4,22 @@
   <div class="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-8 mt-2">
     <div class="w-full xl:w-auto">
       <h1 class="text-3xl font-black text-slate-800 tracking-tight">Cardex de Movimientos</h1>
+      <div class="flex items-center gap-2 no-print mt-2">
+        <button (click)="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          Excel
+        </button>
+        <button (click)="exportarPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+          PDF
+        </button>
+      </div>
+
       <p class="text-sm text-slate-500 mt-1 font-medium">Historial de entradas, salidas, ajustes y mermas</p>
     </div>
     
     <div class="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 w-full xl:w-auto xl:justify-end">
       
       <!-- Contador de Movimientos -->
-      <div class="bg-white rounded-xl shadow-sm border border-slate-200 px-5 py-2.5 flex items-center justify-center sm:justify-start gap-4 sm:mr-2 w-full sm:w-auto">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 px-5 py-2.5 flex items-center justify-center sm:justify-start gap-4 sm:mr-2 w-full sm:w-auto">
         <div class="w-10 h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center shadow-inner shrink-0">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
         </div>
@@ -22,11 +31,11 @@
 
       <!-- Grupo de Botones Secundarios -->
       <div class="flex gap-2 w-full sm:w-auto">
-        <button (click)="irAProductos()" class="flex-1 sm:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold py-2 px-2 sm:px-4 rounded-xl shadow-sm transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 group text-[11px] sm:text-base leading-none">
+        <button (click)="irAProductos()" class="flex-1 sm:flex-none bg-white hover:bg-slate-50/80 transition-colors text-slate-700 border border-slate-200 font-semibold py-2 px-2 sm:px-4 rounded-xl shadow-sm transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 group text-[11px] sm:text-base leading-none">
           <span class="text-indigo-500 group-hover:scale-110 transition-transform text-sm sm:text-base"></span>
           <span>Producto</span>
         </button>
-        <button (click)="abrirModalAjuste()" class="flex-1 sm:flex-none bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 font-semibold py-2 px-2 sm:px-4 rounded-xl shadow-sm transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 group text-[11px] sm:text-base leading-none">
+        <button (click)="abrirModalAjuste()" class="flex-1 sm:flex-none bg-white hover:bg-slate-50/80 transition-colors text-slate-700 border border-slate-200 font-semibold py-2 px-2 sm:px-4 rounded-xl shadow-sm transition-all flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 group text-[11px] sm:text-base leading-none">
           <span class="text-slate-400 group-hover:text-slate-600 transition-colors">
             <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
           </span>
@@ -88,8 +97,8 @@
             <p class="text-sm mt-1">No hay movimientos registrados.</p>
           </div>
         } @else {
-          <table class="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead class="sticky top-0 z-10 bg-slate-50/90 backdrop-blur-sm shadow-sm text-slate-500">
+          <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
               <tr>
                 <th class="py-3.5 px-4 font-bold uppercase tracking-wider text-[10px] whitespace-nowrap border-b border-slate-200">Fecha</th>
                 <th class="py-3.5 px-4 font-bold uppercase tracking-wider text-[10px] whitespace-nowrap border-b border-slate-200">Concepto</th>
@@ -100,7 +109,7 @@
                 <th class="py-3.5 px-4 font-bold uppercase tracking-wider text-[10px] text-center w-16 sm:w-24 whitespace-nowrap border-b border-slate-200">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
+            <tbody class="divide-y divide-slate-100 text-sm">
               @for (item of registrosPaginados(); track $index) {
                 <tr class="hover:bg-indigo-50/30 transition-colors group">
                   <td class="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
@@ -131,16 +140,16 @@
                     <!-- Dropdown Menú -->
                     @if (menuAbiertoId() === getId(item)) {
                       <div class="absolute right-10 sm:right-8 top-10 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-slate-200 overflow-hidden text-left">
-                        <button (click)="abrirEditar(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                        <button (click)="abrirEditar(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50/80 transition-colors text-left flex items-center gap-2">
                           <span></span> Editar Movimiento
                         </button>
-                        <button (click)="imprimirVale(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                        <button (click)="imprimirVale(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50/80 transition-colors text-left flex items-center gap-2">
                           <span></span> Imprimir Vale
                         </button>
-                        <button (click)="abrirDetalles(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                        <button (click)="abrirDetalles(item)" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50/80 transition-colors text-left flex items-center gap-2">
                           <span></span> Ver Detalles
                         </button>
-                        <button (click)="irAlCatalogo()" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 text-left flex items-center gap-2">
+                        <button (click)="irAlCatalogo()" class="w-full px-4 py-2 text-sm text-slate-700 hover:bg-slate-50/80 transition-colors text-left flex items-center gap-2">
                           <span></span> Ir al Catálogo
                         </button>
                         <div class="border-t border-slate-100"></div>
@@ -156,26 +165,11 @@
           </tbody>
         </table>
       }
-      <!-- Paginación -->
-      @if (totalPaginas() > 1 && registrosFiltrados().length > 0 && !cargando()) {
-        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-          <p class="text-sm text-slate-500 dark:text-slate-400">
-            Mostrando p&aacute;gina <span class="font-bold text-slate-700 dark:text-slate-200">{{ paginaActual() }}</span> de <span class="font-bold text-slate-700 dark:text-slate-200">{{ totalPaginas() }}</span>
-            (Total: {{ registrosFiltrados().length }} registros)
-          </p>
-          <div class="flex gap-2">
-            <button (click)="paginaAnterior()" [disabled]="paginaActual() === 1"
-                    class="px-3 py-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-              Anterior
-            </button>
-            <button (click)="paginaSiguiente()" [disabled]="paginaActual() === totalPaginas()"
-                    class="px-3 py-1.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-              Siguiente
-            </button>
-          </div>
-        </div>
-      }
     </div>
+    <!-- Paginación -->
+    @if (totalPaginas() > 1 && registrosFiltrados().length > 0 && !cargando()) {
+      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="registrosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+    }
   </article>
 
   <!-- Modal Registrar Entrada -->

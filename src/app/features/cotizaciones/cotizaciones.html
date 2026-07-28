@@ -11,9 +11,9 @@
   </div>
 
   <div class="flex-1 bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
-    <div class="overflow-x-auto flex-1 custom-scrollbar">
-      <table class="w-full text-left border-collapse">
-        <thead class="sticky top-0 z-10 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300">
+    <div class="overflow-auto flex-1 flex-1 custom-scrollbar">
+      <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
+        <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
           <tr>
             <th class="py-3 px-4 font-semibold text-sm">Folio</th>
             <th class="py-3 px-4 font-semibold text-sm">Cliente</th>
@@ -24,7 +24,7 @@
             <th class="py-3 px-4 font-semibold text-sm text-right">Acciones</th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-200 dark:divide-slate-800">
+        <tbody class="divide-y divide-slate-100 text-sm">
           @if (cargando()) {
             <tr>
               <td colspan="7" class="py-8 text-center text-slate-500">Cargando cotizaciones...</td>
@@ -35,7 +35,7 @@
             </tr>
           } @else {
             @for (cot of cotizaciones(); track cot.idCotizacion) {
-              <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/25 transition-colors">
+              <tr class="hover:bg-slate-50/80 transition-colors dark:hover:bg-slate-800/25 transition-colors">
                 <td class="py-3 px-4 font-medium text-slate-900 dark:text-slate-200">{{ cot.folio }}</td>
                 <td class="py-3 px-4 text-slate-600 dark:text-slate-400">
                   {{ cot.cliente ? cot.cliente.nombreCompleto : (cot.nombreClienteTemporal || 'Público General') }}
@@ -102,8 +102,9 @@
           }
         </tbody>
       </table>
-    </div>
-  </div>
+</div>
+<app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="cotizaciones().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+</div>
 </div>
 
 @if (mostrarModalFactura()) {
