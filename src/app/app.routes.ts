@@ -60,6 +60,16 @@ export const routes: Routes = [
           import('./features/empresas/empresas.component').then((m) => m.EmpresasComponent),
       },
       {
+        path: 'cotizaciones',
+        loadComponent: () =>
+          import('./features/cotizaciones/cotizaciones').then((m) => m.CotizacionesComponent),
+      },
+      {
+        path: 'cotizaciones/nueva',
+        loadComponent: () =>
+          import('./features/cotizaciones/nueva-cotizacion/nueva-cotizacion').then((m) => m.NuevaCotizacionComponent),
+      },
+      {
         path: 'compras',
         canActivate: [adminGuard],
         loadComponent: () =>

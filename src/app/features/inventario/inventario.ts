@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, signal, OnInit, effect, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -12,7 +13,7 @@ import { TicketPrinterService } from '../../core/services/ticket-printer.service
   templateUrl: './inventario.html',
 })
 export class InventarioComponent implements OnInit {
-  vistaActiva = signal<'stock' | 'movimientos'>('stock');
+  vistaActiva = signal<'stock' | 'movimientos'>('movimientos');
   pestanas = signal<any[]>([]);
   pestanaActiva = signal<number | 'todos' | null>(null);
   
@@ -45,6 +46,33 @@ export class InventarioComponent implements OnInit {
     }
     return list;
   });
+
+
+  // Paginación para Movimientos
+  paginaActual = signal(1);
+  tamanoPagina = signal(50);
+
+  registrosPaginados = computed(() => {
+    const arr = this.registrosFiltrados();
+    const index = (this.paginaActual() - 1) * this.tamanoPagina();
+    return arr.slice(index, index + this.tamanoPagina());
+  });
+
+  totalPaginas = computed(() => {
+    return Math.max(1, Math.ceil(this.registrosFiltrados().length / this.tamanoPagina()));
+  });
+
+  paginaAnterior() {
+    if (this.paginaActual() > 1) {
+      this.paginaActual.update(p => p - 1);
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.paginaActual() < this.totalPaginas()) {
+      this.paginaActual.update(p => p + 1);
+    }
+  }
 
   // Filtros Stock
   productosStockFiltrados = computed(() => {
@@ -142,10 +170,10 @@ export class InventarioComponent implements OnInit {
   }
 
   cargarCategorias() {
-    this.http.get<any[]>('http://localhost:3000/pos/categorias').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/categorias`).subscribe({
       next: (data) => {
         const activas = data.filter(c => c.activo !== false);
-        this.pestanas.set([{ idCategoria: 'todos', nombre: 'TODOS (General)' }, ...activas]);
+        this.pestanas.set([{ idCategoria: 'todos', nombre: 'TODOS' }, ...activas]);
         this.pestanaActiva.set('todos');
       },
       error: (err) => console.error('Error al cargar categorias', err)
@@ -157,7 +185,7 @@ export class InventarioComponent implements OnInit {
   }
 
   cargarCatalogo() {
-    this.http.get<any[]>('http://localhost:3000/pos/productos').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
       next: (data) => {
         const unicos = [];
         const vistos = new Set<string>();
@@ -221,7 +249,7 @@ export class InventarioComponent implements OnInit {
     if (this.ajuste.stockReal === null || this.ajuste.stockReal === undefined) { alert('Ingresa el stock real.'); return; }
     this.guardandoAjuste.set(true);
 
-    this.http.post('http://localhost:3000/pos/inventario/ajuste', {
+    this.http.post(`${environment.apiUrl}/pos/inventario/ajuste`, {
       idProducto: this.ajuste.idProducto,
       stockReal: Number(this.ajuste.stockReal),
       motivo: this.ajuste.motivo || 'Ajuste Manual'
@@ -242,16 +270,6 @@ export class InventarioComponent implements OnInit {
         this.guardandoAjuste.set(false);
         alert('Ocurrió un error al aplicar el ajuste.');
       }
-    });
-  }
-
-  getProductosFiltradosPorPestana() {
-    const tabId = this.pestanaActiva();
-    if (tabId === null) return [];
-    
-    return this.catalogoProductos().filter(p => {
-      const id = p.categoria?.idCategoria || p.idCategoria;
-      return id === tabId;
     });
   }
 
@@ -277,13 +295,14 @@ export class InventarioComponent implements OnInit {
       actualizarCosto: this.nuevaEntrada.actualizarCosto
     };
 
-    this.http.post('http://localhost:3000/pos/inventario/entradas', payload).subscribe({
+    this.http.post(`${environment.apiUrl}/pos/inventario/entradas`, payload).subscribe({
       next: () => {
         this.cerrarModal();
         const activeTab = this.pestanaActiva();
         if (activeTab !== null) {
           this.cargarDatos(activeTab); // Recargar tabla
         }
+        alert('Entrada de inventario registrada con éxito');
       },
       error: (err) => {
         console.error('Error al guardar entrada', err);
@@ -295,7 +314,7 @@ export class InventarioComponent implements OnInit {
   cargarDatos(tabId: number | 'todos') {
     this.cargando.set(true);
 
-    this.http.get<any[]>('http://localhost:3000/pos/inventario').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/inventario`).subscribe({
       next: (data) => {
         const formateados = data.map(mov => ({
           ...mov,
@@ -353,7 +372,7 @@ export class InventarioComponent implements OnInit {
   guardarEdicion() {
     const id = this.itemAEditar.idMovimiento || this.getId(this.itemAEditar);
     const tabId = this.pestanaActiva();
-    const endpoint = 'http://localhost:3000/pos/inventario/movimiento';
+    const endpoint = `${environment.apiUrl}/pos/inventario/movimiento`;
 
     this.http.patch(`${endpoint}/${id}`, this.itemAEditar).subscribe({
       next: () => {
@@ -370,7 +389,7 @@ export class InventarioComponent implements OnInit {
     
     const id = item.idMovimiento || this.getId(item);
     const tabId = this.pestanaActiva();
-    const endpoint = 'http://localhost:3000/pos/inventario/movimiento';
+    const endpoint = `${environment.apiUrl}/pos/inventario/movimiento`;
 
     this.http.delete(`${endpoint}/${id}`).subscribe({
       next: () => {
@@ -453,7 +472,7 @@ export class InventarioComponent implements OnInit {
     
     this.guardandoMerma.set(true);
 
-    this.http.post('http://localhost:3000/pos/inventario/merma', {
+    this.http.post(`${environment.apiUrl}/pos/inventario/merma`, {
       idProducto: this.merma.idProducto,
       cantidad: Number(this.merma.cantidad),
       motivo: this.merma.motivo

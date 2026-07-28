@@ -189,7 +189,12 @@
 
           <div class="flex justify-between items-center text-sm font-bold text-slate-500 dark:text-slate-400 pt-2">
             <span>Subtotal</span>
-            <span class="text-slate-800 dark:text-white">{{ pos.totalPagar() | currency }}</span>
+            <span class="text-slate-800 dark:text-white">{{ pos.subtotal() | currency }}</span>
+          </div>
+
+          <div class="flex justify-between items-center text-sm font-bold text-slate-500 dark:text-slate-400">
+            <span>IVA</span>
+            <span class="text-slate-800 dark:text-white">{{ pos.totalIva() | currency }}</span>
           </div>
 
           <div class="flex justify-between items-center text-sm font-bold">

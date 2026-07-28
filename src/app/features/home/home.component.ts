@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -56,7 +57,7 @@ export class HomeComponent implements OnInit {
   }
 
   cargarResumen() {
-    this.http.get<any>('http://localhost:3000/dashboard/resumen').subscribe({
+    this.http.get<any>(`/dashboard/resumen`).subscribe({
       next: (data) => {
         this.resumen.set(data);
         

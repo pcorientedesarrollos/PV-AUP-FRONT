@@ -5,6 +5,9 @@ import { PosService } from '../../../core/services/pos.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Cliente } from '../../../core/interfaces';
 import { TicketPrinterService } from '../../../core/services/ticket-printer.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { ToastService } from '../../../core/services/toast.service';
 
 @Component({
   selector: 'app-carrito',
@@ -14,12 +17,14 @@ import { TicketPrinterService } from '../../../core/services/ticket-printer.serv
 })
 export class CarritoComponent implements OnInit {
   nuevoCliente = output<void>();
+  toast = inject(ToastService);
 
   clientes = signal<Cliente[]>([]);
   clienteSeleccionadoId = signal<string>('');
   cargando = signal(false);
   ventaExitosa = signal(false);
   ultimoTotal = signal(0);
+  ultimoTicketItems = signal<any[]>([]);
   
   // Custom Dropdown State
   dropdownAbierto = signal(false);
@@ -233,10 +238,16 @@ export class CarritoComponent implements OnInit {
     const payload = {
       idCliente: cliente?.idCliente,
       nombreCliente: cliente?.nombreCompleto ?? 'PÚBLICO GENERAL',
+      subtotal: this.pos.subtotal(),
+      totalIva: this.pos.totalIva(),
+      descuento: this.descuentoGlobal(),
       totalPagado: this.totalPagarFinal(),
       idUsuario: this.auth.sesion()?.idUsuario,
+      idSucursal: this.auth.sesion()?.idSucursal || 1, // Defaulting to 1 if not set
       metodoPago: this.metodoPago(),
-      detalles: this.pos.carrito().map((item) => ({
+      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || this.totalPagarFinal()) : undefined,
+      cambioEntregado: this.metodoPago() === 'Efectivo' ? this.cambio() : undefined,
+      carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,
         precioUnitario: Number(item.producto.precioUnitario),
@@ -244,18 +255,23 @@ export class CarritoComponent implements OnInit {
     };
 
     this.ultimoTotal.set(payload.totalPagado);
+    this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
 
-    this.pos.checkout(payload).subscribe({
-      next: () => {
-        this.cargando.set(false);
-        this.modalPagoAbierto.set(false);
-        this.ventaExitosa.set(true);
-      },
-      error: () => {
-        this.cargando.set(false);
-        alert('Error al procesar la venta. Verifica la conexión con el servidor.');
-      },
-    });
+      this.pos.checkout(payload).subscribe({
+        next: () => {
+          this.cargando.set(false);
+          this.modalPagoAbierto.set(false);
+          this.ventaExitosa.set(true);
+        },
+        error: (err: HttpErrorResponse) => {
+          this.cargando.set(false);
+          if (err.error?.message) {
+            this.toast.show(err.error.message, 'error');
+          } else {
+            this.toast.show('Error al procesar la venta. Verifica la conexión con el servidor.', 'error');
+          }
+        },
+      });
   }
 
   nuevaVenta() {
@@ -266,8 +282,8 @@ export class CarritoComponent implements OnInit {
   }
 
   imprimirTicket() {
-    // Reconstruir un objeto venta básico con lo último que se cobró
     const cliente = this.pos.clienteSeleccionado();
+    const items = this.ultimoTicketItems().length > 0 ? this.ultimoTicketItems() : this.pos.carrito();
     const ventaSimulada = {
       id: 'Última Venta',
       fecha: new Date().toLocaleString(),
@@ -276,7 +292,7 @@ export class CarritoComponent implements OnInit {
       descuento: this.descuentoGlobal(),
       totalCobrado: this.ultimoTotal(),
       metodoPago: this.metodoPago(),
-      productos: this.pos.carrito().map(i => ({
+      productos: items.map((i: any) => ({
         nombre: i.producto.nombre,
         cantidad: i.cantidad,
         precioUnitario: i.producto.precioUnitario,

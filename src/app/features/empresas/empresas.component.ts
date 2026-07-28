@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -160,7 +161,7 @@ export class EmpresasComponent implements OnInit {
   }
 
   cargar() {
-    this.http.get<any[]>('http://localhost:3000/pos/empresas').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe({
       next: (res) => this.empresas.set(res),
       error: (err) => console.error(err)
     });
@@ -224,11 +225,11 @@ export class EmpresasComponent implements OnInit {
     formData.append('file', file);
 
     this.cargando.set(true);
-    this.http.post<any>('http://localhost:3000/pos/upload-logo', formData).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/upload-logo`, formData).subscribe({
       next: (res) => {
         // La API devuelve { url: '/uploads/archivo.png' }
         // Pero como Angular corre en el 4200 y el API en el 3000, agregamos el host base
-        this.formulario.logoUrl = 'http://localhost:3000' + res.url;
+        this.formulario.logoUrl = environment.apiUrl + res.url;
         this.cargando.set(false);
       },
       error: (err) => {

@@ -1,4 +1,4 @@
-<div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-colors">
+﻿<div class="flex flex-col h-full bg-slate-50 dark:bg-slate-950 transition-colors">
       <!-- Buscador y Categorías (Estilo Enterprise) -->
       <div class="p-4 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-10 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md flex flex-col gap-3 transition-colors">
         
@@ -91,7 +91,7 @@
                 <!-- Imagen del producto -->
                 <div class="h-32 w-full bg-slate-50 dark:bg-white relative border-b border-slate-100 dark:border-slate-800 flex items-center justify-center p-3">
                   @if (producto.imagenUrl) {
-                    <img [src]="'http://localhost:3000' + producto.imagenUrl" class="w-full h-full object-contain drop-shadow-md transition-transform group-hover:scale-110 duration-300">
+                    <img [src]="apiUrl + producto.imagenUrl" class="w-full h-full object-contain drop-shadow-md transition-transform group-hover:scale-110 duration-300">
                   } @else {
                     <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl font-black text-white shadow-md transition-transform group-hover:scale-110 duration-300" [ngClass]="getColorFamilia(producto.idCategoria)">
                       {{ producto.nombre.charAt(0) }}
@@ -152,7 +152,7 @@
                 <!-- Imagen -->
                 <div class="w-14 h-14 rounded-lg bg-slate-50 dark:bg-white p-1 flex-shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800 relative z-10">
                   @if (producto.imagenUrl) {
-                    <img [src]="'http://localhost:3000' + producto.imagenUrl" class="w-full h-full object-contain rounded-md drop-shadow-sm group-hover:scale-110 transition-transform duration-300">
+                    <img [src]="apiUrl + producto.imagenUrl" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105">
                   } @else {
                     <div class="w-full h-full flex items-center justify-center text-lg font-black text-white shadow-md rounded-md group-hover:scale-110 transition-transform duration-300" [ngClass]="getColorFamilia(producto.idCategoria)">
                       {{ producto.nombre.charAt(0) }}

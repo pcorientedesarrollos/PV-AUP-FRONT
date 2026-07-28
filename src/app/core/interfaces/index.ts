@@ -64,7 +64,10 @@ export interface CheckoutPayload {
   nombreCliente?: string;
   totalPagado: number;
   idUsuario?: number;
-  detalles: ProductoVenta[];
+  idSucursal?: number;
+  efectivoRecibido?: number;
+  cambioEntregado?: number;
+  carrito: ProductoVenta[];
 }
 
 export interface ProductoVenta {

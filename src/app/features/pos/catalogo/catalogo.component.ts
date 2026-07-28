@@ -1,9 +1,11 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+﻿import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../../core/services/pos.service';
 import { Producto } from '../../../core/interfaces';
 import { CameraScannerComponent } from '../../../shared/components/camera-scanner/camera-scanner.component';
+
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-catalogo',
@@ -13,6 +15,7 @@ import { CameraScannerComponent } from '../../../shared/components/camera-scanne
   host: { class: 'flex flex-col h-full relative' },
 })
 export class CatalogoComponent implements OnInit {
+  apiUrl = environment.apiUrl;
   productos = signal<Producto[]>([]);
   busqueda = signal('');
   filtroFamilia = signal<number | 'todas'>('todas');

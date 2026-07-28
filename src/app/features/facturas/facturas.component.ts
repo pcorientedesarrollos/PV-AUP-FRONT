@@ -226,6 +226,33 @@ export class FacturasComponent implements OnInit {
   }
 
   descargarXml(url: string) {
-    if(url) window.open(url, '_blank');
+    if(url) {
+      const encodedUrl = encodeURIComponent(url);
+      
+      this.http.get(`http://localhost:3000/pos/proxy/descargar-xml?url=${encodedUrl}`, {
+        responseType: 'blob' // Lo obtenemos como archivo binario (blob)
+      }).subscribe({
+        next: (blob) => {
+          // Creamos una URL temporal para el blob
+          const downloadUrl = window.URL.createObjectURL(blob);
+          
+          // Creamos un enlace invisible y forzamos el clic
+          const link = document.createElement('a');
+          link.href = downloadUrl;
+          link.download = 'factura.xml'; // Nombre sugerido para la descarga
+          
+          document.body.appendChild(link);
+          link.click();
+          
+          // Limpiamos el DOM y la memoria
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(downloadUrl);
+        },
+        error: (err) => {
+          console.error('Error al descargar el XML:', err);
+          alert('Hubo un error al intentar descargar el archivo XML.');
+        }
+      });
+    }
   }
 }

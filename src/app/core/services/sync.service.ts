@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { get, set } from 'idb-keyval';
@@ -12,7 +13,7 @@ export interface PendingSale {
 
 @Injectable({ providedIn: 'root' })
 export class SyncService {
-  private readonly API = 'http://localhost:3000';
+  private readonly API = environment.apiUrl;
   private readonly STORE_KEY = 'ventas_pendientes';
 
   // Señales de estado

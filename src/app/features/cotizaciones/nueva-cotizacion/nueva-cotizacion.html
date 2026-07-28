@@ -1,0 +1,247 @@
+<div class="max-w-7xl mx-auto h-full flex flex-col space-y-6 pb-6">
+  <!-- Top Bar -->
+  <div class="flex justify-between items-center bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800">
+    <div>
+      <h2 class="text-xl font-bold text-slate-800 dark:text-white uppercase">SISTEMA INTERNO - NUEVA COTIZACIÓN</h2>
+    </div>
+
+  </div>
+
+  <!-- SECTION 1: Datos de la cotización -->
+  <div class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-md border-t-4 border-t-indigo-500 border-l border-r border-b border-slate-200 dark:border-slate-800">
+    <h3 class="font-bold text-slate-800 dark:text-white mb-4 uppercase text-sm tracking-wide">Datos de la cotización</h3>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Vigencia -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Vigencia (Días)</label>
+        <div class="relative">
+          <input type="number" [(ngModel)]="vigenciaDias" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="1">
+        </div>
+      </div>
+      <!-- Título -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Título</label>
+        <input type="text" [(ngModel)]="titulo" placeholder="Ej. prueba" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+      </div>
+      <!-- Cliente -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1 flex justify-between">
+          <span>Cliente</span>
+        </label>
+        <div class="flex gap-2 items-center">
+           <select [(ngModel)]="idCliente" class="flex-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <option [ngValue]="null">-- Seleccionar Cliente --</option>
+            @for (c of clientes(); track c.idCliente) {
+              <option [value]="c.idCliente">{{ c.nombreCompleto }}</option>
+            }
+          </select>
+          <button (click)="mostrarNuevoCliente.set(true)" class="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-200" title="Alta rápida de cliente">
+            + Nuevo
+          </button>
+        </div>
+      </div>
+      <!-- Configuración Adicional -->
+      <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6 pt-2 border-t border-slate-100 dark:border-slate-700">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipo de Cambio (MXN/USD)</label>
+          <div class="flex gap-2">
+            <input type="number" [(ngModel)]="tipoCambio" (ngModelChange)="actualizarFila()" step="0.1" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+            <button (click)="cargarTipoCambio()" title="Actualizar al día" class="bg-indigo-100 text-indigo-700 px-3 rounded-lg text-sm font-semibold hover:bg-indigo-200">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+            <button (click)="aplicarTipoCambioGlobal()" class="bg-indigo-100 text-indigo-700 px-3 rounded-lg text-sm font-semibold hover:bg-indigo-200">Aplicar a todos</button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Utilidad General %</label>
+          <div class="flex gap-2">
+            <input type="number" [(ngModel)]="utilidadGlobal" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0" max="100">
+            <button (click)="aplicarUtilidadGlobal()" class="bg-indigo-100 text-indigo-700 px-3 rounded-lg text-sm font-semibold hover:bg-indigo-200">Aplicar a todos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Seleccionar conceptos facturados -->
+  <div class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-md border-t-4 border-t-indigo-500 border-l border-r border-b border-slate-200 dark:border-slate-800">
+    <h3 class="font-bold text-slate-800 dark:text-white mb-4 uppercase text-sm tracking-wide">Seleccionar conceptos</h3>
+    <div class="relative">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+        <svg class="h-5 w-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input type="text" [(ngModel)]="busquedaProducto" placeholder="Buscar por folio, RFC, emisor o nombre del concepto" class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+    
+      <!-- Resultados Búsqueda -->
+      @if (busquedaProducto().length > 0) {
+        <div class="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-60 overflow-y-auto absolute z-50 w-full left-0">
+          <ul class="divide-y divide-slate-100 dark:divide-slate-700">
+            @for (p of productosFiltrados(); track p.idProducto) {
+              <li class="p-3 hover:bg-indigo-50 dark:hover:bg-slate-700 cursor-pointer flex justify-between items-center transition-colors" (click)="agregarAlCarrito(p)">
+                <div>
+                  <p class="font-semibold text-slate-800 dark:text-white text-sm">{{ p.nombre }}</p>
+                  <p class="text-xs text-slate-500 dark:text-slate-400">{{ p.codigoBarras }} - ${{ p.precioUnitario }}</p>
+                </div>
+                <span class="text-indigo-600 dark:text-indigo-400 font-medium text-sm">+ Agregar</span>
+              </li>
+            }
+            @if (productosFiltrados().length === 0) {
+              <li class="p-4 text-center text-slate-500 dark:text-slate-400 text-sm">No se encontraron conceptos.</li>
+            }
+          </ul>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- SECTION 3: Conceptos cotizados -->
+  <div class="bg-white dark:bg-slate-900 rounded-xl p-6 shadow-md border-t-4 border-t-indigo-500 border-l border-r border-b border-slate-200 dark:border-slate-800 relative z-10">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-bold text-slate-800 dark:text-white uppercase text-sm tracking-wide">Conceptos cotizados</h3>
+      <button (click)="agregarConceptoManual()" class="text-indigo-600 font-medium flex items-center gap-1 hover:text-indigo-800 border border-indigo-200 px-3 py-1.5 rounded-lg bg-indigo-50 dark:bg-indigo-900/30">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Manual
+      </button>
+    </div>
+
+    @if (carrito().length === 0) {
+      <div class="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-8 text-center text-slate-500 dark:text-slate-400 mb-6 bg-slate-50 dark:bg-slate-900/50">
+        Busca conceptos o agrega un concepto manual para calcular cantidad, utilidad y totales.
+      </div>
+    } @else {
+      <div class="overflow-x-auto mb-6">
+        <table class="w-full text-left border-collapse min-w-[800px]">
+          <thead class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+            <tr class="text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 font-semibold">
+              <th class="py-3 px-2 w-1/4">Nombre</th>
+              <th class="py-3 px-2 text-center w-20">Cantidad</th>
+              <th class="py-3 px-2 text-right">Costo Base</th>
+              <th class="py-3 px-2 text-center">Moneda</th>
+              <th class="py-3 px-2 text-center w-20">T.C.</th>
+              <th class="py-3 px-2 text-center w-24">Utilidad %</th>
+              <th class="py-3 px-2 text-right">Ganancia</th>
+              <th class="py-3 px-2 text-right">Precio Final</th>
+              <th class="py-3 px-2 text-center"></th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+            @for (item of carrito(); track item.tempId) {
+              <tr class="hover:bg-slate-50 dark:hover:bg-slate-700 dark:bg-slate-900/50 transition-colors">
+                <td class="py-3 px-2">
+                  @if (item.idProducto) {
+                    <span class="font-medium text-slate-800 dark:text-white text-sm">{{ item.nombre }}</span>
+                  } @else {
+                    <input type="text" [(ngModel)]="item.nombreConcepto" class="w-full bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded p-1.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Nombre manual">
+                  }
+                </td>
+                <td class="py-3 px-2 text-center">
+                  <input type="number" [(ngModel)]="item.cantidad" (ngModelChange)="actualizarFila()" class="w-16 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded p-1.5 text-center text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="1">
+                </td>
+                <td class="py-3 px-2 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <span class="text-slate-500 dark:text-slate-400">$</span>
+                    <input type="number" [(ngModel)]="item.precioUnitario" (ngModelChange)="actualizarFila()" class="w-20 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded p-1.5 text-right text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0">
+                  </div>
+                </td>
+                <td class="py-3 px-2 text-center">
+                  <select [(ngModel)]="item.moneda" (ngModelChange)="actualizarFila()" class="border border-slate-300 dark:border-slate-600 rounded p-1.5 text-sm bg-white dark:bg-slate-800">
+                    <option value="MXN">MXN</option>
+                    <option value="USD">USD</option>
+                  </select>
+                </td>
+                <td class="py-3 px-2 text-center">
+                  <input type="number" [(ngModel)]="item.tipoCambio" (ngModelChange)="actualizarFila()" [disabled]="item.moneda !== 'USD'" [class.opacity-50]="item.moneda !== 'USD'" class="w-16 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded p-1.5 text-center text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="1" step="0.1">
+                </td>
+                <td class="py-3 px-2 text-center">
+                  <input type="number" [(ngModel)]="item.utilidadPorcentaje" (ngModelChange)="actualizarFila()" class="w-16 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-600 rounded p-1.5 text-center text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" min="0" max="100">
+                </td>
+                <td class="py-3 px-2 text-right text-sm text-green-600 font-medium">
+                  ${{ item.utilidadValor.toFixed(2) }}
+                </td>
+                <td class="py-3 px-2 text-right font-bold text-slate-800 dark:text-white">
+                  ${{ (item.cantidad * item.precioConUtilidad).toFixed(2) }}
+                </td>
+                <td class="py-3 px-2 text-center">
+                  <button (click)="removerDelCarrito(item.tempId)" class="text-red-500 hover:text-red-700 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <!-- Footer of Concepts: Options & Totals -->
+    <div class="flex flex-col md:flex-row justify-between gap-6 border-t border-slate-200 dark:border-slate-700 pt-6">
+      <!-- Options -->
+      <div class="flex-1 space-y-4">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" [ngModel]="aplicarIva()" (ngModelChange)="aplicarIva.set($event)" class="w-4 h-4 text-indigo-600 rounded border-slate-300 dark:border-slate-600 focus:ring-indigo-500">
+          <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Aplicar IVA 16% (a la cotización)</span>
+        </label>
+        
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Descripción / observaciones</label>
+          <textarea [(ngModel)]="observaciones" rows="4" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Notas internas..."></textarea>
+        </div>
+      </div>
+      
+      <!-- Totals Box -->
+      <div class="w-full md:w-80 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+        <div class="space-y-3">
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500 dark:text-slate-400">Costo Base (Global MXN)</span>
+            <span class="font-medium text-slate-800 dark:text-white">${{ costoBase().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500 dark:text-slate-400">Utilidad / Ganancia</span>
+            <span class="font-medium text-green-600">+${{ utilidadGanancia().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-sm pt-2 border-t border-slate-200 dark:border-slate-700">
+            <span class="text-slate-500 dark:text-slate-400">Subtotal Factura</span>
+            <span class="font-medium text-slate-800 dark:text-white">${{ subtotal().toFixed(2) }}</span>
+          </div>
+          <div class="flex justify-between text-sm">
+            <span class="text-slate-500 dark:text-slate-400">IVA ({{ aplicarIva() ? 'Sí' : 'No' }})</span>
+            <span class="font-medium text-slate-800 dark:text-white">${{ totalIva().toFixed(2) }}</span>
+          </div>
+          <div class="pt-3 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+            <span class="font-bold text-slate-800 dark:text-white">Total a Cotizar</span>
+            <span class="text-xl font-bold text-indigo-600">${{ total().toFixed(2) }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTONES INFERIORES -->
+  <div class="flex justify-end gap-4 mt-2">
+    <button (click)="cancelar()" class="px-6 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 font-medium transition-colors border border-slate-200 dark:border-slate-700">
+      Cancelar
+    </button>
+    <button (click)="guardarCotizacion()" [disabled]="guardando()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-8 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50">
+      @if (guardando()) {
+        <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Creando...
+      } @else {
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        Crear cotización
+      }
+    </button>
+  </div>
+  
+  <!-- Modal: Alta rápida de cliente -->
+  @if (mostrarNuevoCliente()) {
+    <app-cliente-rapido
+      (cerrar)="mostrarNuevoCliente.set(false)"
+      (clienteCreado)="onClienteCreado($event)"
+    />
+  }
+</div>

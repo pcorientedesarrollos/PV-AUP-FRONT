@@ -62,7 +62,7 @@
           </thead>
           <tbody class="divide-y divide-slate-100">
             @for (d of devolucionesFiltradas(); track d.idDevolucion) {
-              <tr class="hover:bg-slate-50 transition-colors">
+              <tr (click)="verDetalles(d)" class="hover:bg-slate-50 transition-colors cursor-pointer group">
                 <td class="px-4 py-3 text-sm text-slate-600">{{ d.fechaDevolucion | date:'dd/MM/yy HH:mm' }}</td>
                 <td class="px-4 py-3">
                   <span class="font-mono text-sm font-bold text-slate-800">{{ d.venta?.folio || '—' }}</span>
@@ -88,3 +88,103 @@
     </div>
   }
 </div>
+
+<!-- Modal Detalle -->
+@if (devolucionSeleccionada()) {
+  <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-slate-200 dark:border-slate-700 border-t-4 border-t-indigo-500 flex flex-col max-h-[90vh]">
+      
+      <!-- Header -->
+      <div class="px-6 py-4 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
+        <div>
+          <h2 class="text-slate-800 dark:text-white font-bold text-lg">Detalle de Devolución</h2>
+          <p class="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Venta: {{ devolucionSeleccionada().venta?.folio || '—' }}</p>
+        </div>
+        <button (click)="cerrarDetalles()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors text-xl">✕</button>
+      </div>
+
+      <!-- Info General -->
+      <div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase">Fecha</p>
+          <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1">{{ devolucionSeleccionada().fechaDevolucion | date:'dd/MM/yy HH:mm' }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase">Tipo</p>
+          <span class="inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-bold"
+                [ngClass]="devolucionSeleccionada().tipo === 'Total' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'">
+            {{ devolucionSeleccionada().tipo }}
+          </span>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase">Motivo</p>
+          <p class="text-sm font-semibold text-slate-700 dark:text-slate-300 mt-1">{{ devolucionSeleccionada().motivo || 'N/A' }}</p>
+        </div>
+        <div>
+          <p class="text-xs font-bold text-slate-400 uppercase">Total Devuelto</p>
+          <p class="text-sm font-black text-red-600 mt-1">{{ devolucionSeleccionada().montoDevuelto | currency:'MXN':'$':'1.2-2' }}</p>
+        </div>
+      </div>
+      @if (devolucionSeleccionada().observaciones) {
+        <div class="px-6 py-4 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800">
+          <p class="text-xs font-bold text-slate-400 uppercase">Observaciones</p>
+          <p class="text-sm text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-wrap">{{ devolucionSeleccionada().observaciones }}</p>
+        </div>
+      }
+
+      <!-- Tabla de Items -->
+      <div class="flex-1 overflow-auto p-6">
+        <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">Productos Devueltos</h3>
+        <div class="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+          <table class="w-full text-left text-sm text-slate-700 dark:text-slate-300">
+            <thead class="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+              <tr>
+                <th class="py-2 px-3 font-semibold">Producto</th>
+                <th class="py-2 px-3 font-semibold text-center">Cant.</th>
+                <th class="py-2 px-3 font-semibold text-center">Destino</th>
+                <th class="py-2 px-3 font-semibold text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-700">
+              @for (item of devolucionSeleccionada().items; track item.idProducto) {
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                  <td class="px-3 py-2 font-medium">{{ item.nombre }}</td>
+                  <td class="px-3 py-2 text-center">{{ item.cantidad }}</td>
+                  <td class="px-3 py-2 text-center">
+                    @if ((item.destino || 'stock') === 'stock') {
+                      <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-bold border border-emerald-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Stock
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 font-bold border border-rose-200">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        Merma
+                      </span>
+                    }
+                  </td>
+                  <td class="px-3 py-2 text-right font-bold text-slate-800 dark:text-white">
+                    {{ (item.cantidad * item.precioUnitario) | currency:'MXN':'$':'1.2-2' }}
+                  </td>
+                </tr>
+              }
+              @if (!devolucionSeleccionada().items || devolucionSeleccionada().items.length === 0) {
+                <tr>
+                  <td colspan="4" class="px-3 py-8 text-center text-slate-400">No hay detalles de productos disponibles para esta devolución antigua.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Footer -->
+      <div class="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+        <button (click)="cerrarDetalles()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 font-bold py-2 px-6 rounded-lg transition-colors">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+}

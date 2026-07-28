@@ -53,8 +53,21 @@
 
       <!-- Sección: Datos Fiscales y Contacto -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center flex-wrap gap-4">
           <h2 class="text-lg font-bold text-slate-800 dark:text-white">Datos de la Empresa</h2>
+          <div>
+            <input type="file" accept="application/pdf" class="hidden" #fileCsf (change)="onCsfSelected($event)">
+            <button type="button" (click)="fileCsf.click()" [disabled]="subiendoCsf()"
+                    class="px-3 py-1.5 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 font-semibold rounded-lg text-sm border border-indigo-200 dark:border-indigo-800 transition-colors flex items-center gap-2 disabled:opacity-50">
+              @if (subiendoCsf()) {
+                <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Leyendo...
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Leer Constancia (PDF)
+              }
+            </button>
+          </div>
         </div>
 
         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -87,6 +100,25 @@
           <div class="space-y-2 md:col-span-2">
             <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">Dirección</label>
             <input type="text" formControlName="direccion" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="Calle, Número, Colonia, Ciudad, Estado, CP">
+          </div>
+
+          <!-- Configuración de Impuestos (Global) -->
+          <div class="space-y-2 md:col-span-2 mt-4">
+            <h3 class="text-md font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-2 mb-4">Configuración de Impuestos</h3>
+          </div>
+          
+          <div class="space-y-2">
+            <label class="block text-sm font-bold text-slate-700 dark:text-slate-300">IVA Global por defecto (%) *</label>
+            <div class="relative">
+              <input type="number" formControlName="ivaPorDefecto" min="0" max="100" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-colors" placeholder="16">
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-slate-500 font-bold">%</span>
+              </div>
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Este IVA se aplicará automáticamente a los productos nuevos.</p>
+            @if (configForm.get('ivaPorDefecto')?.invalid && configForm.get('ivaPorDefecto')?.touched) {
+              <p class="text-xs text-rose-500 font-medium mt-1">El IVA es requerido y debe ser entre 0 y 100.</p>
+            }
           </div>
         </div>
       </div>

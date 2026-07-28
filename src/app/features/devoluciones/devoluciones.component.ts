@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -11,11 +12,12 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './devoluciones.component.html',
 })
 export class DevolucionesComponent implements OnInit {
-  readonly API = 'http://localhost:3000/pos';
+  readonly API = environment.apiUrl + '/pos';
 
   devoluciones = signal<any[]>([]);
   cargando = signal(true);
   busqueda = signal('');
+  devolucionSeleccionada = signal<any>(null);
 
   devolucionesFiltradas = computed(() => {
     const q = this.busqueda().toLowerCase();
@@ -48,4 +50,12 @@ export class DevolucionesComponent implements OnInit {
   }
 
   totalDevuelto() { return this.devoluciones().reduce((s, d) => s + Number(d.montoDevuelto), 0); }
+
+  verDetalles(d: any) {
+    this.devolucionSeleccionada.set(d);
+  }
+
+  cerrarDetalles() {
+    this.devolucionSeleccionada.set(null);
+  }
 }

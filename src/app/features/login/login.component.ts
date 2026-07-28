@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -53,7 +54,7 @@ export class LoginComponent {
 
   buscarEmpresa() {
     if (!this.credenciales.user) return;
-    this.http.get<any>(`http://localhost:3000/pos/empresa-por-usuario/${this.credenciales.user}`).subscribe({
+    this.http.get<any>(`${environment.apiUrl}/pos/empresa-por-usuario/${this.credenciales.user}`).subscribe({
       next: (res) => {
         this.empresaNombre.set(res.nombre || 'AUP POS');
         this.empresaLogo.set(res.logoUrl || '/logo.png');
@@ -67,17 +68,4 @@ export class LoginComponent {
     });
   }
 
-  saltarLogin() {
-    this.cargando.set(true);
-    this.auth.bypassLogin().subscribe({
-      next: () => {
-        this.cargando.set(false);
-        this.router.navigate(['/pos']);
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.toast.show('Error al acceder. Verifica que la BD tenga usuarios.', 'error');
-      }
-    });
-  }
 }

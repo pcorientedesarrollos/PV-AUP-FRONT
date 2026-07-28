@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -27,7 +28,7 @@ export class ProformasComponent implements OnInit {
   }
 
   cargarProformas() {
-    this.http.get<any[]>('http://localhost:3000/pos/proformas', {
+    this.http.get<any[]>(`${environment.apiUrl}/pos/proformas`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (data) => this.proformas.set(data),
@@ -60,7 +61,7 @@ export class ProformasComponent implements OnInit {
     const idVenta = Number(match[0]);
 
     this.generando.set(true);
-    this.http.post<any>('http://localhost:3000/pos/proforma', {
+    this.http.post<any>(`${environment.apiUrl}/pos/proforma`, {
       idVenta: idVenta,
       clienteNombre: this.clienteNombre()
     }).subscribe({

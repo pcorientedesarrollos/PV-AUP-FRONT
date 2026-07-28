@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -6,7 +7,7 @@ import { LoginPayload, Sesion } from '../interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly API = 'http://localhost:3000';
+  private readonly API = environment.apiUrl;
 
   // Estado de sesión con signals
   private _sesion = signal<Sesion | null>(this.cargarSesion());
@@ -18,17 +19,6 @@ export class AuthService {
 
   login(payload: LoginPayload) {
     return this.http.post<Sesion>(`${this.API}/pos/auth/login`, payload).pipe(
-      tap((sesion) => {
-        if (typeof window !== 'undefined' && window.sessionStorage) {
-          sessionStorage.setItem('sesion', JSON.stringify(sesion));
-        }
-        this._sesion.set(sesion);
-      })
-    );
-  }
-
-  bypassLogin() {
-    return this.http.post<Sesion>(`${this.API}/auth/bypass`, {}).pipe(
       tap((sesion) => {
         if (typeof window !== 'undefined' && window.sessionStorage) {
           sessionStorage.setItem('sesion', JSON.stringify(sesion));

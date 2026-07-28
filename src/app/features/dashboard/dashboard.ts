@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -6,18 +7,63 @@ import { AuthService } from '../../core/services/auth.service';
 import { SyncService } from '../../core/services/sync.service';
 import { ThemeService } from '../../core/services/theme.service';
 import { ConfigService } from '../../core/services/config.service';
+import { BaseChartDirective } from 'ng2-charts';
+import { Chart, ChartConfiguration, registerables } from 'chart.js';
+Chart.register(...registerables);
 import { filter } from 'rxjs/operators';
 import { ConfiguracionTicketComponent } from '../configuracion-ticket/configuracion-ticket.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule, ConfiguracionTicketComponent],
+  imports: [CommonModule, RouterModule, ConfiguracionTicketComponent, BaseChartDirective],
   templateUrl: './dashboard.html',
 })
 export class DashboardComponent implements OnInit {
   menuAbierto = signal(typeof window !== 'undefined' && window.innerWidth >= 1024);
   mostrarModalConfig = false;
+
+
+  // Chart
+  public barChartLegend = false;
+  public barChartPlugins = [];
+  public barChartData: ChartConfiguration<'bar'>['data'] = {
+    labels: [],
+    datasets: [
+      { data: [], label: 'Ventas ($)', backgroundColor: 'rgba(245, 158, 11, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(245, 158, 11, 1)' }
+    ]
+  };
+  public barChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            let label = context.dataset.label || '';
+            if (label) {
+                label += ': ';
+            }
+            if (context.parsed.y !== null) {
+                label += new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(context.parsed.y);
+            }
+            return label;
+          }
+        }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          callback: function(value) {
+            return '$' + value;
+          }
+        }
+      }
+    }
+  };
 
   // Stats
   stats = signal<any>(null);
@@ -63,8 +109,19 @@ export class DashboardComponent implements OnInit {
       }, 500);
       return;
     }
-    this.http.get<any>('http://localhost:3000/pos/dashboard/stats').subscribe({
-      next: (data) => { this.stats.set(data); this.cargandoStats.set(false); },
+    this.http.get<any>(`${environment.apiUrl}/pos/dashboard/stats`).subscribe({
+            next: (data) => { 
+        this.stats.set(data); 
+        this.cargandoStats.set(false);
+        if (data && data.graficaDias) {
+          this.barChartData = {
+            labels: data.graficaDias.map((d: any) => d.fecha),
+            datasets: [
+              { data: data.graficaDias.map((d: any) => d.total), label: 'Ventas', backgroundColor: 'rgba(245, 158, 11, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(245, 158, 11, 1)' }
+            ]
+          };
+        }
+      },
       error: (err) => { console.error('Error cargando stats', err); this.cargandoStats.set(false); }
     });
   }

@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -18,7 +19,7 @@ export interface TicketConfig {
 export class TicketPrinterService {
   private configCache: TicketConfig | null = null;
   private cachedSucursalId: number | null = null;
-  private readonly API = 'http://localhost:3000/pos/configuracion';
+  private readonly API = `${environment.apiUrl}/pos/configuracion`;
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
@@ -65,7 +66,7 @@ export class TicketPrinterService {
     
     let logoUrl = this.auth.sesion()?.empresa?.logoUrl || '/logo.png';
     if (logoUrl.startsWith('/uploads')) {
-      logoUrl = 'http://localhost:3000' + logoUrl;
+      logoUrl = environment.apiUrl + logoUrl;
     } else if (!logoUrl.startsWith('http')) {
       logoUrl = (typeof window !== 'undefined' ? window.location.origin : '') + logoUrl;
     }
@@ -164,7 +165,9 @@ export class TicketPrinterService {
         <div class="divider"></div>
         
         <div class="text-right bold mb-1" style="font-size: 1.1em;">
-          TOTAL: $${Number(venta.total || 0).toFixed(2)}
+          ${ venta.subtotal ? `SUBTOTAL: $${Number(venta.subtotal).toFixed(2)}<br>` : '' }
+          ${ venta.totalIva ? `IVA: $${Number(venta.totalIva).toFixed(2)}<br>` : '' }
+          TOTAL: $${Number(venta.total || venta.totalPagado || 0).toFixed(2)}
         </div>
         <div class="text-center mb-2" style="font-size: 0.9em;">
           <span>Efectivo: $${Number(venta.efectivoRecibido || venta.total || 0).toFixed(2)}</span><br>

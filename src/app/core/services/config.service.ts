@@ -8,6 +8,7 @@ export interface AppConfig {
   telefono: string;
   email: string;
   logoUrl: string;
+  ivaPorDefecto: number;
 }
 
 @Injectable({
@@ -22,7 +23,8 @@ export class ConfigService {
     direccion: 'Av. Principal 123, Centro',
     telefono: '555-123-4567',
     email: 'contacto@empresa.com',
-    logoUrl: '/logo.png' // Default logo
+    logoUrl: '/logo.png', // Default logo
+    ivaPorDefecto: 16
   };
 
   public config = signal<AppConfig>(this.defaultConfig);

@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -49,7 +50,7 @@ export class CorteCajaComponent implements OnInit {
   }
 
   cargarHistorialCortes() {
-    this.http.get<any[]>('http://localhost:3000/pos/cortes').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/cortes`).subscribe({
       next: (data) => this.historialCortes.set(data),
       error: (err) => console.error('Error al cargar historial de cortes', err)
     });
@@ -61,7 +62,7 @@ export class CorteCajaComponent implements OnInit {
     this.efectivoContado.set(null);
     
     const idUsuario = this.auth.sesion()?.idUsuario || 1;
-    const url = `http://localhost:3000/pos/corte-actual/${idUsuario}`;
+    const url = `${environment.apiUrl}/pos/corte-actual/${idUsuario}`;
     this.http.get<any>(url).subscribe({
       next: (data) => {
         if (!data) {
@@ -105,7 +106,7 @@ export class CorteCajaComponent implements OnInit {
       montoApertura: this.montoApertura()
     };
 
-    this.http.post('http://localhost:3000/pos/abrir-turno', payload).subscribe({
+    this.http.post(`${environment.apiUrl}/pos/abrir-turno`, payload).subscribe({
       next: () => {
         alert('Turno abierto exitosamente.');
         this.cargarCorte(); // Recargar para mostrar el modo Corte
@@ -136,7 +137,7 @@ export class CorteCajaComponent implements OnInit {
       efectivoEscaner: this.efectivoContado()
     };
 
-    this.http.post('http://localhost:3000/pos/corte', payload).subscribe({
+    this.http.post(`${environment.apiUrl}/pos/corte`, payload).subscribe({
       next: () => {
         this.cargando.set(false);
         this.corteRealizado.set(true);

@@ -1,4 +1,4 @@
-import { Component, signal, computed, OnInit } from '@angular/core';
+import { Component, signal, computed, effect, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
@@ -6,16 +6,28 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { BarcodeDirective } from '../../shared/directives/barcode.directive';
 import JsBarcode from 'jsbarcode';
 import { AuthService } from '../../core/services/auth.service';
+import { environment } from '../../../environments/environment';
+import { ImportarModalComponent } from '../../shared/components/importar-modal/importar-modal.component';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, BarcodeDirective],
+  imports: [CommonModule, FormsModule, BarcodeDirective, ImportarModalComponent],
   templateUrl: './productos.component.html',
 })
 export class ProductosComponent implements OnInit {
   productos = signal<any[]>([]);
   cargando = signal(false);
+  mostrarImportar = signal(false);
+
+  // Panel proveedores por producto
+  productoSeleccionado = signal<any | null>(null);
+  comprasProducto = signal<any[]>([]);
+  cargandoComprasProducto = signal(false);
+
+  // Modal: detalle de compra (estilo factura)
+  compraDetalle = signal<any | null>(null);
+  cargandoCompraDetalle = signal(false);
 
   busqueda = signal('');
   filtroFamilia = signal<number | 'todas'>('todas');
@@ -63,9 +75,10 @@ export class ProductosComponent implements OnInit {
 
       let coincideStock = true;
       const st = Number(p.stockActual);
+      const min = p.stockMinimo != null && p.stockMinimo !== '' ? Number(p.stockMinimo) : 5;
       if (stock === 'sin-stock') coincideStock = st <= 0;
-      else if (stock === 'stock-bajo') coincideStock = st > 0 && st <= 10;
-      else if (stock === 'disponible') coincideStock = st > 10;
+      else if (stock === 'stock-bajo') coincideStock = st > 0 && st <= min;
+      else if (stock === 'disponible') coincideStock = st > min;
 
       let coincideEmpresa = true;
       if (fEmpresa !== 'todas') {
@@ -81,17 +94,48 @@ export class ProductosComponent implements OnInit {
     });
   });
 
+  // --- PAGINACIÓN ---
+  paginaActual = signal(1);
+  tamanoPagina = signal(50);
+  
+  totalPaginas = computed(() => {
+    return Math.max(1, Math.ceil(this.productosFiltrados().length / this.tamanoPagina()));
+  });
+
+  productosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.productosFiltrados().slice(inicio, fin);
+  });
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute,
+    public auth: AuthService
+  ) {
+    // Resetear a página 1 cuando cambia algún filtro
+    effect(() => {
+      this.busqueda();
+      this.filtroFamilia();
+      this.filtroStock();
+      this.filtroEmpresa();
+      this.filtroSucursal();
+      this.paginaActual.set(1);
+    }, { allowSignalWrites: true });
+  }
+
   // Estadísticas (siempre sobre todos los productos, no el filtro)
   totalProductos = computed(() => this.productos().length);
   sinStock = computed(() => this.productos().filter(p => Number(p.stockActual) <= 0).length);
   stockBajo = computed(() => this.productos().filter(p => {
     const s = Number(p.stockActual);
-    const min = Number(p.stockMinimo) > 0 ? Number(p.stockMinimo) : 5;
+    const min = p.stockMinimo != null && p.stockMinimo !== '' ? Number(p.stockMinimo) : 5;
     return s > 0 && s <= min;
   }).length);
   disponible = computed(() => this.productos().filter(p => {
     const s = Number(p.stockActual);
-    const min = Number(p.stockMinimo) > 0 ? Number(p.stockMinimo) : 5;
+    const min = p.stockMinimo != null && p.stockMinimo !== '' ? Number(p.stockMinimo) : 5;
     return s > min;
   }).length);
 
@@ -121,8 +165,75 @@ export class ProductosComponent implements OnInit {
   imagenPreview = signal<string | null>(null);
   categorias = signal<any[]>([]);
 
+  // Validaciones en tiempo real
+  
+  coincidenciasNombre(): any[] {
+    if (!this.nuevoProducto?.nombre || this.nuevoProducto.nombre.trim().length < 2) return [];
+    const term = this.nuevoProducto.nombre.toLowerCase().trim();
+    return this.productos().filter(p => p.nombre.toLowerCase().includes(term) && p.idProducto !== this.nuevoProducto.idProducto).slice(0, 5);
+  }
+
+  coincidenciasCodigo(): any[] {
+    if (!this.nuevoProducto?.codigoBarras || this.nuevoProducto.codigoBarras.trim().length < 2) return [];
+    const term = this.nuevoProducto.codigoBarras.toLowerCase().trim();
+    return this.productos().filter(p => p.codigoBarras?.toLowerCase().includes(term) && p.idProducto !== this.nuevoProducto.idProducto).slice(0, 5);
+  }
+
+  duplicadoNombre(): boolean {
+    if (!this.nuevoProducto?.nombre) return false;
+    const nombre = this.nuevoProducto.nombre.toLowerCase().trim();
+    return this.productos().some(p => p.nombre.toLowerCase().trim() === nombre && p.idProducto !== this.nuevoProducto.idProducto);
+  }
+  
+  duplicadoCodigo(): boolean {
+    if (!this.nuevoProducto?.codigoBarras) return false;
+    const codigo = this.nuevoProducto.codigoBarras.toLowerCase().trim();
+    return this.productos().some(p => p.codigoBarras?.toLowerCase().trim() === codigo && p.idProducto !== this.nuevoProducto.idProducto);
+  }
+
+  formularioInvalido(): boolean {
+    return !this.nuevoProducto?.nombre?.trim() || this.duplicadoNombre() || this.duplicadoCodigo();
+  }
+
+
   // Modal código de barras
   codigoBarrasVisualizar = signal<string | null>(null);
+
+  verComprasProducto(prod: any) {
+    if (this.productoSeleccionado()?.idProducto === prod.idProducto) {
+      this.productoSeleccionado.set(null);
+      this.comprasProducto.set([]);
+      return;
+    }
+    this.productoSeleccionado.set(prod);
+    this.cargandoComprasProducto.set(true);
+    this.comprasProducto.set([]);
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos/${prod.idProducto}/compras`).subscribe({
+      next: (data) => { this.comprasProducto.set(data); this.cargandoComprasProducto.set(false); },
+      error: () => this.cargandoComprasProducto.set(false)
+    });
+  }
+
+  cerrarComprasProducto() {
+    this.productoSeleccionado.set(null);
+    this.comprasProducto.set([]);
+  }
+
+  verDetalleCompra(compra: any) {
+    this.cargandoCompraDetalle.set(true);
+    this.compraDetalle.set(null);
+    this.http.get<any>(`${environment.apiUrl}/pos/compras/${compra.idCompra}`).subscribe({
+      next: (data) => {
+        this.compraDetalle.set(data);
+        this.cargandoCompraDetalle.set(false);
+      },
+      error: () => this.cargandoCompraDetalle.set(false)
+    });
+  }
+
+  cerrarDetalleCompra() {
+    this.compraDetalle.set(null);
+  }
 
   // SAT Catalog
   satProductQuery: string = '';
@@ -147,7 +258,7 @@ export class ProductosComponent implements OnInit {
     { unit_key: 'XPK', name: 'Paquete' }
   ];
 
-  constructor(private http: HttpClient, private router: Router, private route: ActivatedRoute, public auth: AuthService) {}
+
 
   isAdmin(): boolean { const p = this.auth.sesion()?.idPerfil; return p === 1 || p === 3; }
 
@@ -168,12 +279,12 @@ export class ProductosComponent implements OnInit {
   }
 
   cargarCatalogosSoporte() {
-    this.http.get<any[]>('http://localhost:3000/pos/empresas').subscribe(res => this.empresas.set(res));
-    this.http.get<any[]>('http://localhost:3000/pos/sucursales').subscribe(res => this.sucursales.set(res));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe(res => this.empresas.set(res));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/sucursales`).subscribe(res => this.sucursales.set(res));
   }
 
   cargarCategorias() {
-    this.http.get<any[]>('http://localhost:3000/pos/categorias').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/categorias`).subscribe({
       next: (data) => this.categorias.set(data),
       error: (err) => console.error('Error cargando categorias', err)
     });
@@ -181,7 +292,7 @@ export class ProductosComponent implements OnInit {
 
   cargarProductos() {
     this.cargando.set(true);
-    this.http.get<any[]>('http://localhost:3000/pos/productos').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
       next: (data) => { this.productos.set(data); this.cargando.set(false); },
       error: (err) => { console.error('Error al cargar productos:', err); this.cargando.set(false); }
     });
@@ -189,7 +300,7 @@ export class ProductosComponent implements OnInit {
 
   getStockClass(prod: any): string {
     const stock = Number(prod.stockActual);
-    const min = Number(prod.stockMinimo || 5);
+    const min = prod.stockMinimo != null && prod.stockMinimo !== '' ? Number(prod.stockMinimo) : 5;
     if (stock <= 0) return 'stock-cero';
     if (stock <= min) return 'stock-bajo';
     return 'stock-ok';
@@ -197,7 +308,7 @@ export class ProductosComponent implements OnInit {
 
   getStockLabel(prod: any): string {
     const stock = Number(prod.stockActual);
-    const min = Number(prod.stockMinimo || 5);
+    const min = prod.stockMinimo != null && prod.stockMinimo !== '' ? Number(prod.stockMinimo) : 5;
     if (stock <= 0) return 'Sin Stock';
     if (stock <= min) return 'Stock Bajo';
     return 'Disponible';
@@ -207,17 +318,34 @@ export class ProductosComponent implements OnInit {
     return prod.categoria?.nombre || 'Sin categoría';
   }
 
+  // abrirModal(prod: any) {
+  //   this.esNuevoProducto.set(false);
+  //   this.nuevoProducto = { ...prod };
+  //   this.imagenPreview.set(prod.imagenUrl ? `http://localhost:3000${prod.imagenUrl}` : null);
+  //   this.archivoImagen = null;
+  //   this.satProductQuery = prod.claveProdServ ? (prod.claveProdServ) : '';
+  //   this.satUnitQuery = prod.claveUnidad ? (prod.claveUnidad) : '';
+  //   this.satProductsResults = [];
+  //   this.satUnitsResults = [];
+  //   this.mostrarModal.set(true);
+  // }
   abrirModal(prod: any) {
-    this.esNuevoProducto.set(false);
-    this.nuevoProducto = { ...prod };
-    this.imagenPreview.set(prod.imagenUrl ? `http://localhost:3000${prod.imagenUrl}` : null);
-    this.archivoImagen = null;
-    this.satProductQuery = prod.claveProdServ ? (prod.claveProdServ + ' (Actual)') : '';
-    this.satUnitQuery = prod.claveUnidad ? (prod.claveUnidad + ' (Actual)') : '';
-    this.satProductsResults = [];
-    this.satUnitsResults = [];
-    this.mostrarModal.set(true);
-  }
+  this.esNuevoProducto.set(false);
+  
+  this.nuevoProducto = { 
+    ...prod,
+    // Si viene dentro del objeto 'categoria', lo extraemos; si no, usamos el id directo o null
+    idCategoria: prod.categoria?.idCategoria ? Number(prod.categoria.idCategoria) : (prod.idCategoria ? Number(prod.idCategoria) : null)
+  };
+  
+  this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
+  this.archivoImagen = null;
+  this.satProductQuery = prod.claveProdServ ? (prod.claveProdServ) : '';
+  this.satUnitQuery = prod.claveUnidad ? (prod.claveUnidad) : '';
+  this.satProductsResults = [];
+  this.satUnitsResults = [];
+  this.mostrarModal.set(true);
+}
 
   abrirModalNuevo() {
     this.esNuevoProducto.set(true);
@@ -263,7 +391,7 @@ export class ProductosComponent implements OnInit {
       const formData = new FormData();
       formData.append('codigoBarras', this.nuevoProducto.codigoBarras || '');
       formData.append('imagen', this.archivoImagen);
-      this.http.patch(`http://localhost:3000/pos/productos/${id}/imagen`, formData).subscribe({
+      this.http.patch(`${environment.apiUrl}/pos/productos/${id}/imagen`, formData).subscribe({
         next: () => this.guardarDatosGenerales(id),
         error: () => this.guardando.set(false)
       });
@@ -284,7 +412,7 @@ export class ProductosComponent implements OnInit {
       claveUnidad: this.nuevoProducto.claveUnidad,
     };
 
-    this.http.patch(`http://localhost:3000/pos/productos/${id}`, payload).subscribe({
+    this.http.patch(`${environment.apiUrl}/pos/productos/${id}`, payload).subscribe({
       next: () => {
         this.guardando.set(false);
         this.cargarProductos();
@@ -316,7 +444,7 @@ export class ProductosComponent implements OnInit {
 
     const guardar = (imagenUrl?: string) => {
       if (imagenUrl) payload.imagenUrl = imagenUrl;
-      this.http.post('http://localhost:3000/pos/productos', payload).subscribe({
+      this.http.post(`${environment.apiUrl}/pos/productos`, payload).subscribe({
         next: () => { this.guardando.set(false); this.cargarProductos(); this.cerrarModal(); },
         error: (err) => { console.error('Error al crear producto:', err); this.guardando.set(false); }
       });
@@ -325,7 +453,7 @@ export class ProductosComponent implements OnInit {
     if (this.archivoImagen) {
       const formData = new FormData();
       formData.append('imagen', this.archivoImagen);
-      this.http.post<any>('http://localhost:3000/pos/productos/imagen-temp', formData).subscribe({
+      this.http.post<any>(`${environment.apiUrl}/pos/productos/imagen-temp`, formData).subscribe({
         next: (res) => guardar(res.imagenUrl),
         error: () => guardar() // si falla imagen, crea igual sin imagen
       });
@@ -383,7 +511,7 @@ export class ProductosComponent implements OnInit {
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      this.http.get<any[]>(`http://localhost:3000/pos/catalogo-sat/productos?q=${encodeURIComponent(this.satProductQuery)}`).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${encodeURIComponent(this.satProductQuery)}`).subscribe({
         next: (data) => this.satProductsResults = data || [],
         error: (err) => console.error('Error searching SAT products', err)
       });
@@ -407,7 +535,7 @@ export class ProductosComponent implements OnInit {
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      this.http.get<any[]>(`http://localhost:3000/pos/catalogo-sat/unidades?q=${encodeURIComponent(this.satUnitQuery)}`).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${encodeURIComponent(this.satUnitQuery)}`).subscribe({
         next: (data) => this.satUnitsResults = data || [],
         error: (err) => console.error('Error searching SAT units', err)
       });

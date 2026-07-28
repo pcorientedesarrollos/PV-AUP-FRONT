@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -73,7 +74,7 @@ export class ConfiguracionTicketComponent implements OnInit {
     this.cargando = true;
     this.mensajeError = '';
 
-    this.http.get<any>('http://localhost:3000/pos/configuracion', {
+    this.http.get<any>(`${environment.apiUrl}/pos/configuracion`, {
       headers: { 'x-sucursal-id': idSucursal.toString() }
     }).subscribe({
       next: (d) => {
@@ -141,7 +142,7 @@ export class ConfiguracionTicketComponent implements OnInit {
     this.mensajeError = '';
     this.cdr.detectChanges();
     
-    this.http.patch('http://localhost:3000/pos/configuracion', this.configSucursal, {
+    this.http.patch(`${environment.apiUrl}/pos/configuracion`, this.configSucursal, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: () => {

@@ -1,9 +1,10 @@
 import { Component, effect, inject } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
+import { filter } from 'rxjs/operators';
 
 import { ToastComponent } from './shared/components/toast/toast.component';
 
@@ -17,9 +18,33 @@ export class App {
   private titleService = inject(Title);
   private document = inject(DOCUMENT);
   private auth = inject(AuthService);
-  private theme = inject(ThemeService); // Instancia inicial para cargar el tema
+  private theme = inject(ThemeService);
+  private router = inject(Router);
+
+  private readonly LAST_ROUTE_KEY = 'lastRoute';
+  // Rutas que NO deben persistirse
+  private readonly SKIP_ROUTES = ['/login', '/pos', '/', ''];
 
   constructor() {
+    // Guardar la ruta actual en cada navegación exitosa
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd)
+    ).subscribe((e: any) => {
+      const url: string = e.urlAfterRedirects || e.url || '';
+      if (url && !this.SKIP_ROUTES.some(r => url === r || url.startsWith('/pos'))) {
+        sessionStorage.setItem(this.LAST_ROUTE_KEY, url);
+      }
+    });
+
+    // Si el usuario ya tiene sesión y hay una ruta guardada, restaurarla
+    if (this.auth.isLoggedIn()) {
+      const saved = sessionStorage.getItem(this.LAST_ROUTE_KEY);
+      if (saved && !this.SKIP_ROUTES.includes(saved)) {
+        // Navegar a la ruta guardada después de que el router esté listo
+        setTimeout(() => this.router.navigateByUrl(saved), 0);
+      }
+    }
+
     effect(() => {
       const empresa = this.auth.sesion()?.empresa?.nombre;
       const logoUrl = this.auth.sesion()?.empresa?.logoUrl;
@@ -43,8 +68,6 @@ export class App {
       if (colorPrincipal) {
         this.document.documentElement.style.setProperty('--color-primario', colorPrincipal);
         
-        // Calcular si es un color oscuro o claro para ajustar el texto
-        // Formula simple de luminosidad
         const hex = colorPrincipal.replace('#', '');
         if (hex.length === 6) {
           const r = parseInt(hex.substring(0, 2), 16);
@@ -54,11 +77,10 @@ export class App {
           if (luma < 128) {
             this.document.documentElement.style.setProperty('--texto-on-primario', '#ffffff');
           } else {
-            this.document.documentElement.style.setProperty('--texto-on-primario', '#1e293b'); // slate-800
+            this.document.documentElement.style.setProperty('--texto-on-primario', '#1e293b');
           }
         }
       } else {
-        // Reset defaults
         this.document.documentElement.style.setProperty('--color-primario', '#f59e0b');
         this.document.documentElement.style.setProperty('--texto-on-primario', '#ffffff');
       }

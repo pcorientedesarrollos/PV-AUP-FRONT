@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, effect, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 import { ConfigService, AppConfig } from '../../core/services/config.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -12,12 +14,21 @@ import { ToastService } from '../../core/services/toast.service';
 })
 export class ConfiguracionComponent implements OnInit {
   configForm!: FormGroup;
+  subiendoCsf = signal(false);
 
   constructor(
     private fb: FormBuilder,
-    private configService: ConfigService,
-    private toast: ToastService
-  ) {}
+    public configService: ConfigService,
+    private toast: ToastService,
+    private http: HttpClient
+  ) {
+    effect(() => {
+      const currentConfig = this.configService.config();
+      if (this.configForm) {
+        this.configForm.patchValue(currentConfig, { emitEvent: false });
+      }
+    });
+  }
 
   ngOnInit() {
     const currentConfig = this.configService.config();
@@ -27,7 +38,8 @@ export class ConfiguracionComponent implements OnInit {
       direccion: [currentConfig.direccion],
       telefono: [currentConfig.telefono],
       email: [currentConfig.email, [Validators.email]],
-      logoUrl: [currentConfig.logoUrl]
+      logoUrl: [currentConfig.logoUrl],
+      ivaPorDefecto: [currentConfig.ivaPorDefecto, [Validators.required, Validators.min(0), Validators.max(100)]]
     });
   }
 
@@ -65,5 +77,36 @@ export class ConfiguracionComponent implements OnInit {
 
   removerLogo() {
     this.configForm.patchValue({ logoUrl: '/logo.png' });
+  }
+
+  onCsfSelected(event: any) {
+    const file = event.target.files[0];
+    if (!file) return;
+    this.subiendoCsf.set(true);
+    const fd = new FormData();
+    fd.append('file', file);
+
+    this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
+      next: (res) => {
+        this.subiendoCsf.set(false);
+        if (res.success) {
+          this.configForm.patchValue({
+            empresaNombre: res.nombre || this.configForm.value.empresaNombre,
+            rfc: res.rfc || this.configForm.value.rfc,
+            direccion: res.direccion ? `${res.direccion}${res.cp ? ', CP ' + res.cp : ''}` : this.configForm.value.direccion
+          });
+          this.toast.show('Datos fiscales extraídos correctamente.', 'success');
+        } else {
+          this.toast.show('Error al leer Cédula: ' + (res.error || 'Formato no reconocido'), 'error');
+        }
+        // Reset file input so it can be re-selected if needed
+        event.target.value = '';
+      },
+      error: () => {
+        this.subiendoCsf.set(false);
+        this.toast.show('Error conectando al servidor para procesar la Cédula.', 'error');
+        event.target.value = '';
+      }
+    });
   }
 }

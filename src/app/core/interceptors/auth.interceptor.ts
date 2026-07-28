@@ -27,6 +27,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         headers = headers.set('x-empresa-id', empresaId.toString());
       }
     }
+    const idUsuario = authService.sesion()?.idUsuario;
+    if (idUsuario) {
+      headers = headers.set('x-usuario-id', idUsuario.toString());
+    }
     authReq = authReq.clone({ headers });
   }
 

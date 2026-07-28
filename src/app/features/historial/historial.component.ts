@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TicketPrinterService } from '../../core/services/ticket-printer.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-historial',
@@ -49,6 +50,33 @@ export class HistorialComponent implements OnInit {
     return list;
   });
 
+
+  // Paginación
+  paginaActual = signal(1);
+  tamanoPagina = signal(50);
+
+  ventasPaginadas = computed(() => {
+    const arr = this.ventasFiltradas();
+    const index = (this.paginaActual() - 1) * this.tamanoPagina();
+    return arr.slice(index, index + this.tamanoPagina());
+  });
+
+  totalPaginas = computed(() => {
+    return Math.max(1, Math.ceil(this.ventasFiltradas().length / this.tamanoPagina()));
+  });
+
+  paginaAnterior() {
+    if (this.paginaActual() > 1) {
+      this.paginaActual.update(p => p - 1);
+    }
+  }
+
+  paginaSiguiente() {
+    if (this.paginaActual() < this.totalPaginas()) {
+      this.paginaActual.update(p => p + 1);
+    }
+  }
+
   ventasCompletadas = computed(() => this.ventasFiltradas().filter(v => v.tipo !== 'C').length);
   ventasCanceladas = computed(() => this.ventasFiltradas().filter(v => v.tipo === 'C').length);
 
@@ -87,11 +115,11 @@ export class HistorialComponent implements OnInit {
   clientes = signal<any[]>([]);
   mostrarModalFactura = signal(false);
   ventaAFacturar = signal<any>(null);
-  datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null as number | null, apiKey: '' };
+  datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null as number | null };
   facturando = signal(false);
 
   cargarClientes() {
-    this.http.get<any[]>('http://localhost:3000/pos/clientes').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
       next: (data) => this.clientes.set(data),
       error: (err) => console.error('Error cargando clientes', err)
     });
@@ -99,7 +127,7 @@ export class HistorialComponent implements OnInit {
 
   abrirModalFactura(venta: any) {
     this.ventaAFacturar.set(venta);
-    this.datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null, apiKey: '' };
+    this.datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null };
     
     // Auto-seleccionar si la venta ya tiene un cliente asociado
     if (venta.cliente && venta.cliente.idCliente) {
@@ -142,7 +170,7 @@ export class HistorialComponent implements OnInit {
     const fd = new FormData();
     fd.append('file', file);
 
-    this.http.post<any>('http://localhost:3000/pos/utils/parse-csf', fd).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
       next: (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {
@@ -171,24 +199,20 @@ export class HistorialComponent implements OnInit {
       this.alertaMensaje.set({ tipo: 'error', texto: 'Faltan datos fiscales del cliente para facturar.' });
       return;
     }
-    if (!this.datosFactura.apiKey) {
-      this.alertaMensaje.set({ tipo: 'error', texto: 'Debes proporcionar la API Key de Facturapi.' });
-      return;
-    }
+
     
     this.facturando.set(true);
-    const idVenta = this.ventaAFacturar().idCajaChica; // mapped ID
+    const idVenta = this.ventaAFacturar().idVenta || this.ventaAFacturar().idCajaChica;
     
     const payload = {
       rfc: this.datosFactura.rfc,
       razonSocial: this.datosFactura.razonSocial,
       cp: this.datosFactura.cp,
       regimen: this.datosFactura.regimen,
-      usoCfdi: this.datosFactura.usoCfdi,
-      apiKey: this.datosFactura.apiKey 
+      usoCfdi: this.datosFactura.usoCfdi
     };
 
-    this.http.post(`http://localhost:3000/pos/facturar/${idVenta}`, payload).subscribe({
+    this.http.post(`${environment.apiUrl}/pos/facturar/${idVenta}`, payload).subscribe({
       next: (res: any) => {
         this.facturando.set(false);
         this.alertaMensaje.set({ tipo: 'exito', texto: '¡Factura generada exitosamente!' });
@@ -213,7 +237,7 @@ export class HistorialComponent implements OnInit {
   cargarHistorial() {
     this.cargarClientes();
     this.cargando.set(true);
-    const url = `http://localhost:3000/pos/ventas`;
+    const url = `${environment.apiUrl}/pos/ventas`;
     this.http.get<any[]>(url).subscribe({
       next: (data) => {
         // Filtrar por fecha localmente
@@ -238,7 +262,7 @@ export class HistorialComponent implements OnInit {
           total: v.totalPagado,
           detalles: v.detalles?.map((d: any) => ({
             ...d,
-            idDetalle: d.idVentaDetalle,
+            idDetalle: d.idDetalle,
             concepto: d.producto?.nombre || 'Producto',
             importe: d.subtotal
           })) || []
@@ -269,7 +293,13 @@ export class HistorialComponent implements OnInit {
     this.ventaACancelar.set(null);
     this.cargando.set(true);
     
-    this.http.post(`http://localhost:3000/cajachica/${venta.idCajaChica}/cancelar`, {}).subscribe({
+    // La cancelación de ventas se maneja a través del módulo de devoluciones
+    // No existe un endpoint /cajachica - se usa /pos/devoluciones
+    this.http.post(`${environment.apiUrl}/pos/devoluciones`, {
+      idVenta: venta.idVenta || venta.idCajaChica,
+      motivo: 'Cancelación de venta',
+      tipo: 'Total'
+    }).subscribe({
       next: () => {
         this.alertaMensaje.set({ tipo: 'exito', texto: 'La venta ha sido anulada exitosamente y los productos regresaron al inventario.' });
         this.cerrarModal();
@@ -329,7 +359,20 @@ export class HistorialComponent implements OnInit {
     }
 
     this.cargando.set(true);
-    this.http.post<{ success: boolean, mensaje: string }>(`http://localhost:3000/cajachica/${venta.idCajaChica}/devolucion-parcial`, { devoluciones }).subscribe({
+    this.http.post<{ success: boolean, mensaje: string }>(`${environment.apiUrl}/pos/devoluciones`, {
+      idVenta: venta.idVenta || venta.idCajaChica,
+      motivo: 'Devolución parcial',
+      items: devoluciones.map(d => {
+        const detalle = venta.detalles?.find((det: any) => det.idDetalle === d.idDetalle);
+        return {
+          idProducto: detalle?.idProducto || detalle?.producto?.idProducto,
+          nombre: detalle?.concepto || detalle?.producto?.nombre || 'Producto',
+          cantidad: d.cantidadADevolver,
+          precioUnitario: detalle?.precioUnitario || 0,
+          destino: 'stock'
+        };
+      })
+    }).subscribe({
       next: (res) => {
         this.alertaMensaje.set({ tipo: res.success ? 'exito' : 'error', texto: res.mensaje });
         this.cerrarDevolucionParcial();
@@ -435,6 +478,7 @@ export class HistorialComponent implements OnInit {
   ventaParaDevolver = signal<any>(null);
   itemsDevolucion: { idProducto: number; nombre: string; cantidad: number; precioUnitario: number; seleccionado: boolean; maxCantidad: number; destino: 'stock' | 'merma' }[] = [];
   motivoDevolucion = '';
+  observacionesDevolucion = '';
   guardandoDevolucion = signal(false);
 
   get montoDevolucion() {
@@ -454,6 +498,7 @@ export class HistorialComponent implements OnInit {
   abrirModalDevolucion(venta: any) {
     this.ventaParaDevolver.set(venta);
     this.motivoDevolucion = '';
+    this.observacionesDevolucion = '';
     this.itemsDevolucion = (venta.detalles || []).map((d: any) => ({
       idProducto: d.idProducto || d.producto?.idProducto,
       nombre: d.nombreProducto || d.producto?.nombre || 'Producto',
@@ -472,8 +517,9 @@ export class HistorialComponent implements OnInit {
 
     this.guardandoDevolucion.set(true);
     const payload = {
-      idVenta: this.ventaParaDevolver()?.idVenta,
+      idVenta: this.ventaParaDevolver()?.idVenta || this.ventaParaDevolver()?.idCajaChica,
       motivo: this.motivoDevolucion,
+      observaciones: this.observacionesDevolucion,
       items: items.map(i => ({ 
         idProducto: i.idProducto, 
         nombre: i.nombre, 
@@ -483,7 +529,7 @@ export class HistorialComponent implements OnInit {
       }))
     };
 
-    this.http.post<any>('http://localhost:3000/pos/devoluciones', payload, { headers: this.headersHttp }).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/devoluciones`, payload, { headers: this.headersHttp }).subscribe({
       next: (res) => {
         this.guardandoDevolucion.set(false);
         this.mostrarModalDevolucion.set(false);

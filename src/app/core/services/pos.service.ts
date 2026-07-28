@@ -2,6 +2,8 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { of, tap } from 'rxjs';
 import { SyncService } from './sync.service';
+import { ConfigService } from './config.service';
+import { environment } from '../../../environments/environment';
 import {
   Producto,
   Cliente,
@@ -14,7 +16,8 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class PosService {
-  private readonly API = 'http://localhost:3000';
+  private readonly API = environment.apiUrl;
+  private configService = inject(ConfigService);
 
   // ─── Estado del carrito con signals ──────────────────────────────────────────
   private _carrito = signal<ItemCarrito[]>([]);
@@ -24,13 +27,29 @@ export class PosService {
     this._carrito().reduce((acc, item) => acc + item.cantidad, 0)
   );
 
-  readonly totalPagar = computed(() =>
+  readonly subtotal = computed(() =>
     this._carrito().reduce((acc, item) => {
       const price = Number(item.producto.precioUnitario) || 0;
       const qty = Number(item.cantidad) || 0;
       return acc + (price * qty);
     }, 0)
   );
+
+  readonly totalIva = computed(() => {
+    // Tomamos el IVA por defecto del ConfigService
+    const ivaDefecto = this.configService.config().ivaPorDefecto || 0; 
+    return this._carrito().reduce((acc, item) => {
+      const price = Number(item.producto.precioUnitario) || 0;
+      const qty = Number(item.cantidad) || 0;
+      const sub = price * qty;
+      const ivaVal = Number(item.producto.iva);
+      const iva = ivaVal !== 0 ? ivaVal : ivaDefecto;
+      const tasa = iva < 0 ? 0 : iva / 100;
+      return acc + (sub * tasa);
+    }, 0);
+  });
+
+  readonly totalPagar = computed(() => this.subtotal() + this.totalIva());
 
   // Cliente seleccionado
   private _clienteSeleccionado = signal<Cliente | null>(null);
@@ -86,9 +105,10 @@ export class PosService {
   }
 
   getUsuarios(idSucursal?: number) {
-    // Si queremos filtrar manual o usar el interceptor,
-    // el interceptor ya envia x-sucursal-id, pero lo podemos pedir.
-    return this.http.get<any[]>(`${this.API}/pos/usuarios`);
+    // El interceptor ya envía x-sucursal-id, pero si se pasa explícitamente lo incluimos también
+    const headers: any = {};
+    if (idSucursal) headers['x-sucursal-id'] = String(idSucursal);
+    return this.http.get<any[]>(`${this.API}/pos/usuarios`, { headers });
   }
 
   getUsuariosGlobal() {
@@ -323,5 +343,26 @@ export class PosService {
   
   cerrarTurno(payload: { idCorte: number, efectivoEscaner: number }) {
     return this.http.post(`${this.API}/pos/corte`, payload);
+  }
+
+  // ─── Cotizaciones ─────────────────────────────────────────────────────────────
+  getCotizaciones() {
+    return this.http.get<any[]>(`${this.API}/pos/cotizaciones`);
+  }
+
+  crearCotizacion(payload: any) {
+    return this.http.post<any>(`${this.API}/pos/cotizaciones`, payload);
+  }
+
+  convertirCotizacionAVenta(idCotizacion: number) {
+    return this.http.patch<any>(`${this.API}/pos/cotizaciones/${idCotizacion}/convertir`, {});
+  }
+
+  cambiarEstatusCotizacion(idCotizacion: number, estatus: string) {
+    return this.http.patch<any>(`${this.API}/pos/cotizaciones/${idCotizacion}/estatus`, { estatus });
+  }
+
+  facturarCotizacion(idCotizacion: number, payload: any) {
+    return this.http.post<any>(`${this.API}/pos/cotizaciones/${idCotizacion}/facturar`, payload);
   }
 }

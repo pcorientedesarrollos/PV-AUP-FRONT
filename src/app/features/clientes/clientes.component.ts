@@ -1,9 +1,12 @@
-import { Component, signal, computed, OnInit, effect } from '@angular/core';
+import { Component, signal, computed, OnInit, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
+import { environment } from '../../../environments/environment';
+
 
 @Component({
   selector: 'app-clientes',
@@ -12,10 +15,12 @@ import { AuthService } from '../../core/services/auth.service';
   templateUrl: './clientes.component.html',
 })
 export class ClientesComponent implements OnInit {
+  toast = inject(ToastService);
   // Estado Principal
   clientesOriginales = signal<any[]>([]);
   clientesUnicos = signal<any[]>([]);
   cargando = signal(true);
+  mostrarImportar = signal(false);
   
   // Búsqueda y Filtros
   busqueda = signal('');
@@ -62,6 +67,31 @@ export class ClientesComponent implements OnInit {
     );
   });
 
+  // --- PAGINACIÓN ---
+  paginaActual = signal(1);
+  tamanoPagina = signal(50);
+  
+  totalPaginas = computed(() => {
+    return Math.max(1, Math.ceil(this.clientesFiltrados().length / this.tamanoPagina()));
+  });
+
+  clientesPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    const fin = inicio + this.tamanoPagina();
+    return this.clientesFiltrados().slice(inicio, fin);
+  });
+
+  constructor(private http: HttpClient, private router: Router, public auth: AuthService) {
+    // Resetear a página 1 cuando cambia algún filtro
+    effect(() => {
+      this.busqueda();
+      this.filtroEstado();
+      this.filtroEmpresa();
+      this.filtroSucursal();
+      this.paginaActual.set(1);
+    }, { allowSignalWrites: true });
+  }
+
   // Modal
   mostrarModal = signal(false);
   modoModal = signal<'crear' | 'editar'>('crear');
@@ -87,6 +117,17 @@ export class ClientesComponent implements OnInit {
           }
           if (res.regimenFiscal) {
             this.clienteActual.regimenFiscal = res.regimenFiscal;
+            if (res.regimenFiscal === '616') {
+              this.clienteActual.usoCfdi = 'S01';
+            } else {
+              this.clienteActual.usoCfdi = 'G03';
+            }
+          }
+          this.clienteActual.formaPago = '01';
+          this.clienteActual.metodoPago = 'PUE';
+          
+          if (res.direccion) {
+            this.clienteActual.domicilio = res.direccion;
           }
           
         } else {
@@ -98,6 +139,32 @@ export class ClientesComponent implements OnInit {
         alert('Error conectando al servidor para procesar la Cédula.');
       }
     });
+  }
+
+
+
+  coincidenciasNombre(): any[] {
+    if (!this.clienteActual?.nombre || this.clienteActual.nombre.trim().length < 2) return [];
+    const term = this.clienteActual.nombre.toLowerCase().trim();
+    return this.clientesOriginales().filter((c: any) => c.nombre?.toLowerCase().includes(term) && c.idCliente !== this.clienteActual.idCliente).slice(0, 5);
+  }
+
+  coincidenciasRfc(): any[] {
+    if (!this.clienteActual?.rfc || this.clienteActual.rfc.trim().length < 2) return [];
+    const term = this.clienteActual.rfc.toLowerCase().trim();
+    return this.clientesOriginales().filter((c: any) => c.rfc?.toLowerCase().includes(term) && c.idCliente !== this.clienteActual.idCliente).slice(0, 5);
+  }
+
+  get duplicadoNombre(): boolean {
+    if (!this.clienteActual?.nombre) return false;
+    const nombre = this.clienteActual.nombre.toLowerCase().trim();
+    return this.clientesOriginales().some(c => c.nombre?.toLowerCase().trim() === nombre && c.idCliente !== this.clienteActual.idCliente);
+  }
+  
+  get duplicadoRfc(): boolean {
+    if (!this.clienteActual?.rfc) return false;
+    const rfc = this.clienteActual.rfc.toLowerCase().trim();
+    return this.clientesOriginales().some(c => c.rfc?.toLowerCase().trim() === rfc && c.idCliente !== this.clienteActual.idCliente);
   }
 
   clienteActual = {
@@ -114,7 +181,7 @@ export class ClientesComponent implements OnInit {
     metodoPago: 'PUE'
   };
 
-  constructor(private http: HttpClient, private router: Router, public auth: AuthService) {}
+
 
   isAdmin(): boolean {
     return this.auth.sesion()?.idPerfil === 1 || this.auth.sesion()?.idPerfil === 3;
@@ -290,7 +357,20 @@ export class ClientesComponent implements OnInit {
 
   guardarCliente() {
     if (!this.clienteActual.nombre.trim()) {
-      alert('El nombre del cliente es obligatorio');
+      this.toast.show('El nombre del cliente es obligatorio', 'warning');
+      return;
+    }
+
+    // Validar duplicados
+    const rfc = this.clienteActual.rfc?.trim().toLowerCase();
+    const nombre = this.clienteActual.nombre?.trim().toLowerCase();
+    const duplicado = this.clientesOriginales().find((c: any) => 
+      c.idCliente !== this.clienteActual.idCliente && 
+      ((rfc && c.rfc?.trim().toLowerCase() === rfc) || 
+       (nombre && c.nombre?.trim().toLowerCase() === nombre))
+    );
+    if (duplicado) {
+      this.toast.show(`Ya existe un cliente activo con este Nombre o RFC (${duplicado.nombre}).`, 'error');
       return;
     }
 
@@ -311,31 +391,67 @@ export class ClientesComponent implements OnInit {
     if (this.modoModal() === 'crear') {
       this.http.post('http://localhost:3000/pos/clientes/alta-rapida', payload).subscribe({
         next: () => {
+          this.toast.show('Cliente registrado con éxito', 'success');
           this.cerrarModal();
           this.cargarClientes();
         },
-        error: (err) => console.error('Error creando cliente', err)
+        error: (err: HttpErrorResponse) => {
+          if (err.error?.message) {
+            this.toast.show(err.error.message, 'error');
+          } else {
+            this.toast.show('Error al crear el cliente. Verifica duplicados.', 'error');
+          }
+        }
       });
     } else {
       this.http.patch(`http://localhost:3000/pos/clientes/${this.clienteActual.idCliente}`, payload).subscribe({
         next: () => {
+          this.toast.show('Cliente actualizado con éxito', 'success');
           this.cerrarModal();
           this.cargarClientes();
         },
-        error: (err) => console.error('Error editando cliente', err)
+        error: (err: HttpErrorResponse) => {
+          if (err.error?.message) {
+            this.toast.show(err.error.message, 'error');
+          } else {
+            this.toast.show('Error al editar el cliente.', 'error');
+          }
+        }
       });
     }
   }
 
   eliminarCliente(id: number) {
-    if (confirm('¿Estás seguro de que deseas eliminar este cliente? (Solo se eliminará el registro principal mostrado)')) {
+    if (confirm('¿Estás seguro de que deseas desactivar este cliente?')) {
       this.http.delete(`http://localhost:3000/pos/clientes/${id}`).subscribe({
         next: () => this.cargarClientes(),
         error: (err) => {
-          console.error('Error eliminando', err);
-          alert('No se pudo eliminar el cliente. Puede que tenga ventas asociadas.');
+          console.error('Error desactivando', err);
+          alert('No se pudo desactivar el cliente.');
         }
       });
     }
+  }
+
+  getNombreFormaPago(codigo: string): string {
+    const formas: Record<string, string> = {
+      '01': '01 - Efectivo',
+      '02': '02 - Cheque nominativo',
+      '03': '03 - Transferencia electrónica de fondos',
+      '04': '04 - Tarjeta de crédito',
+      '28': '28 - Tarjeta de débito',
+      '99': '99 - Por definir'
+    };
+    return formas[codigo] || codigo;
+  }
+
+  getNombreUsoCfdi(codigo: string): string {
+    const usos: Record<string, string> = {
+      'G01': 'G01 - Adquisición de mercancías',
+      'G03': 'G03 - Gastos en general',
+      'S01': 'S01 - Sin efectos fiscales',
+      'P01': 'P01 - Por definir'
+    };
+    return usos[codigo] || codigo;
   }
 }

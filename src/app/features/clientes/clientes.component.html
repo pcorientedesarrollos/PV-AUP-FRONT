@@ -89,7 +89,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            @for (cliente of clientesFiltrados(); track cliente.idCliente) {
+            @for (cliente of clientesPaginados(); track cliente.idCliente) {
               <tr class="hover:bg-slate-50 transition-colors group">
                 <td class="py-3 px-4 text-center text-slate-500 font-medium whitespace-nowrap">#{{ cliente.idCliente }}</td>
                 <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ cliente.nombre }}</td>
@@ -147,8 +147,30 @@
           </tbody>
         </table>
       }
+
+    </div>
+
+    <!-- Controles de Paginación -->
+    <div class="border-t border-slate-200 bg-white p-4 flex items-center justify-between">
+      <p class="text-sm text-slate-600">
+        Mostrando página <span class="font-bold">{{ paginaActual() }}</span> de <span class="font-bold">{{ totalPaginas() }}</span> 
+        (Total: {{ clientesFiltrados().length }} clientes)
+      </p>
+      <div class="flex items-center gap-2">
+        <button (click)="paginaActual.set(paginaActual() - 1)" 
+                [disabled]="paginaActual() === 1"
+                class="px-3 py-1.5 border border-slate-300 rounded text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Anterior
+        </button>
+        <button (click)="paginaActual.set(paginaActual() + 1)" 
+                [disabled]="paginaActual() === totalPaginas()"
+                class="px-3 py-1.5 border border-slate-300 rounded text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">
+          Siguiente
+        </button>
+      </div>
     </div>
   </article>
+
 
   <!-- Modal -->
   @if (mostrarModal()) {

@@ -1,17 +1,68 @@
 <div class="h-full flex flex-col bg-slate-50 relative p-4 sm:p-6 lg:p-8 animate-fade-in custom-scrollbar overflow-y-auto">
   <div class="max-w-7xl mx-auto w-full space-y-6">
     
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
-          <button (click)="cancelar()" class="text-slate-400 hover:text-slate-700">⬅</button>
-          Nueva Orden de Compra
-        </h1>
-        <p class="text-slate-500 mt-1">Registra la entrada de mercancía y los costos del proveedor</p>
+    <!-- Encabezado -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-2 mt-2">
+      <div class="flex items-center gap-4">
+        <button (click)="cancelar()" class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+        </button>
+        <div>
+          <h1 class="text-3xl font-black text-slate-800 tracking-tight">Nueva Orden de Compra</h1>
+          <p class="text-sm font-medium text-slate-500 mt-1">Registra la entrada de mercancía y costos</p>
+        </div>
       </div>
-      <div class="bg-indigo-50 border border-indigo-100 rounded-lg px-6 py-2">
-        <p class="text-xs text-indigo-500 font-bold uppercase">Total Compra</p>
-        <p class="text-2xl font-black text-indigo-700">{{ totalCompra() | currency:'MXN' }}</p>
+
+      <div class="flex flex-col sm:flex-row items-center gap-4 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm w-full sm:w-auto">
+        <div class="flex items-center gap-3 relative z-20">
+          <!-- Botón Cargar PDF -->
+          <input type="file" #filePdf hidden accept=".pdf" (change)="importarPdf($event)">
+          <button 
+            (click)="filePdf.click()" 
+            [disabled]="importando() || !!archivoXml"
+            class="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold transition-all border rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            [class]="archivoPdf ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'">
+            @if (importandoPdf()) {
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <span>Procesando...</span>
+            } @else {
+              @if (archivoPdf) {
+                <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>PDF Procesado</span>
+              } @else {
+                <svg class="w-5 h-5 text-red-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <span>Cargar PDF</span>
+              }
+            }
+          </button>
+
+          <!-- Botón Cargar XML -->
+          <input type="file" #fileXml hidden accept=".xml" (change)="importarXml($event)">
+          <button 
+            (click)="fileXml.click()" 
+            [disabled]="importando() || !!archivoPdf"
+            class="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold text-white transition-all bg-slate-800 border border-transparent rounded-xl hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            @if (importandoXml()) {
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <span>Procesando...</span>
+            } @else {
+              @if (archivoXml) {
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>XML Cargado</span>
+              } @else {
+                <svg class="w-5 h-5 text-amber-400 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                <span>Cargar Factura XML</span>
+              }
+            }
+          </button>
+        </div>
+
+        <div class="h-10 w-px bg-slate-200 hidden sm:block"></div>
+
+        <div class="px-4 py-1.5 flex flex-col items-end">
+          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Total Compra</p>
+          <p class="text-2xl font-black text-indigo-600 leading-none">{{ totalCompra() | currency:'MXN' }}</p>
+        </div>
       </div>
     </div>
 
@@ -19,47 +70,75 @@
       
       <!-- Lado Izquierdo: Datos Generales -->
       <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
-          <h2 class="font-bold text-slate-700 text-lg border-b pb-2">1. Datos del Proveedor</h2>
+        
+        <!-- Tarjeta Proveedor -->
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/60 p-6 space-y-5 transition-all hover:shadow-md">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+            <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">1</div>
+            <h2 class="font-bold text-slate-800 text-lg">Datos del Proveedor</h2>
+          </div>
           
-          <div>
-            <label class="block font-medium text-slate-700 text-sm mb-1">Proveedor *</label>
-            <select [(ngModel)]="idProveedor" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500">
-              <option [ngValue]="null" disabled>Selecciona a quién le compras...</option>
-              @for (prov of proveedores(); track prov.idProveedor) {
-                <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
-              }
-            </select>
-          </div>
+          <div class="space-y-4">
+            <div>
+              <label class="block font-semibold text-slate-700 text-xs uppercase tracking-wide mb-1.5">Proveedor <span class="text-red-500">*</span></label>
+              <div class="relative">
+                <select [(ngModel)]="idProveedor" class="w-full appearance-none bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-3 pr-8 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-sm">
+                  <option [ngValue]="null" disabled>Selecciona a quién le compras...</option>
+                  @for (prov of proveedores(); track prov.idProveedor) {
+                    <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
+                  }
+                </select>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                  <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </div>
 
-          <div>
-            <label class="block font-medium text-slate-700 text-sm mb-1">Folio / Ticket / Factura (Opcional)</label>
-            <input type="text" [(ngModel)]="folioFactura" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. A-5492">
-          </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-xs uppercase tracking-wide mb-1.5">Folio / Factura</label>
+              <input type="text" [(ngModel)]="folioFactura" class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-sm placeholder-slate-400" placeholder="Ej. A-5492">
+            </div>
 
-          <div>
-            <label class="block font-medium text-slate-700 text-sm mb-1">Notas / Concepto (Opcional)</label>
-            <textarea [(ngModel)]="notas" rows="2" class="w-full border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500" placeholder="Ej. Lote de reposición mensual..."></textarea>
+            <div>
+              <label class="block font-semibold text-slate-700 text-xs uppercase tracking-wide mb-1.5">Concepto / Notas</label>
+              <textarea [(ngModel)]="notas" rows="2" class="w-full bg-slate-50 border border-slate-200 text-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all font-medium text-sm placeholder-slate-400 custom-scrollbar resize-none" placeholder="Lote de reposición..."></textarea>
+            </div>
           </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 space-y-4">
-          <h2 class="font-bold text-slate-700 text-lg border-b pb-2">2. Agregar Productos</h2>
-          <div class="relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">🔍</span>
-            <input type="text" [(ngModel)]="busquedaProducto" placeholder="Busca producto por nombre o código..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-md focus:ring-amber-500 focus:border-amber-500 text-sm">
+        <!-- Tarjeta Buscador -->
+        <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-slate-200/60 p-6 space-y-5 transition-all hover:shadow-md">
+          <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold">2</div>
+            <h2 class="font-bold text-slate-800 text-lg">Agregar Productos</h2>
+          </div>
+          
+          <div class="relative group">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-amber-500 transition-colors">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <input type="text" [(ngModel)]="busquedaProducto" placeholder="Busca por nombre, clave..." class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white transition-all font-medium text-sm placeholder-slate-400">
           </div>
           
           @if (busquedaProducto().length > 0) {
-            <ul class="border border-slate-200 rounded-md divide-y divide-slate-100 max-h-48 overflow-y-auto bg-slate-50">
+            <ul class="border border-slate-200 rounded-xl divide-y divide-slate-100 max-h-56 overflow-y-auto bg-white shadow-lg shadow-slate-200/50 absolute z-20 w-full sm:w-[calc(100%-3rem)] mt-1 custom-scrollbar">
               @for (prod of productosFiltrados(); track prod.idProducto) {
-                <li (click)="agregarAlCarrito(prod)" class="p-2 hover:bg-amber-50 cursor-pointer flex justify-between items-center text-sm transition-colors">
-                  <span class="font-medium text-slate-700">{{ prod.nombre }}</span>
-                  <span class="text-slate-500 text-xs">Costo act: {{ prod.precioUnitario | currency }}</span>
+                <li (click)="agregarAlCarrito(prod)" class="p-3 hover:bg-amber-50 cursor-pointer flex justify-between items-center transition-colors group">
+                  <div class="flex flex-col">
+                    <span class="font-bold text-slate-700 group-hover:text-amber-700 text-sm">{{ prod.nombre }}</span>
+                    @if(prod.codigoBarras) { <span class="text-[10px] text-slate-400 font-mono">{{ prod.codigoBarras }}</span> }
+                  </div>
+                  <div class="text-right">
+                    <span class="block text-slate-400 text-[10px] uppercase font-bold tracking-wider">Costo</span>
+                    <span class="font-semibold text-emerald-600 text-sm">{{ prod.precioUnitario | currency }}</span>
+                  </div>
                 </li>
               }
               @if (productosFiltrados().length === 0) {
-                <li class="p-2 text-slate-400 text-sm text-center">No se encontraron productos</li>
+                <li class="p-4 flex flex-col items-center justify-center text-slate-400 gap-2">
+                  <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <span class="text-sm font-medium">No se encontraron productos</span>
+                </li>
               }
             </ul>
           }
@@ -68,54 +147,76 @@
 
       <!-- Lado Derecho: Carrito de Compras -->
       <div class="lg:col-span-2">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 h-full flex flex-col">
-          <div class="p-5 border-b border-slate-100 flex justify-between items-center">
-            <h2 class="font-bold text-slate-700 text-lg">3. Productos a Ingresar</h2>
-            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">{{ carrito().length }} artículos</span>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 h-full flex flex-col overflow-hidden">
+          <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">3</div>
+              <h2 class="font-bold text-slate-800 text-lg">Carrito de Ingreso</h2>
+            </div>
+            <div class="bg-slate-200/50 border border-slate-200 text-slate-600 text-xs font-black px-4 py-1.5 rounded-full shadow-inner flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+              {{ carrito().length }} ARTÍCULOS
+            </div>
           </div>
 
           <div class="flex-1 overflow-x-auto p-0">
-            <table class="w-full text-left border-collapse">
-              <thead>
-                <tr class="bg-slate-50 border-b border-slate-200">
-                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Producto</th>
-                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Cantidad</th>
-                  <th class="p-3 text-xs font-bold text-slate-500 uppercase">Costo Unit.</th>
-                  <th class="p-3 text-xs font-bold text-slate-500 uppercase" title="Actualizar catálogo">Act. Catál.</th>
-                  <th class="p-3 text-xs font-bold text-slate-500 uppercase text-right">Subtotal</th>
-                  <th class="p-3 w-10"></th>
+            <table class="w-full text-left border-collapse whitespace-nowrap">
+              <thead class="sticky top-0 bg-white/90 backdrop-blur-md z-10 shadow-[0_1px_2px_rgba(0,0,0,0.05)]">
+                <tr>
+                  <th class="p-4 text-xs font-black text-slate-400 uppercase tracking-wider">Producto</th>
+                  <th class="p-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center">Cantidad</th>
+                  <th class="p-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center">Costo Unit.</th>
+                  <th class="p-4 text-xs font-black text-slate-400 uppercase tracking-wider text-center" title="Actualizar catálogo">Act. Catál.</th>
+                  <th class="p-4 text-xs font-black text-slate-400 uppercase tracking-wider text-right">Subtotal</th>
+                  <th class="p-4 w-12"></th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
                 @for (item of carrito(); track item.idProducto) {
-                  <tr>
-                    <td class="p-3 text-sm font-medium text-slate-700">{{ item.nombre }}</td>
-                    <td class="p-3">
-                      <input type="number" [(ngModel)]="item.cantidad" class="w-20 border-slate-300 rounded p-1 text-sm focus:ring-amber-500" min="1">
+                  <tr class="hover:bg-slate-50 transition-colors group">
+                    <td class="p-4">
+                      <p class="text-sm font-bold text-slate-700 truncate max-w-[200px]">{{ item.nombre }}</p>
+                      @if (item.codigoBarras) {
+                        <p class="text-[10px] text-slate-400 font-mono">{{ item.codigoBarras }}</p>
+                      }
                     </td>
-                    <td class="p-3">
-                      <div class="flex items-center">
-                        <span class="text-slate-400 mr-1">$</span>
-                        <input type="number" [(ngModel)]="item.precioCosto" class="w-24 border-slate-300 rounded p-1 text-sm focus:ring-amber-500" min="0" step="0.01">
+                    <td class="p-4 text-center">
+                      <input type="number" [(ngModel)]="item.cantidad" class="w-20 bg-white border border-slate-200 text-slate-700 rounded-lg p-2 text-sm font-bold text-center focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm" min="1">
+                    </td>
+                    <td class="p-4 text-center">
+                      <div class="relative inline-block w-28">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold">$</span>
+                        <input type="number" [(ngModel)]="item.precioCosto" class="w-full bg-white border border-slate-200 text-emerald-600 rounded-lg py-2 pl-7 pr-2 text-sm font-bold text-right focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all shadow-sm" min="0" step="0.01">
                       </div>
                     </td>
-                    <td class="p-3 text-center">
-                      <input type="checkbox" [(ngModel)]="item.actualizarCosto" class="rounded text-amber-500 focus:ring-amber-500 cursor-pointer" title="Actualiza el costo base del producto con este nuevo costo">
+                    <td class="p-4 text-center">
+                      <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" [(ngModel)]="item.actualizarCosto" class="sr-only peer">
+                        <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                      </label>
                     </td>
-                    <td class="p-3 text-right font-bold text-indigo-600 text-sm">
+                    <td class="p-4 text-right font-black text-indigo-600 text-sm">
                       {{ (item.cantidad * item.precioCosto) | currency:'MXN' }}
                     </td>
-                    <td class="p-3 text-center">
-                      <button (click)="removerDelCarrito(item.idProducto)" class="text-red-400 hover:text-red-600 focus:outline-none" title="Remover">
-                        🗑️
+                    <td class="p-4 text-center">
+                      <button (click)="removerDelCarrito(item.idProducto)" class="w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-colors focus:outline-none">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                       </button>
                     </td>
                   </tr>
                 }
                 @if (carrito().length === 0) {
                   <tr>
-                    <td colspan="6" class="p-10 text-center text-slate-400 text-sm">
-                      Tu carrito de compras está vacío.<br>Busca y agrega productos desde el panel izquierdo.
+                    <td colspan="6">
+                      <div class="flex flex-col items-center justify-center py-16 text-slate-400 space-y-4">
+                        <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center border border-slate-100">
+                          <svg class="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                        </div>
+                        <div class="text-center">
+                          <p class="font-bold text-slate-500">Carrito vacío</p>
+                          <p class="text-sm mt-1">Busca y agrega productos desde el panel izquierdo.</p>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 }
@@ -123,14 +224,16 @@
             </table>
           </div>
 
-          <div class="p-5 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-between items-center">
-            <button (click)="cancelar()" class="text-slate-500 hover:text-slate-700 font-medium px-4 py-2 transition-colors">Cancelar</button>
+          <div class="p-5 border-t border-slate-100 bg-slate-50 flex justify-between items-center shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] relative z-10">
+            <button (click)="cancelar()" class="text-slate-500 hover:text-slate-800 hover:bg-slate-200/50 font-bold px-5 py-2.5 rounded-xl transition-all">Cancelar</button>
             <button (click)="finalizarCompra()" [disabled]="guardando() || carrito().length === 0 || !idProveedor()" 
-                    class="btn-primary px-8 py-3 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold shadow-md shadow-green-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    class="group relative inline-flex items-center justify-center gap-2 px-8 py-3 font-bold text-white transition-all bg-emerald-500 border border-transparent rounded-xl hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30">
               @if (guardando()) {
-                <span class="animate-spin text-lg">↻</span> Guardando...
+                <svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <span>Guardando...</span>
               } @else {
-                <span>✔️</span> Finalizar e Ingresar al Inventario
+                <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <span>Finalizar e Ingresar</span>
               }
             </button>
           </div>
@@ -140,3 +243,97 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Nuevo Proveedor desde XML -->
+@if (mostrarModalNuevoProveedorXml()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-slide-up border border-slate-100">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+        <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+          </div>
+          Nuevo Proveedor Detectado
+        </h3>
+        <button (click)="resolveProveedorXml?.(false)" class="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-6">
+        <p class="text-sm text-slate-600 mb-5 leading-relaxed">
+          La factura XML pertenece a un proveedor que <strong class="text-slate-800">no está registrado</strong> en tu base de datos. ¿Deseas darlo de alta automáticamente?
+        </p>
+        <div class="bg-indigo-50/50 rounded-xl p-5 mb-2 border border-indigo-100/50">
+          <p class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-1">Nombre / Razón Social</p>
+          <p class="font-bold text-slate-800 mb-4">{{ proveedorXmlPendiente?.nombre }}</p>
+          
+          <p class="text-xs text-indigo-400 font-bold uppercase tracking-wider mb-1">RFC</p>
+          <p class="font-mono font-bold text-indigo-700 bg-indigo-100/50 inline-block px-2 py-0.5 rounded">{{ proveedorXmlPendiente?.rfc }}</p>
+        </div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+        <button (click)="resolveProveedorXml?.(false)" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 hover:text-slate-800 transition-colors shadow-sm">
+          Ignorar
+        </button>
+        <button (click)="resolveProveedorXml?.(true)" class="px-5 py-2.5 rounded-xl font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-500/20">
+          Registrar Proveedor
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Nuevos Productos desde XML -->
+@if (mostrarModalNuevosProductosXml()) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh] overflow-hidden animate-slide-up border border-slate-100">
+      <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+        <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+          </div>
+          Productos Nuevos Detectados
+        </h3>
+        <button (click)="resolveProductosXml?.(false)" class="text-slate-400 hover:text-slate-600 transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-200/50">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <div class="p-6 overflow-y-auto custom-scrollbar">
+        <div class="bg-emerald-50/80 border border-emerald-100 rounded-xl p-4 mb-5 flex gap-3">
+          <svg class="w-6 h-6 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <p class="text-sm text-emerald-800 leading-relaxed">
+            Se detectaron <strong class="font-black text-emerald-900">{{ productosXmlPendientes.length }}</strong> productos en la factura que no están en tu catálogo. ¿Deseas registrarlos automáticamente?
+          </p>
+        </div>
+        
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+          <ul class="divide-y divide-slate-100 max-h-60 overflow-y-auto custom-scrollbar">
+            @for (p of productosXmlPendientes; track p.conceptoXml) {
+              <li class="p-4 hover:bg-slate-50 transition-colors">
+                <p class="font-bold text-slate-800 text-sm mb-2 leading-tight">{{ p.conceptoXml }}</p>
+                <div class="flex flex-wrap gap-x-4 gap-y-2">
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                    <span class="uppercase tracking-wider text-[10px]">Cód:</span>
+                    <span class="font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">{{ p.noIdentificacion || 'N/A' }}</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-500">
+                    <span class="uppercase tracking-wider text-[10px]">Costo:</span>
+                    <span class="font-bold text-emerald-600">{{ p.costoUnitario | currency:'MXN':'symbol':'1.2-2' }}</span>
+                  </span>
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 shrink-0">
+        <button (click)="resolveProductosXml?.(false)" class="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 hover:text-slate-800 transition-colors shadow-sm">
+          Agregar Manualmente
+        </button>
+        <button (click)="resolveProductosXml?.(true)" class="px-5 py-2.5 rounded-xl font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-md shadow-emerald-500/20">
+          Crear en Catálogo
+        </button>
+      </div>
+    </div>
+  </div>
+}

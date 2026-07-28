@@ -1,3 +1,4 @@
+﻿import { environment } from '../../../environments/environment';
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -70,14 +71,14 @@ export class UsuariosComponent implements OnInit {
   ngOnInit() {
     this.cargarUsuarios();
     if (this.isSoporte()) {
-      this.http.get<any[]>('http://localhost:3000/pos/empresas').subscribe(res => this.empresas.set(res));
-      this.http.get<any[]>('http://localhost:3000/pos/sucursales').subscribe(res => this.sucursales.set(res));
+      this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe(res => this.empresas.set(res));
+      this.http.get<any[]>(`${environment.apiUrl}/pos/sucursales`).subscribe(res => this.sucursales.set(res));
     }
   }
 
   cargarUsuarios() {
     this.cargando.set(true);
-    this.http.get<any[]>('http://localhost:3000/pos/usuarios').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/usuarios`).subscribe({
       next: (data) => {
         const mapeados = data.map(u => ({
           idUsuario: u.idUsuario,
@@ -155,8 +156,8 @@ export class UsuariosComponent implements OnInit {
     }
 
     const request = isEdit 
-      ? this.http.patch(`http://localhost:3000/pos/usuarios/${this.editandoId()}`, payload)
-      : this.http.post('http://localhost:3000/pos/usuarios', payload);
+      ? this.http.patch(`${environment.apiUrl}/pos/usuarios/${this.editandoId()}`, payload)
+      : this.http.post(`${environment.apiUrl}/pos/usuarios`, payload);
 
     request.subscribe({
       next: () => {
@@ -184,7 +185,7 @@ export class UsuariosComponent implements OnInit {
     }
     const accion = usr.oculto === 1 ? 'activar' : 'desactivar';
     if (confirm(`¿Estás seguro de que deseas ${accion} este usuario?`)) {
-      this.http.patch(`http://localhost:3000/pos/usuarios/${usr.idUsuario}`, { oculto: usr.oculto === 1 ? false : true }).subscribe({
+      this.http.patch(`${environment.apiUrl}/pos/usuarios/${usr.idUsuario}`, { oculto: usr.oculto === 1 ? false : true }).subscribe({
         next: () => this.cargarUsuarios(),
         error: (err) => console.error('Error cambiando estado', err)
       });
