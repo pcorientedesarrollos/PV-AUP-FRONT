@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { environment } from '../../../environments/environment';
 import { ExportService } from '../../core/services/export.service';
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
@@ -34,6 +35,8 @@ export class FacturasComponent implements OnInit {
   });
 
   facturas = signal<any[]>([]);
+  ventasDisponibles = signal<any[]>([]);
+  mostrarDropdownVentas = false;
   cargando = signal(false);
   idSucursalSesion = 0;
 
@@ -56,7 +59,7 @@ export class FacturasComponent implements OnInit {
     const fd = new FormData();
     fd.append('file', file);
 
-    this.http.post<any>('http://localhost:3000/pos/utils/parse-csf', fd).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
       next: (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {
@@ -128,7 +131,7 @@ export class FacturasComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any[]>('http://localhost:3000/pos/clientes', {
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (data) => this.clientesGuardados.set(data),
@@ -153,7 +156,7 @@ export class FacturasComponent implements OnInit {
 
   cargarFacturas() {
     this.cargando.set(true);
-    this.http.get<any[]>('http://localhost:3000/pos/facturas', {
+    this.http.get<any[]>(`${environment.apiUrl}/pos/facturas`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (data) => {
@@ -167,6 +170,29 @@ export class FacturasComponent implements OnInit {
     });
   }
 
+    ocultarDropdownVentas() {
+    setTimeout(() => this.mostrarDropdownVentas = false, 200);
+  }
+
+  seleccionarVentaDropdown(venta: any) {
+    this.folioVenta.set(venta.folio || 'VTA-' + (venta.idCajaChica || venta.idVenta));
+    this.mostrarDropdownVentas = false;
+    
+    this.idVenta.set(venta.idVenta || venta.idCajaChica);
+    this.errorFactura.set('');
+    
+    if (venta.cliente) {
+      this.formData = {
+        ...this.formData,
+        rfc: venta.cliente.rfc || '',
+        razonSocial: venta.cliente.nombreCompleto || '',
+        cp: venta.cliente.direccion ? (venta.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : ''
+      };
+    } else {
+      this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '' };
+    }
+  }
+
   abrirModalFactura() {
     this.errorFactura.set('');
     this.idVenta.set(null);
@@ -175,6 +201,29 @@ export class FacturasComponent implements OnInit {
     this.formData.razonSocial = '';
     this.formData.cp = '';
     this.mostrarModal.set(true);
+    this.cargarVentasDisponibles();
+  }
+
+  cargarVentasDisponibles() {
+    const inicio = new Date();
+    inicio.setDate(inicio.getDate() - 30); // Ultimos 30 dias
+    const fin = new Date();
+    const strInicio = inicio.toISOString().split('T')[0];
+    const strFin = fin.toISOString().split('T')[0];
+    this.http.get<any[]>(`${environment.apiUrl}/pos/ventas?fechaInicio=${strInicio}&fechaFin=${strFin}`).subscribe({
+      next: (ventas) => {
+        const disponibles = ventas.filter(v => {
+          if (v.estatus === 'Cancelada') return false;
+          if (v.facturas && v.facturas.length > 0) {
+            const facturada = v.facturas.some((f: any) => f.estatus === 'Emitida' || f.estatus === 'Procesando' || f.estatus === 'Completada');
+            if (facturada) return false;
+          }
+          return true;
+        });
+        this.ventasDisponibles.set(disponibles);
+      },
+      error: () => console.error('Error al cargar ventas recientes')
+    });
   }
 
   cerrarModal() {
@@ -184,7 +233,14 @@ export class FacturasComponent implements OnInit {
   buscarVentaPorFolio() {
     if (!this.folioVenta()) return;
     const query = this.folioVenta().trim();
-    this.http.get<any[]>(`http://localhost:3000/pos/ventas?folio=${query}`, {
+    
+    const local = this.ventasDisponibles().find(v => v.folio === query || String(v.idVenta) === query || String(v.idCajaChica) === query || 'V-'+v.idVenta === query || 'VTA-'+v.idVenta === query);
+    if (local) {
+      this.seleccionarVentaDropdown(local);
+      return;
+    }
+
+    this.http.get<any[]>(`${environment.apiUrl}/pos/ventas?folio=${query}`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (ventas) => {
@@ -194,13 +250,14 @@ export class FacturasComponent implements OnInit {
           this.errorFactura.set('');
           // AUTO RELLENAR SI HAY CLIENTE
           if (v.cliente) {
-            if (v.cliente.rfc) this.formData.rfc = v.cliente.rfc;
-            if (v.cliente.nombreCompleto) this.formData.razonSocial = v.cliente.nombreCompleto;
-            // Extraer CP de la dirección si existe
-            if (v.cliente.direccion) {
-              const cpMatch = v.cliente.direccion.match(/\b\d{5}\b/);
-              if (cpMatch) this.formData.cp = cpMatch[0];
-            }
+            this.formData = {
+              ...this.formData,
+              rfc: v.cliente.rfc || '',
+              razonSocial: v.cliente.nombreCompleto || '',
+              cp: v.cliente.direccion ? (v.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : ''
+            };
+          } else {
+             this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '' };
           }
         } else {
           this.idVenta.set(null);
@@ -227,7 +284,7 @@ export class FacturasComponent implements OnInit {
     this.facturando.set(true);
     this.errorFactura.set('');
 
-    this.http.post<any>(`http://localhost:3000/pos/facturar/${this.idVenta()}`, this.formData).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/facturar/${this.idVenta()}`, this.formData).subscribe({
       next: (res) => {
         this.facturando.set(false);
         this.cerrarModal();
@@ -248,7 +305,7 @@ export class FacturasComponent implements OnInit {
     if(url) {
       const encodedUrl = encodeURIComponent(url);
       
-      this.http.get(`http://localhost:3000/pos/proxy/descargar-xml?url=${encodedUrl}`, {
+      this.http.get(`${environment.apiUrl}/pos/proxy/descargar-xml?url=${encodedUrl}`, {
         responseType: 'blob' // Lo obtenemos como archivo binario (blob)
       }).subscribe({
         next: (blob) => {

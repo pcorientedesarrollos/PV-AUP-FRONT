@@ -22,6 +22,7 @@ export class HistorialComponent implements OnInit {
   fechaFin = signal(new Date(new Date().getTime() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10)); // Hoy local
 
   // Filtros
+  filtroBusqueda = signal('');
   filtroCliente = signal('todos');
   filtroUsuario = signal('todos');
 
@@ -48,6 +49,14 @@ export class HistorialComponent implements OnInit {
     }
     if (this.filtroUsuario() !== 'todos') {
       list = list.filter(v => (v.usuarioNombre || 'Sistema') === this.filtroUsuario());
+    }
+    const search = this.filtroBusqueda().toLowerCase().trim();
+    if (search) {
+      list = list.filter(v => 
+        (v.nombre && v.nombre.toLowerCase().includes(search)) || 
+        String(v.idCajaChica).includes(search) ||
+        (v.folio && v.folio.toLowerCase().includes(search))
+      );
     }
     return list;
   });

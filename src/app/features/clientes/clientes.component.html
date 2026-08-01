@@ -92,19 +92,18 @@
         <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
           <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
             <tr>
-              <th class="py-3 px-4 font-semibold w-16 text-center whitespace-nowrap">ID</th>
               <th class="py-3 px-4 font-semibold whitespace-nowrap">Cliente</th>
               <th class="py-3 px-4 font-semibold whitespace-nowrap">RFC</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Correo</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Teléfono</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Domicilio</th>
-              <th class="py-3 px-4 font-semibold text-center w-24 whitespace-nowrap">Acciones</th>
+              <th class="py-3 px-4 font-semibold whitespace-nowrap">Forma de Pago</th>
+              <th class="py-3 px-4 font-semibold whitespace-nowrap">Método de Pago</th>
+              <th class="py-3 px-4 font-semibold whitespace-nowrap">Uso de CFDI</th>
+              <th class="py-3 px-4 font-semibold whitespace-nowrap">C.P.</th>
+              <th class="py-3 px-4 font-semibold text-center w-32 whitespace-nowrap">Acciones</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100 text-sm">
             @for (cliente of clientesPaginados(); track cliente.idCliente) {
-              <tr class="hover:bg-slate-50/80 transition-colors transition-colors group">
-                <td class="py-3 px-4 text-center text-slate-500 font-medium whitespace-nowrap">#{{ cliente.idCliente }}</td>
+              <tr class="hover:bg-slate-50/80 transition-colors">
                 <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ cliente.nombre }}</td>
                 <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
                   @if (cliente.rfc) {
@@ -114,22 +113,29 @@
                   }
                 </td>
                 <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (cliente.correo) {
-                    {{ cliente.correo }}
+                  @if (cliente.formaPago) {
+                    {{ getNombreFormaPago(cliente.formaPago) }}
                   } @else {
-                    <span class="text-slate-400 italic">No registrado</span>
+                    <span class="text-slate-400 italic">-</span>
                   }
                 </td>
                 <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (cliente.telefono) {
-                    {{ cliente.telefono }}
+                  @if (cliente.metodoPago) {
+                    {{ cliente.metodoPago }}
                   } @else {
-                    <span class="text-slate-400 italic">No registrado</span>
+                    <span class="text-slate-400 italic">-</span>
                   }
                 </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-normal min-w-[250px] max-w-[400px] break-words">
-                  @if (cliente.domicilio) {
-                    {{ cliente.domicilio }}
+                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
+                  @if (cliente.usoCfdi) {
+                    {{ getNombreUsoCfdi(cliente.usoCfdi) }}
+                  } @else {
+                    <span class="text-slate-400 italic">-</span>
+                  }
+                </td>
+                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
+                  @if (cliente.cp) {
+                    {{ cliente.cp }}
                   } @else {
                     <span class="text-slate-400 italic">-</span>
                   }
@@ -141,7 +147,7 @@
                     </button>
                     @if (isAdmin()) {
                       <button (click)="eliminarCliente(cliente.idCliente)" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Eliminar">
-                        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                       </button>
                     }
                   </div>

@@ -24,6 +24,8 @@ export class CarritoComponent implements OnInit {
   cargando = signal(false);
   ventaExitosa = signal(false);
   ultimoTotal = signal(0);
+  ultimoSubtotal = signal(0);
+  ultimoIva = signal(0);
   ultimoTicketItems = signal<any[]>([]);
   
   // Custom Dropdown State
@@ -255,6 +257,8 @@ export class CarritoComponent implements OnInit {
     };
 
     this.ultimoTotal.set(payload.totalPagado);
+    this.ultimoSubtotal.set(this.pos.subtotal());
+    this.ultimoIva.set(this.pos.totalIva());
     this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
 
       this.pos.checkout(payload).subscribe({
@@ -291,6 +295,8 @@ export class CarritoComponent implements OnInit {
       nombreCliente: cliente?.nombreCompleto || 'PÚBLICO GENERAL',
       descuento: this.descuentoGlobal(),
       totalCobrado: this.ultimoTotal(),
+      subtotal: this.ultimoTotal() > 0 ? this.ultimoSubtotal() : this.pos.subtotal(),
+      totalIva: this.ultimoTotal() > 0 ? this.ultimoIva() : this.pos.totalIva(),
       metodoPago: this.metodoPago(),
       productos: items.map((i: any) => ({
         nombre: i.producto.nombre,

@@ -146,14 +146,16 @@ export class TicketPrinterService {
           <tbody>
     `;
 
-    if (venta.detalles && Array.isArray(venta.detalles)) {
-      venta.detalles.forEach((d: any) => {
-        const nombre = d.productoNombre || (d.producto?.nombre) || 'Producto';
+    const detalles = venta.detalles || venta.productos || [];
+    if (detalles && Array.isArray(detalles)) {
+      detalles.forEach((d: any) => {
+        const nombre = d.productoNombre || d.producto?.nombre || d.nombre || 'Producto';
+        const importe = d.importe || d.subtotal || 0;
         html += `
             <tr>
               <td class="text-left">${d.cantidad}</td>
               <td class="text-left">${nombre}</td>
-              <td class="text-right">$${Number(d.importe || 0).toFixed(2)}</td>
+              <td class="text-right">$${Number(importe).toFixed(2)}</td>
             </tr>
         `;
       });
@@ -165,12 +167,32 @@ export class TicketPrinterService {
         <div class="divider"></div>
         
         <div class="text-right bold mb-1" style="font-size: 1.1em;">
-          ${ venta.subtotal ? `SUBTOTAL: $${Number(venta.subtotal).toFixed(2)}<br>` : '' }
-          ${ venta.totalIva ? `IVA: $${Number(venta.totalIva).toFixed(2)}<br>` : '' }
-          TOTAL: $${Number(venta.total || venta.totalPagado || 0).toFixed(2)}
+          ${(() => {
+            const total = Number(venta.total || venta.totalPagado || venta.totalCobrado || 0);
+            let subtotal = Number(venta.subtotal || 0);
+            let iva = Number(venta.totalIva || 0);
+            
+            if (!subtotal) {
+              const detalles = venta.detalles || venta.productos || [];
+              subtotal = detalles.reduce((sum: any, d: any) => sum + Number(d.importe || d.subtotal || 0), 0);
+            }
+            if (!iva && total > subtotal) {
+              iva = total - subtotal;
+            }
+            
+            let res = '';
+            if (subtotal > 0 && iva > 0) {
+              res += `SUBTOTAL: $${subtotal.toFixed(2)}<br>`;
+              res += `IVA: $${iva.toFixed(2)}<br>`;
+            } else if (subtotal > 0 && iva <= 0 && total !== subtotal) {
+              res += `SUBTOTAL: $${subtotal.toFixed(2)}<br>`;
+            }
+            return res;
+          })()}
+          TOTAL: $${Number(venta.total || venta.totalPagado || venta.totalCobrado || 0).toFixed(2)}
         </div>
         <div class="text-center mb-2" style="font-size: 0.9em;">
-          <span>Efectivo: $${Number(venta.efectivoRecibido || venta.total || 0).toFixed(2)}</span><br>
+          <span>Efectivo: $${Number(venta.efectivoRecibido || venta.total || venta.totalCobrado || 0).toFixed(2)}</span><br>
           <span>Cambio: $${Number(venta.cambio || 0).toFixed(2)}</span>
         </div>
         

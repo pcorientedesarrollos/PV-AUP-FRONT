@@ -128,24 +128,24 @@ export class ComprasComponent implements OnInit {
   exportarExcel() {
     const data = this.comprasFiltradas().map((c: any) => ({
       'ID Compra': c.idCompra,
-      'Fecha': new Date(c.fecha).toLocaleString(),
+      'Folio': c.folio || 'N/A',
+      'Fecha': c.fechaCompra ? new Date(c.fechaCompra).toLocaleString() : 'N/A',
       'Proveedor': c.proveedor?.nombre || 'N/A',
       'Total': c.total,
-      'Estatus': c.estatus,
-      'Factura': c.folioFactura || 'N/A'
+      'Factura': c.folioFacturaProveedor || 'N/A'
     }));
     this.exportService.exportToExcel(data, 'Compras');
   }
 
   exportarPDF() {
-    const headers = ['ID', 'Fecha', 'Proveedor', 'Total', 'Estatus', 'Factura'];
+    const headers = ['ID', 'Folio', 'Fecha', 'Proveedor', 'Total', 'Factura'];
     const data = this.comprasFiltradas().map((c: any) => [
       c.idCompra.toString(),
-      new Date(c.fecha).toLocaleString(),
+      c.folio || 'N/A',
+      c.fechaCompra ? new Date(c.fechaCompra).toLocaleString() : 'N/A',
       c.proveedor?.nombre || 'N/A',
       `$${c.total}`,
-      c.estatus,
-      c.folioFactura || 'N/A'
+      c.folioFacturaProveedor || 'N/A'
     ]);
     this.exportService.exportToPdf(headers, data, 'Reporte de Compras', 'Compras', 'l');
   }
