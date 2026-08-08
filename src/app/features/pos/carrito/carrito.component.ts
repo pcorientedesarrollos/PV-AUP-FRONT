@@ -253,6 +253,7 @@ export class CarritoComponent implements OnInit {
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,
         precioUnitario: Number(item.producto.precioUnitario),
+        descuento: item.descuento || 0,
       })),
     };
 
@@ -293,7 +294,7 @@ export class CarritoComponent implements OnInit {
       fecha: new Date().toLocaleString(),
       nombreUsuario: this.auth.sesion()?.usuario || 'Admin',
       nombreCliente: cliente?.nombreCompleto || 'PÚBLICO GENERAL',
-      descuento: this.descuentoGlobal(),
+      descuento: this.pos.totalDescuentos() + this.descuentoGlobal(),
       totalCobrado: this.ultimoTotal(),
       subtotal: this.ultimoTotal() > 0 ? this.ultimoSubtotal() : this.pos.subtotal(),
       totalIva: this.ultimoTotal() > 0 ? this.ultimoIva() : this.pos.totalIva(),
@@ -302,6 +303,7 @@ export class CarritoComponent implements OnInit {
         nombre: i.producto.nombre,
         cantidad: i.cantidad,
         precioUnitario: i.producto.precioUnitario,
+        descuento: i.descuento || 0,
         subtotal: i.cantidad * i.producto.precioUnitario
       }))
     };

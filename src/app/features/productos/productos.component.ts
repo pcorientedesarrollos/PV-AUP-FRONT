@@ -351,7 +351,7 @@ export class ProductosComponent implements OnInit {
 
   abrirModalNuevo() {
     this.esNuevoProducto.set(true);
-    this.nuevoProducto = { nombre: '', precioUnitario: 0, precioMayoreo: null, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87' };
+    this.nuevoProducto = { nombre: '', precioUnitario: 0, precioMayoreo: null, descuento: 0, minimoMayoreo: 0, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87' };
     this.imagenPreview.set(null);
     this.archivoImagen = null;
     this.satProductQuery = '01010101 - No existe en el catálogo';
@@ -409,6 +409,8 @@ export class ProductosComponent implements OnInit {
       precioUnitario: Number(this.nuevoProducto.precioUnitario),
       precioPublico: Number(this.nuevoProducto.precioPublico || this.nuevoProducto.precioUnitario),
       precioMayoreo: this.nuevoProducto.precioMayoreo ? Number(this.nuevoProducto.precioMayoreo) : undefined,
+      descuento: Number(this.nuevoProducto.descuento || 0),
+      minimoMayoreo: Number(this.nuevoProducto.minimoMayoreo || 0),
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       claveProdServ: this.nuevoProducto.claveProdServ,
       claveUnidad: this.nuevoProducto.claveUnidad,
@@ -438,6 +440,8 @@ export class ProductosComponent implements OnInit {
       codigoBarras: this.nuevoProducto.codigoBarras || undefined,
       precioUnitario: Number(this.nuevoProducto.precioUnitario || 0),
       precioMayoreo: this.nuevoProducto.precioMayoreo ? Number(this.nuevoProducto.precioMayoreo) : undefined,
+      descuento: Number(this.nuevoProducto.descuento || 0),
+      minimoMayoreo: Number(this.nuevoProducto.minimoMayoreo || 0),
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       idCategoria: this.nuevoProducto.idCategoria ? Number(this.nuevoProducto.idCategoria) : undefined,
       claveProdServ: this.nuevoProducto.claveProdServ,

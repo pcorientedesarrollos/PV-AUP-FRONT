@@ -151,11 +151,15 @@ export class TicketPrinterService {
       detalles.forEach((d: any) => {
         const nombre = d.productoNombre || d.producto?.nombre || d.nombre || 'Producto';
         const importe = d.importe || d.subtotal || 0;
+        const descuento = d.descuento || 0;
         html += `
             <tr>
-              <td class="text-left">${d.cantidad}</td>
-              <td class="text-left">${nombre}</td>
-              <td class="text-right">$${Number(importe).toFixed(2)}</td>
+              <td class="text-left" style="vertical-align: top;">${d.cantidad}</td>
+              <td class="text-left">
+                ${nombre}
+                ${descuento > 0 ? `<br><small><i>- Desc: $${Number(descuento).toFixed(2)}</i></small>` : ''}
+              </td>
+              <td class="text-right" style="vertical-align: top;">$${Number(importe).toFixed(2)}</td>
             </tr>
         `;
       });
@@ -181,11 +185,14 @@ export class TicketPrinterService {
             }
             
             let res = '';
-            if (subtotal > 0 && iva > 0) {
+            if (subtotal > 0) {
               res += `SUBTOTAL: $${subtotal.toFixed(2)}<br>`;
+            }
+            if (iva > 0) {
               res += `IVA: $${iva.toFixed(2)}<br>`;
-            } else if (subtotal > 0 && iva <= 0 && total !== subtotal) {
-              res += `SUBTOTAL: $${subtotal.toFixed(2)}<br>`;
+            }
+            if (venta.descuento > 0) {
+              res += `DESCUENTOS: -$${Number(venta.descuento).toFixed(2)}<br>`;
             }
             return res;
           })()}

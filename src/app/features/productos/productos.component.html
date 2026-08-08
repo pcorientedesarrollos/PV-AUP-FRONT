@@ -216,8 +216,15 @@
                       'bg-emerald-100 text-emerald-700': getStockClass(prod) === 'stock-ok'
                     }">{{ getStockLabel(prod) }}</span>
                   </td>
-                  <td class="py-3 px-4 text-right font-black text-emerald-600">
-                    {{ prod.precioUnitario | currency }}
+                  <td class="py-3 px-4 text-right">
+                    @if ((prod.descuento || 0) > 0) {
+                      <div class="flex flex-col items-end leading-tight">
+                        <span class="text-[10px] text-slate-400 line-through font-bold">{{ prod.precioUnitario | currency }}</span>
+                        <span class="font-black text-rose-500">{{ (prod.precioUnitario - (prod.descuento || 0)) | currency }}</span>
+                      </div>
+                    } @else {
+                      <span class="font-black text-emerald-600">{{ prod.precioUnitario | currency }}</span>
+                    }
                   </td>
                   <!-- Historial de compras -->
                   <td class="py-3 px-4 text-center">
@@ -298,7 +305,14 @@
                 <div class="p-2.5 flex flex-col flex-1">
                   <p class="text-[11px] font-bold text-slate-800 leading-tight line-clamp-2 flex-1">{{ prod.nombre }}</p>
                   <div class="mt-2 flex items-center justify-between">
-                    <span class="text-emerald-600 font-black text-xs">{{ prod.precioUnitario | currency }}</span>
+                    <div class="flex flex-col items-start leading-tight">
+                      @if ((prod.descuento || 0) > 0) {
+                        <span class="text-[9px] text-slate-400 line-through font-bold">{{ prod.precioUnitario | currency }}</span>
+                        <span class="text-rose-500 font-black text-xs">{{ (prod.precioUnitario - (prod.descuento || 0)) | currency }}</span>
+                      } @else {
+                        <span class="text-emerald-600 font-black text-xs">{{ prod.precioUnitario | currency }}</span>
+                      }
+                    </div>
                     <button (click)="abrirModal(prod)"
                             class="w-6 h-6 rounded bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors flex items-center justify-center">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -640,12 +654,21 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
             <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio de Venta</label>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Venta</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
                 <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioUnitario"
+                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1" title="Descuento automático en POS">Descuento ($)</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
+                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.descuento"
+                       placeholder="0.00"
                        class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
               </div>
             </div>
@@ -657,6 +680,12 @@
                        placeholder="Opcional"
                        class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
               </div>
+            </div>
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1" title="Cantidad para auto-mayoreo">Mín. Mayoreo</label>
+              <input type="number" min="0" [(ngModel)]="nuevoProducto.minimoMayoreo"
+                     placeholder="Ej. 3"
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
             </div>
             <div>
               <label class="block font-semibold text-slate-700 text-sm mb-1">Stock Mínimo</label>

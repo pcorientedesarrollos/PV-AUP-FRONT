@@ -567,6 +567,16 @@ export class HistorialComponent implements OnInit {
     this.exportService.exportToExcel(data, 'Historial_Ventas');
   }
 
+  descargarPdf(url: string) {
+    if(url) {
+      if (url.startsWith('/pos/facturas')) {
+        window.open(`${environment.apiUrl}${url}`, '_blank');
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+  }
+
   exportarPDF() {
     const headers = ['ID', 'Fecha', 'Total', 'Pago', 'Estatus', 'Cajero', 'Cliente'];
     const data = this.ventasFiltradas().map((v: any) => [

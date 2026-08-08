@@ -154,6 +154,28 @@ export class FacturasComponent implements OnInit {
     }
   }
 
+  cancelarFactura(idFactura: number) {
+    const motivo = prompt('Ingresa el motivo de cancelación (01, 02, 03, 04):', '02');
+    if (!motivo) return;
+    
+    let payload: any = { motivo };
+    if (motivo === '01') {
+      const uuidSustitucion = prompt('Ingresa el UUID de sustitución:');
+      if (!uuidSustitucion) return;
+      payload.uuidSustitucion = uuidSustitucion;
+    }
+    
+    this.http.post(`${environment.apiUrl}/pos/facturas/${idFactura}/cancelar`, payload).subscribe({
+      next: () => {
+        alert('Factura cancelada con éxito');
+        this.cargarFacturas();
+      },
+      error: (err) => {
+        alert('Error al cancelar factura: ' + (err.error?.message || err.message));
+      }
+    });
+  }
+
   cargarFacturas() {
     this.cargando.set(true);
     this.http.get<any[]>(`${environment.apiUrl}/pos/facturas`, {
@@ -298,35 +320,45 @@ export class FacturasComponent implements OnInit {
   }
 
   descargarPdf(url: string) {
-    if(url) window.open(url, '_blank');
+    if(url) {
+      if (url.startsWith('/pos/facturas')) {
+        window.open(`${environment.apiUrl}${url}`, '_blank');
+      } else {
+        window.open(url, '_blank');
+      }
+    }
+  }
+
+  descargarPaqueteCancelacion(idFactura: number) {
+    if (idFactura) {
+      window.open(`${environment.apiUrl}/pos/facturas/${idFactura}/paquete-cancelacion`, '_blank');
+    }
   }
 
   descargarXml(url: string) {
     if(url) {
+      if (url.startsWith('/pos/facturas')) {
+        window.open(`${environment.apiUrl}${url}`, '_blank');
+        return;
+      }
+
       const encodedUrl = encodeURIComponent(url);
       
       this.http.get(`${environment.apiUrl}/pos/proxy/descargar-xml?url=${encodedUrl}`, {
-        responseType: 'blob' // Lo obtenemos como archivo binario (blob)
+        responseType: 'blob'
       }).subscribe({
         next: (blob) => {
-          // Creamos una URL temporal para el blob
           const downloadUrl = window.URL.createObjectURL(blob);
-          
-          // Creamos un enlace invisible y forzamos el clic
-          const link = document.createElement('a');
-          link.href = downloadUrl;
-          link.download = 'factura.xml'; // Nombre sugerido para la descarga
-          
-          document.body.appendChild(link);
-          link.click();
-          
-          // Limpiamos el DOM y la memoria
-          document.body.removeChild(link);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = 'factura.xml';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
           window.URL.revokeObjectURL(downloadUrl);
         },
         error: (err) => {
-          console.error('Error al descargar el XML:', err);
-          alert('Hubo un error al intentar descargar el archivo XML.');
+          alert('Error al descargar el XML. El servidor no permite la descarga directa o el enlace ya no es válido.');
         }
       });
     }

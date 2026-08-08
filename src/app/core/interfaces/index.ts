@@ -17,6 +17,8 @@ export interface Producto {
   precioUnitario: number;
   precioPublico?: number;
   precioMayoreo?: number;
+  descuento?: number;
+  minimoMayoreo?: number;
   stockActual?: number;
   stockMinimo?: number;
   imagenUrl?: string;
@@ -33,6 +35,7 @@ export interface ItemCarrito {
   producto: Producto;
   cantidad: number;
   subtotal: number;
+  descuento?: number;
 }
 
 // Cliente (PosCliente)
@@ -74,6 +77,7 @@ export interface ProductoVenta {
   idProducto: number;
   cantidad: number;
   precioUnitario: number;
+  descuento?: number;
 }
 
 // Payload para alta rápida de cliente

@@ -152,32 +152,46 @@
                 <td class="py-3 px-4 text-slate-600 whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.detalles?.length || 0 }} ítems</td>
                 <td class="py-3 px-4 font-bold text-slate-900 text-right whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.total | currency }}</td>
                 <td class="py-3 px-4 text-center whitespace-nowrap">
-                  <div class="flex items-center justify-center gap-2">
-                    <button (click)="verDetalles(venta)" class="text-slate-400 hover:text-amber-600 transition-colors p-1" title="Ver Ticket">
-                      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                      </svg>
+                  <div class="relative group inline-block text-left">
+                    <button class="p-2 text-slate-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </button>
-                    @if (venta.tipo !== 'C') {
-                      @if (venta.tieneFactura && venta.facturaPdf) {
-                        <a [href]="venta.facturaPdf" target="_blank" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Descargar PDF Factura">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                        </a>
-                      } @else {
-                        <button (click)="abrirModalFactura(venta)" class="text-slate-400 hover:text-indigo-600 transition-colors p-1" title="Facturar Ticket">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <div class="absolute right-10 top-0 w-48 bg-white border border-slate-200 divide-y divide-slate-100 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                      <div class="py-1">
+                        <button (click)="verDetalles(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-amber-600 transition-colors">
+                          <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                          </svg>
+                          Ver Ticket
                         </button>
+                        @if (venta.tipo !== 'C') {
+                          @if (venta.tieneFactura && venta.facturaPdf) {
+                            <button (click)="descargarPdf(venta.facturaPdf)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-500 transition-colors">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                              Descargar Factura
+                            </button>
+                          } @else {
+                            <button (click)="abrirModalFactura(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                              Facturar Ticket
+                            </button>
+                          }
+                        }
+                      </div>
+                      @if (venta.tipo !== 'C' && venta.estatus !== 'Devuelta' && venta.estatus !== 'Cancelada' && isAdmin()) {
+                        <div class="py-1">
+                          <button (click)="abrirModalDevolucion(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-500 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                            Devolución
+                          </button>
+                          <button (click)="confirmarCancelarVenta(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Anular Venta
+                          </button>
+                        </div>
                       }
-                    }
-                    @if (venta.tipo !== 'C' && isAdmin()) {
-                      <button (click)="abrirModalDevolucion(venta)" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Devolución">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                      </button>
-                      <button (click)="confirmarCancelarVenta(venta)" class="text-slate-400 hover:text-red-600 transition-colors p-1" title="Anular Toda la Venta">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      </button>
-                    }
+                    </div>
                   </div>
                 </td>
               </tr>
@@ -239,15 +253,33 @@
                 <div class="flex-1">
                   <p class="font-medium text-slate-800 text-sm">{{ item.cantidad }}x {{ item.concepto }}</p>
                   <p class="text-xs text-slate-500">@ {{ item.precio | currency }} c/u</p>
+                  @if ((item.descuento || 0) > 0) {
+                    <p class="text-[10px] text-rose-500 font-bold mt-0.5">- Desc: {{ item.descuento | currency }}</p>
+                  }
                 </div>
-                <p class="font-bold text-slate-800 text-sm">{{ item.importe | currency }}</p>
+                <p class="font-bold text-slate-800 text-sm mt-1">{{ item.importe | currency }}</p>
               </div>
             }
           </div>
 
           <div class="border-t border-dashed border-slate-300 my-4"></div>
 
-          <div class="flex justify-between items-center">
+          <div class="flex justify-between items-center text-sm text-slate-500 mb-1">
+            <span>Subtotal</span>
+            <span>{{ (ventaSeleccionada().subtotal || (ventaSeleccionada().total / 1.16)) | currency }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm text-slate-500 mb-1">
+            <span>IVA (16%)</span>
+            <span>{{ (ventaSeleccionada().iva || (ventaSeleccionada().total - (ventaSeleccionada().total / 1.16))) | currency }}</span>
+          </div>
+          @if ((ventaSeleccionada().descuento || 0) > 0) {
+            <div class="flex justify-between items-center text-sm text-rose-500 font-bold mb-3">
+              <span>Descuentos Extras</span>
+              <span>-{{ ventaSeleccionada().descuento | currency }}</span>
+            </div>
+          }
+
+          <div class="flex justify-between items-center pt-2 border-t border-slate-100">
             <p class="text-base font-bold text-slate-800 uppercase">Total</p>
             <p class="text-2xl font-bold text-emerald-600">{{ ventaSeleccionada().total | currency }}</p>
           </div>
@@ -394,33 +426,38 @@
               </select>
             </div>
 
-            @if (datosFactura.rfc && datosFactura.cp && datosFactura.regimen) {
-              <div class="bg-slate-50 p-3 rounded-md border border-slate-200">
-                <p class="text-sm font-semibold text-slate-800">{{ datosFactura.razonSocial }}</p>
-                <p class="text-xs text-slate-500">RFC: {{ datosFactura.rfc }} | CP: {{ datosFactura.cp }}</p>
+            <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-800">Autocompletar con Cédula Fiscal (PDF)</span>
+              <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf" class="hidden">
+              <button (click)="fileInput.click()" [disabled]="subiendoCsf()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded flex items-center gap-2 transition-colors disabled:opacity-50">
+                @if (subiendoCsf()) {
+                  <svg class="animate-spin h-3 w-3 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                  Procesando...
+                } @else {
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                  Subir PDF
+                }
+              </button>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-3">
+              <div class="col-span-2">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Razón Social</label>
+                <input type="text" [(ngModel)]="datosFactura.razonSocial" placeholder="Ej. EMPRESA SA DE CV" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm uppercase focus:ring-2 focus:ring-indigo-500 outline-none">
               </div>
-            } @else {
-              <div class="bg-red-50 p-3 rounded-md border border-red-200">
-                <p class="text-xs text-red-600 font-medium mb-2">⚠️ Faltan datos fiscales (RFC, CP o Régimen).</p>
-                <p class="text-xs text-slate-600 mb-2">Puedes subir la Constancia de Situación Fiscal (PDF) para llenarlos automáticamente:</p>
-                <div class="flex items-center gap-2">
-                  <input type="file" #fileInput (change)="onFileSelected($event)" accept="application/pdf" class="hidden">
-                  <button (click)="fileInput.click()" [disabled]="subiendoCsf()"
-                          class="bg-white border border-slate-300 text-slate-700 hover:bg-slate-50/80 transition-colors px-3 py-1.5 rounded text-xs font-medium transition-colors flex items-center gap-2">
-                    @if (subiendoCsf()) {
-                      <svg class="animate-spin h-3 w-3 text-indigo-600" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span>Procesando...</span>
-                    } @else {
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                      <span>Subir Constancia (PDF)</span>
-                    }
-                  </button>
-                </div>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">RFC</label>
+                <input type="text" [(ngModel)]="datosFactura.rfc" placeholder="XAXX010101000" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm uppercase focus:ring-2 focus:ring-indigo-500 outline-none">
               </div>
-            }
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Código Postal</label>
+                <input type="text" [(ngModel)]="datosFactura.cp" placeholder="00000" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              </div>
+              <div class="col-span-2">
+                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Régimen Fiscal (Clave ej. 601, 612)</label>
+                <input type="text" [(ngModel)]="datosFactura.regimen" placeholder="Ej. 601" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              </div>
+            </div>
 
           <div>
             <label class="block font-semibold text-slate-700 text-sm mb-1">Uso de CFDI</label>
@@ -433,9 +470,45 @@
           </div>
 
           
-          <div class="flex justify-between items-center border-t border-slate-200 pt-3 mt-2">
-            <span class="text-sm font-bold text-slate-600">Total a facturar:</span>
-            <span class="text-lg font-bold text-emerald-600">{{ ventaAFacturar().total | currency }}</span>
+          <div class="mt-2 border border-slate-200 rounded-lg overflow-hidden">
+            <div class="bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 border-b border-slate-200">
+              Detalle de Venta
+            </div>
+            <div class="max-h-32 overflow-y-auto bg-white p-2 text-xs divide-y divide-slate-100 custom-scrollbar">
+              @for (item of ventaAFacturar().detalles; track item.idDetalle) {
+                <div class="py-1.5 flex justify-between items-start gap-4">
+                  <div class="flex-1">
+                    <span class="font-semibold text-slate-700">{{ item.producto?.nombre || item.productoSnapshot?.nombre }}</span>
+                    <span class="text-slate-500 block">{{ item.cantidad }} x {{ item.precio | currency }}</span>
+                    @if ((item.descuento || 0) > 0) {
+                      <span class="text-rose-500 text-[10px] font-bold block mt-0.5">- Desc: {{ item.descuento | currency }}</span>
+                    }
+                  </div>
+                  <span class="font-bold text-emerald-600 mt-1">{{ item.subtotal | currency }}</span>
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="space-y-1 border-t border-slate-200 pt-3 mt-2">
+            <div class="flex justify-between items-center text-xs text-slate-500">
+              <span>Subtotal:</span>
+              <span class="font-semibold">{{ (ventaAFacturar().subtotal || (ventaAFacturar().total / 1.16)) | currency }}</span>
+            </div>
+            <div class="flex justify-between items-center text-xs text-slate-500">
+              <span>IVA (16%):</span>
+              <span class="font-semibold">{{ (ventaAFacturar().iva || (ventaAFacturar().total - (ventaAFacturar().total / 1.16))) | currency }}</span>
+            </div>
+            @if ((ventaAFacturar().descuento || 0) > 0) {
+              <div class="flex justify-between items-center text-xs text-rose-500 font-bold">
+                <span>Descuentos Extras:</span>
+                <span>-{{ ventaAFacturar().descuento | currency }}</span>
+              </div>
+            }
+            <div class="flex justify-between items-center pt-1 mt-1 border-t border-slate-100">
+              <span class="text-sm font-bold text-slate-600">Total a facturar:</span>
+              <span class="text-lg font-bold text-emerald-600">{{ ventaAFacturar().total | currency }}</span>
+            </div>
           </div>
         </div>
 
