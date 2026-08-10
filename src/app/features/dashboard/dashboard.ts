@@ -1,4 +1,4 @@
-﻿import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Component, HostListener, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -18,6 +18,7 @@ import { ConfiguracionTicketComponent } from '../configuracion-ticket/configurac
   standalone: true,
   imports: [CommonModule, RouterModule, ConfiguracionTicketComponent, BaseChartDirective],
   templateUrl: './dashboard.html',
+  styleUrl: './dashboard.css',
 })
 export class DashboardComponent implements OnInit {
   menuAbierto = signal(typeof window !== 'undefined' && window.innerWidth >= 1024);
@@ -30,7 +31,7 @@ export class DashboardComponent implements OnInit {
   public barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
-      { data: [], label: 'Ventas ($)', backgroundColor: 'rgba(245, 158, 11, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(245, 158, 11, 1)' }
+      { data: [], label: 'Ventas ($)', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' }
     ]
   };
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
@@ -117,7 +118,7 @@ export class DashboardComponent implements OnInit {
           this.barChartData = {
             labels: data.graficaDias.map((d: any) => d.fecha),
             datasets: [
-              { data: data.graficaDias.map((d: any) => d.total), label: 'Ventas', backgroundColor: 'rgba(245, 158, 11, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(245, 158, 11, 1)' }
+              { data: data.graficaDias.map((d: any) => d.total), label: 'Ventas', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' }
             ]
           };
         }

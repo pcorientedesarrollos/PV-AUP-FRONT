@@ -1,11 +1,11 @@
-<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
-  
+<div class="bg-gray-50 min-h-screen p-6 flex flex-col mx-auto w-full">
   <!-- Encabezado y Acciones -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+      <h1 class="page-title">
         Historial de Ventas
       </h1>
+      <p class="page-subtitle">Revisión de tickets y facturación</p>
 <div class="mt-2 flex gap-2 no-print">
       <div class="flex items-center gap-2">
         <button (click)="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
@@ -18,28 +18,27 @@
         </button>
       </div>
 </div>
-
     </div>
     
     <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
       @if (isSoporte()) {
-        <button (click)="imprimirTodosLosTickets()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors flex items-center gap-2">
+        <button (click)="imprimirTodosLosTickets()" class="btn-submit bg-indigo-600 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
           <span>Imprimir Todos</span>
         </button>
       }
       <!-- Exportar CSV -->
       @if (isAdmin()) {
-        <button (click)="exportarCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors flex items-center gap-2">
+        <button (click)="exportarCSV()" class="btn-submit bg-emerald-600 flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
           <span>Exportar CSV</span>
         </button>
       }
-      <button (click)="irAFacturas()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors flex items-center gap-2">
+      <button (click)="irAFacturas()" class="btn-submit bg-indigo-600 flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
         <span>Facturar</span>
       </button>
-      <button (click)="cargarHistorial()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors flex items-center gap-2">
+      <button (click)="cargarHistorial()" class="btn-submit flex items-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
         <span>Actualizar</span>
       </button>
@@ -48,117 +47,129 @@
 
   <!-- Tarjetas de resumen -->
   <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-    <article class="bg-white rounded-lg shadow p-4 flex flex-col">
-      <span class="text-sm font-medium text-slate-500">Total Ventas</span>
-      <span class="text-3xl font-bold text-slate-800 mt-1">{{ ventasFiltradas().length }}</span>
+    <article class="metric-card">
+      <div class="flex flex-col">
+        <span class="text-sm font-medium text-gray-500">Total Ventas</span>
+        <span class="text-3xl font-bold text-gray-800 mt-1">{{ ventasFiltradas().length }}</span>
+      </div>
     </article>
-    <article class="bg-white rounded-lg shadow p-4 flex flex-col">
-      <span class="text-sm font-medium text-slate-500">Completadas</span>
-      <span class="text-3xl font-bold text-emerald-600 mt-1">{{ ventasCompletadas() }}</span>
+    <article class="metric-card">
+      <div class="flex flex-col">
+        <span class="text-sm font-medium text-gray-500">Completadas</span>
+        <span class="text-3xl font-bold text-green-600 mt-1">{{ ventasCompletadas() }}</span>
+      </div>
     </article>
-    <article class="bg-white rounded-lg shadow p-4 flex flex-col hidden md:flex">
-      <span class="text-sm font-medium text-slate-500">Canceladas</span>
-      <span class="text-3xl font-bold text-rose-600 mt-1">{{ ventasCanceladas() }}</span>
+    <article class="metric-card hidden md:flex">
+      <div class="flex flex-col">
+        <span class="text-sm font-medium text-gray-500">Canceladas</span>
+        <span class="text-3xl font-bold text-red-600 mt-1">{{ ventasCanceladas() }}</span>
+      </div>
     </article>
   </div>
 
   <!-- Contenido Principal: Card -->
-  <article class="flex-1 bg-white rounded-lg shadow flex flex-col overflow-hidden border border-slate-200">
+  <article class="flex-1 card-base flex flex-col overflow-hidden">
     
     <!-- Barra de Filtros -->
-    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between bg-slate-50">
-      <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+    <div class="table-filters">
+      <div class="filters-row">
         <!-- Buscador general -->
-        <div class="relative w-full md:w-48 flex items-center gap-2 bg-white border border-slate-300 rounded px-3 py-1.5 focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-amber-500 transition-shadow">
-          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar folio, cliente..." class="bg-transparent border-none text-sm text-slate-700 focus:outline-none w-full">
-          <svg class="w-4 h-4 text-slate-400 absolute right-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        <div class="filter-control">
+          <label class="filter-label">Buscar</label>
+          <input type="text" [(ngModel)]="filtroBusqueda" placeholder="Buscar folio, cliente..." class="filter-input w-full">
         </div>
         
-        <div class="relative w-full md:w-48 flex items-center gap-2 bg-white border border-slate-300 rounded px-3 py-1.5 focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-amber-500 transition-shadow">
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider absolute -top-2 left-2 bg-white px-1">Desde</span>
-          <input type="date" [(ngModel)]="fechaInicio" (change)="cargarHistorial()" class="bg-transparent border-none text-sm text-slate-700 focus:outline-none w-full cursor-pointer mt-1">
+        <div class="filter-control">
+          <label class="filter-label">Desde</label>
+          <input type="date" [(ngModel)]="fechaInicio" (change)="cargarHistorial()" class="filter-input w-full cursor-pointer">
         </div>
-        <div class="relative w-full md:w-48 flex items-center gap-2 bg-white border border-slate-300 rounded px-3 py-1.5 focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-amber-500 transition-shadow">
-          <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider absolute -top-2 left-2 bg-white px-1">Hasta</span>
-          <input type="date" [(ngModel)]="fechaFin" (change)="cargarHistorial()" class="bg-transparent border-none text-sm text-slate-700 focus:outline-none w-full cursor-pointer mt-1">
-        </div>
-      </div>
-      
-      <div class="flex items-center gap-2 w-full md:w-auto mt-3 md:mt-0">
-        <select [(ngModel)]="filtroCliente" class="bg-white min-w-[150px] rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
-          <option value="todos">Todos los Clientes</option>
-          @for (c of clientesUnicos(); track c) {
-            <option [value]="c">{{ c }}</option>
-          }
-        </select>
         
-        @if (isAdmin()) {
-          <select [(ngModel)]="filtroUsuario" class="bg-white min-w-[150px] rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
-            <option value="todos">Todos los Vendedores</option>
-            @for (u of usuariosUnicos(); track u) {
-              <option [value]="u || 'Sistema'">{{ u || 'Sistema' }}</option>
+        <div class="filter-control">
+          <label class="filter-label">Hasta</label>
+          <input type="date" [(ngModel)]="fechaFin" (change)="cargarHistorial()" class="filter-input w-full cursor-pointer">
+        </div>
+        
+        <div class="filter-control">
+          <label class="filter-label">Cliente</label>
+          <select [(ngModel)]="filtroCliente" class="filter-select w-full">
+            <option value="todos">Todos los Clientes</option>
+            @for (c of clientesUnicos(); track c) {
+              <option [value]="c">{{ c }}</option>
             }
           </select>
+        </div>
+
+        @if (isAdmin()) {
+          <div class="filter-control">
+            <label class="filter-label">Vendedor</label>
+            <select [(ngModel)]="filtroUsuario" class="filter-select w-full">
+              <option value="todos">Todos los Vendedores</option>
+              @for (u of usuariosUnicos(); track u) {
+                <option [value]="u || 'Sistema'">{{ u || 'Sistema' }}</option>
+              }
+            </select>
+          </div>
         }
       </div>
     </div>
 
     <!-- Tabla -->
-    <div class="flex-1 overflow-auto bg-white">
+    <div class="honey-table-container flex-1">
+      <div class="table-wrapper">
       @if (cargando()) {
-        <div class="flex justify-center items-center h-full">
-          <div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div>
+        <div class="flex justify-center items-center h-full py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-amber-500"></div>
         </div>
       } @else {
-        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
+        <table class="honey-table table-hoverable table-bordered">
+          <thead class="bg-gray-50">
             <tr>
-              <th class="py-3 px-4 font-semibold w-24 text-center whitespace-nowrap">Folio</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Hora</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Cliente</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
               @if (isAdmin()) {
-                <th class="py-3 px-4 font-semibold whitespace-nowrap">Vendedor</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
               }
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Artículos</th>
-              <th class="py-3 px-4 font-semibold text-right whitespace-nowrap">Total</th>
-              <th class="py-3 px-4 font-semibold text-center w-24 whitespace-nowrap">Acciones</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Artículos</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Total</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-center actions-column">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
+          <tbody class="bg-white divide-y divide-gray-200">
             @for (venta of ventasPaginadas(); track venta.idCajaChica) {
-              <tr class="hover:bg-slate-50/80 transition-colors transition-colors group">
-                <td class="py-3 px-4 text-center text-slate-500 font-medium whitespace-nowrap">
+              <tr class="transition-colors group">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                   <span [ngClass]="{'line-through text-red-400': venta.tipo === 'C'}">SRV-{{ venta.idCajaChica }}</span>
                   @if (venta.tipo === 'C') {
-                    <span class="ml-2 inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Anulado</span>
+                    <span class="ml-2 badge-danger">Anulado</span>
                   }
                   @if (venta.estatus === 'Devuelta') {
-                    <span class="ml-2 inline-flex items-center rounded-md bg-red-50 px-2 py-1 text-xs font-medium text-red-700 ring-1 ring-inset ring-red-600/10">Devuelta</span>
+                    <span class="ml-2 badge-danger">Devuelta</span>
                   }
                   @if (venta.estatus === 'Dev. Parcial') {
-                    <span class="ml-2 inline-flex items-center rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/10">Dev. Parcial</span>
+                    <span class="ml-2 badge-warning">Dev. Parcial</span>
                   }
                 </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.hora }}</td>
-                <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal break-words" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.nombre }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.hora }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium break-words" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.nombre }}</td>
                 @if (isAdmin()) {
-                  <td class="py-3 px-4 text-slate-600 whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">
-                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-bold bg-gray-100 text-gray-700 border border-gray-200">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                       {{ venta.usuarioNombre || 'No registrado' }}
                     </span>
                   </td>
                 }
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.detalles?.length || 0 }} ítems</td>
-                <td class="py-3 px-4 font-bold text-slate-900 text-right whitespace-nowrap" [ngClass]="{'line-through text-slate-400': venta.tipo === 'C'}">{{ venta.total | currency }}</td>
-                <td class="py-3 px-4 text-center whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.detalles?.length || 0 }} ítems</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold text-right" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.total | currency }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                   <div class="relative group inline-block text-left">
-                    <button class="p-2 text-slate-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
+                    <button class="p-2 text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </button>
-                    <div class="absolute right-10 top-0 w-48 bg-white border border-slate-200 divide-y divide-slate-100 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <div class="absolute right-10 top-0 w-48 bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
                       <div class="py-1">
-                        <button (click)="verDetalles(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-amber-600 transition-colors">
+                        <button (click)="verDetalles(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-amber-600 transition-colors">
                           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
                             <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
@@ -167,12 +178,12 @@
                         </button>
                         @if (venta.tipo !== 'C') {
                           @if (venta.tieneFactura && venta.facturaPdf) {
-                            <button (click)="descargarPdf(venta.facturaPdf)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-500 transition-colors">
+                            <button (click)="descargarPdf(venta.facturaPdf)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-colors">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                               Descargar Factura
                             </button>
                           } @else {
-                            <button (click)="abrirModalFactura(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-indigo-600 transition-colors">
+                            <button (click)="abrirModalFactura(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-indigo-600 transition-colors">
                               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                               Facturar Ticket
                             </button>
@@ -181,11 +192,11 @@
                       </div>
                       @if (venta.tipo !== 'C' && venta.estatus !== 'Devuelta' && venta.estatus !== 'Cancelada' && isAdmin()) {
                         <div class="py-1">
-                          <button (click)="abrirModalDevolucion(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-500 transition-colors">
+                          <button (click)="abrirModalDevolucion(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-500 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                             Devolución
                           </button>
-                          <button (click)="confirmarCancelarVenta(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-red-600 transition-colors">
+                          <button (click)="confirmarCancelarVenta(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Anular Venta
                           </button>
@@ -197,9 +208,9 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="py-12 text-center text-slate-500">
+                <td colspan="6" class="empty-state">
                   <div class="flex flex-col items-center justify-center">
-                    <svg class="w-12 h-12 text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <svg class="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                     <p>No hay ventas registradas en esta fecha.</p>
                   </div>
                 </td>
@@ -208,86 +219,89 @@
           </tbody>
         </table>
       }
+      </div>
     </div>
     <!-- Paginación -->
     @if (totalPaginas() > 1) {
-      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="ventasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+      <div class="pagination-container">
+        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="ventasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+      </div>
     }
   </article>
 
   <!-- Modal Ver Ticket -->
   @if (ventaSeleccionada()) {
-    <div class="modal-backdrop">
-      <div class="modal-panel flex flex-col max-h-full slideInDown">
+    <div class="modal-overlay">
+      <div class="modal-container">
         <!-- Ticket Header -->
-        <div class="p-6 text-center border-b border-slate-200 bg-slate-50 relative">
-          <button (click)="cerrarModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
-          <h2 class="text-xl font-bold text-slate-900 tracking-wider">APICULTORES UNIDOS</h2>
-          <p class="text-slate-500 font-medium text-sm mt-1">Ticket #{{ ventaSeleccionada().idCajaChica }}</p>
+        <div class="modal-header relative">
+          <button (click)="cerrarModal()" class="close-button absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">✕</button>
+          <h2 class="modal-title tracking-wider">APICULTORES UNIDOS</h2>
+          <p class="text-gray-500 font-medium text-sm mt-1">Ticket #{{ ventaSeleccionada().idCajaChica }}</p>
           @if (ventaSeleccionada().tipo === 'C') {
             <p class="text-red-500 font-bold mt-1 text-sm uppercase">¡Venta Cancelada!</p>
           }
-          <p class="text-slate-400 text-xs mt-1">{{ ventaSeleccionada().fecha | date:'dd/MM/yyyy' }} {{ ventaSeleccionada().hora }}</p>
+          <p class="text-gray-400 text-xs mt-1">{{ ventaSeleccionada().fecha | date:'dd/MM/yyyy' }} {{ ventaSeleccionada().hora }}</p>
         </div>
 
         <!-- Ticket Body -->
-        <div class="p-6 overflow-y-auto flex-1 custom-scrollbar">
+        <div class="modal-body">
           <div class="mb-4 flex justify-between">
             <div>
-              <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Cliente</p>
-              <p class="font-medium text-slate-800">{{ ventaSeleccionada().nombre }}</p>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Cliente</p>
+              <p class="font-medium text-gray-800">{{ ventaSeleccionada().nombre }}</p>
             </div>
             @if (isAdmin()) {
               <div class="text-right">
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Le Atendió</p>
-                <p class="font-medium text-slate-800">{{ ventaSeleccionada().usuarioNombre || 'Sistema' }}</p>
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Le Atendió</p>
+                <p class="font-medium text-gray-800">{{ ventaSeleccionada().usuarioNombre || 'Sistema' }}</p>
               </div>
             }
           </div>
 
-          <div class="border-t border-dashed border-slate-300 my-4"></div>
+          <div class="border-t border-dashed border-gray-300 my-4"></div>
           
           <div class="space-y-3">
             @for (item of ventaSeleccionada().detalles; track item.idDetalle) {
               <div class="flex justify-between items-start gap-4">
                 <div class="flex-1">
-                  <p class="font-medium text-slate-800 text-sm">{{ item.cantidad }}x {{ item.concepto }}</p>
-                  <p class="text-xs text-slate-500">@ {{ item.precio | currency }} c/u</p>
+                  <p class="font-medium text-gray-800 text-sm">{{ item.cantidad }}x {{ item.concepto }}</p>
+                  <p class="text-xs text-gray-500">@ {{ item.precio | currency }} c/u</p>
                   @if ((item.descuento || 0) > 0) {
-                    <p class="text-[10px] text-rose-500 font-bold mt-0.5">- Desc: {{ item.descuento | currency }}</p>
+                    <p class="text-[10px] text-red-500 font-bold mt-0.5">- Desc: {{ item.descuento | currency }}</p>
                   }
                 </div>
-                <p class="font-bold text-slate-800 text-sm mt-1">{{ item.importe | currency }}</p>
+                <p class="font-bold text-gray-800 text-sm mt-1">{{ item.importe | currency }}</p>
               </div>
             }
           </div>
 
-          <div class="border-t border-dashed border-slate-300 my-4"></div>
+          <div class="border-t border-dashed border-gray-300 my-4"></div>
 
-          <div class="flex justify-between items-center text-sm text-slate-500 mb-1">
+          <div class="flex justify-between items-center text-sm text-gray-500 mb-1">
             <span>Subtotal</span>
             <span>{{ (ventaSeleccionada().subtotal || (ventaSeleccionada().total / 1.16)) | currency }}</span>
           </div>
-          <div class="flex justify-between items-center text-sm text-slate-500 mb-1">
+          <div class="flex justify-between items-center text-sm text-gray-500 mb-1">
             <span>IVA (16%)</span>
             <span>{{ (ventaSeleccionada().iva || (ventaSeleccionada().total - (ventaSeleccionada().total / 1.16))) | currency }}</span>
           </div>
           @if ((ventaSeleccionada().descuento || 0) > 0) {
-            <div class="flex justify-between items-center text-sm text-rose-500 font-bold mb-3">
+            <div class="flex justify-between items-center text-sm text-red-500 font-bold mb-3">
               <span>Descuentos Extras</span>
               <span>-{{ ventaSeleccionada().descuento | currency }}</span>
             </div>
           }
 
-          <div class="flex justify-between items-center pt-2 border-t border-slate-100">
-            <p class="text-base font-bold text-slate-800 uppercase">Total</p>
-            <p class="text-2xl font-bold text-emerald-600">{{ ventaSeleccionada().total | currency }}</p>
+          <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+            <p class="text-base font-bold text-gray-800 uppercase">Total</p>
+            <p class="text-2xl font-bold text-green-600">{{ ventaSeleccionada().total | currency }}</p>
           </div>
         </div>
 
         <!-- Ticket Footer -->
         <div class="modal-footer justify-center">
-          <button (click)="imprimirTicket()" class="btn-primary flex-1 flex items-center justify-center gap-2">
+          <button (click)="imprimirTicket()" class="btn-submit flex-1 flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             <span>Imprimir</span>
           </button>
@@ -298,31 +312,31 @@
 
   <!-- Modal Confirmación de Cancelación -->
   @if (ventaACancelar()) {
-    <div class="modal-backdrop">
-      <div class="modal-panel modal-panel-sm flex flex-col">
+    <div class="modal-overlay">
+      <div class="modal-container">
         <!-- Header -->
-        <div class="modal-header bg-red-50 border-red-100 justify-start gap-3">
+        <div class="modal-header bg-red-50 border-red-100 justify-start gap-3 flex flex-row items-center">
           <div class="bg-red-100 text-red-600 p-2 rounded-full">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
           </div>
           <div>
-            <h3 class="text-lg font-bold text-red-900">¿Anular Venta?</h3>
+            <h3 class="modal-title text-red-900">¿Anular Venta?</h3>
           </div>
         </div>
 
         <!-- Body -->
-        <div class="modal-body text-slate-600 text-sm">
-          <p>Estás a punto de anular el Ticket <span class="font-bold text-slate-900">#{{ ventaACancelar().idCajaChica }}</span>.</p>
+        <div class="modal-body text-gray-600 text-sm">
+          <p>Estás a punto de anular el Ticket <span class="font-bold text-gray-900">#{{ ventaACancelar().idCajaChica }}</span>.</p>
           <p class="mt-2 text-red-600 font-medium">Esta acción devolverá los artículos al inventario y el dinero se descontará del corte final.</p>
           <p class="mt-2">¿Estás seguro de que deseas continuar?</p>
         </div>
 
         <!-- Footer -->
         <div class="modal-footer">
-          <button (click)="cancelarCancelacion()" class="btn-secondary">
+          <button (click)="cancelarCancelacion()" class="btn-cancel">
             No, mantener venta
           </button>
-          <button (click)="ejecutarCancelacion()" class="btn-danger">
+          <button (click)="ejecutarCancelacion()" class="btn-submit bg-red-600 hover:bg-red-700">
             Sí, Anular
           </button>
         </div>
@@ -332,26 +346,26 @@
 
   <!-- Modal de Alerta de Éxito o Error -->
   @if (alertaMensaje()) {
-    <div class="modal-backdrop">
-      <div class="modal-panel modal-panel-sm flex flex-col text-center">
+    <div class="modal-overlay">
+      <div class="modal-container text-center max-w-sm">
         <div class="modal-body">
           <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4"
-               [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'">
+               [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
             @if (alertaMensaje()?.tipo === 'exito') {
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             } @else {
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             }
           </div>
-          <h3 class="text-lg font-bold text-slate-900 mb-2">
+          <h3 class="modal-title mb-2">
             {{ alertaMensaje()?.tipo === 'exito' ? '¡Hecho!' : 'Ocurrió un Problema' }}
           </h3>
-          <p class="text-sm text-slate-500">
+          <p class="text-sm text-gray-500">
             {{ alertaMensaje()?.texto }}
           </p>
         </div>
         <div class="modal-footer justify-center">
-          <button (click)="cerrarAlerta()" class="w-full mt-4 btn-primary" [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-emerald-600 hover:bg-emerald-700 focus:ring-emerald-500' : 'bg-slate-800 hover:bg-slate-900 focus:ring-slate-500'">
+          <button (click)="cerrarAlerta()" class="btn-submit w-full mt-4" [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'">
             Entendido
           </button>
         </div>
@@ -361,33 +375,33 @@
 
   <!-- Modal Devolución Parcial -->
   @if (ventaADevolverParcial()) {
-    <div class="modal-backdrop">
-      <div class="modal-panel flex flex-col max-h-full max-w-lg w-full slideInDown">
-        <div class="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center relative">
+    <div class="modal-overlay">
+      <div class="modal-container max-w-lg">
+        <div class="modal-header flex justify-between items-center relative">
           <div>
-            <h2 class="text-lg font-bold text-slate-900">Devolución Parcial</h2>
-            <p class="text-xs text-slate-500">Ticket #{{ ventaADevolverParcial().idCajaChica }}</p>
+            <h2 class="modal-title">Devolución Parcial</h2>
+            <p class="text-xs text-gray-500">Ticket #{{ ventaADevolverParcial().idCajaChica }}</p>
           </div>
-          <button (click)="cerrarDevolucionParcial()" class="text-slate-400 hover:text-slate-600 transition-colors p-2">✕</button>
+          <button (click)="cerrarDevolucionParcial()" class="close-button text-gray-400 hover:text-gray-600 transition-colors p-2">✕</button>
         </div>
 
-        <div class="p-4 overflow-y-auto flex-1 custom-scrollbar">
-          <p class="text-sm text-slate-600 mb-4">Indica la cantidad a devolver de cada producto. Los artículos devueltos regresarán al inventario y el dinero se descontará del ticket.</p>
+        <div class="modal-body">
+          <p class="text-sm text-gray-600 mb-4">Indica la cantidad a devolver de cada producto. Los artículos devueltos regresarán al inventario y el dinero se descontará del ticket.</p>
           
           <div class="space-y-3">
             @for (item of ventaADevolverParcial().detalles; track item.idDetalle) {
-              <div class="flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-lg shadow-sm">
+              <div class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div class="flex-1">
-                  <p class="font-medium text-slate-800 text-sm leading-tight">{{ item.concepto }}</p>
-                  <p class="text-xs text-slate-500 mt-0.5">Vendidos: <span class="font-bold text-slate-700">{{ item.cantidad }}</span> &middot; @ {{ item.precio | currency }} c/u</p>
+                  <p class="font-medium text-gray-800 text-sm leading-tight">{{ item.concepto }}</p>
+                  <p class="text-xs text-gray-500 mt-0.5">Vendidos: <span class="font-bold text-gray-700">{{ item.cantidad }}</span> &middot; @ {{ item.precio | currency }} c/u</p>
                 </div>
                 <div class="w-24 text-right">
-                  <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Devolver</label>
+                  <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Devolver</label>
                   <input type="number" 
                          [value]="cantidadesADevolver()[item.idDetalle]"
                          (input)="cambiarCantidadDevolucion(item.idDetalle, $event, item.cantidad)"
                          min="0" [max]="item.cantidad"
-                         class="w-full px-2 py-1.5 text-right border border-slate-300 rounded focus:ring-amber-500 focus:border-amber-500 text-sm font-medium">
+                         class="form-input w-full px-2 py-1.5 text-right text-sm font-medium">
                 </div>
               </div>
             }
@@ -395,8 +409,8 @@
         </div>
 
         <div class="modal-footer flex gap-2">
-          <button (click)="cerrarDevolucionParcial()" class="btn-secondary flex-1">Cancelar</button>
-          <button (click)="ejecutarDevolucionParcial()" class="btn-primary flex-1">Confirmar Devolución</button>
+          <button (click)="cerrarDevolucionParcial()" class="btn-cancel flex-1">Cancelar</button>
+          <button (click)="ejecutarDevolucionParcial()" class="btn-submit flex-1">Confirmar Devolución</button>
         </div>
       </div>
     </div>
@@ -404,21 +418,21 @@
 
   <!-- Modal Facturar -->
   @if (mostrarModalFactura()) {
-    <div class="modal-backdrop">
-      <div class="modal-panel flex flex-col slideInDown">
-        <div class="modal-header">
+    <div class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-header flex items-center justify-between">
           <h2 class="modal-title flex items-center gap-2">
             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Facturar Ticket #{{ ventaAFacturar().idCajaChica }}
           </h2>
-          <button (click)="cerrarModalFactura()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+          <button (click)="cerrarModalFactura()" class="close-button text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">✕</button>
         </div>
         
         <div class="modal-body space-y-4">
-          <div>
-            <label class="block font-semibold text-slate-700 text-sm mb-1">Seleccionar Cliente</label>
+          <div class="form-group">
+            <label class="form-label">Seleccionar Cliente</label>
               <select [(ngModel)]="datosFactura.clienteId" (change)="onClienteSeleccionado($any($event.target).value)"
-                      class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
+                      class="form-input">
                 <option [ngValue]="null">-- Público en General --</option>
                 @for (c of clientes(); track c.idCliente) {
                   <option [ngValue]="c.idCliente">{{ c.rfc || 'Sin RFC' }} - {{ c.nombreCompleto }}</option>
@@ -440,28 +454,28 @@
               </button>
             </div>
             
-            <div class="grid grid-cols-2 gap-3">
-              <div class="col-span-2">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Razón Social</label>
-                <input type="text" [(ngModel)]="datosFactura.razonSocial" placeholder="Ej. EMPRESA SA DE CV" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm uppercase focus:ring-2 focus:ring-indigo-500 outline-none">
+            <div class="form-grid">
+              <div class="col-span-2 form-group">
+                <label class="form-label">Razón Social</label>
+                <input type="text" [(ngModel)]="datosFactura.razonSocial" placeholder="Ej. EMPRESA SA DE CV" class="form-input uppercase">
               </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">RFC</label>
-                <input type="text" [(ngModel)]="datosFactura.rfc" placeholder="XAXX010101000" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm uppercase focus:ring-2 focus:ring-indigo-500 outline-none">
+              <div class="form-group">
+                <label class="form-label">RFC</label>
+                <input type="text" [(ngModel)]="datosFactura.rfc" placeholder="XAXX010101000" class="form-input uppercase">
               </div>
-              <div>
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Código Postal</label>
-                <input type="text" [(ngModel)]="datosFactura.cp" placeholder="00000" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              <div class="form-group">
+                <label class="form-label">Código Postal</label>
+                <input type="text" [(ngModel)]="datosFactura.cp" placeholder="00000" class="form-input">
               </div>
-              <div class="col-span-2">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Régimen Fiscal (Clave ej. 601, 612)</label>
-                <input type="text" [(ngModel)]="datosFactura.regimen" placeholder="Ej. 601" class="w-full border border-slate-300 rounded-md px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none">
+              <div class="col-span-2 form-group">
+                <label class="form-label">Régimen Fiscal (Clave ej. 601, 612)</label>
+                <input type="text" [(ngModel)]="datosFactura.regimen" placeholder="Ej. 601" class="form-input">
               </div>
             </div>
 
-          <div>
-            <label class="block font-semibold text-slate-700 text-sm mb-1">Uso de CFDI</label>
-            <select [(ngModel)]="datosFactura.usoCfdi" class="w-full border border-slate-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm bg-white">
+          <div class="form-group">
+            <label class="form-label">Uso de CFDI</label>
+            <select [(ngModel)]="datosFactura.usoCfdi" class="form-input">
               <option value="G01">G01 - Adquisición de mercancías</option>
               <option value="G03">G03 - Gastos en general</option>
               <option value="P01">P01 - Por definir</option>
@@ -470,51 +484,51 @@
           </div>
 
           
-          <div class="mt-2 border border-slate-200 rounded-lg overflow-hidden">
-            <div class="bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-600 border-b border-slate-200">
+          <div class="mt-2 border border-gray-200 rounded-lg overflow-hidden">
+            <div class="bg-gray-100 px-3 py-1.5 text-xs font-bold text-gray-600 border-b border-gray-200">
               Detalle de Venta
             </div>
-            <div class="max-h-32 overflow-y-auto bg-white p-2 text-xs divide-y divide-slate-100 custom-scrollbar">
+            <div class="max-h-32 overflow-y-auto bg-white p-2 text-xs divide-y divide-gray-100 custom-scrollbar">
               @for (item of ventaAFacturar().detalles; track item.idDetalle) {
                 <div class="py-1.5 flex justify-between items-start gap-4">
                   <div class="flex-1">
-                    <span class="font-semibold text-slate-700">{{ item.producto?.nombre || item.productoSnapshot?.nombre }}</span>
-                    <span class="text-slate-500 block">{{ item.cantidad }} x {{ item.precio | currency }}</span>
+                    <span class="font-semibold text-gray-700">{{ item.producto?.nombre || item.productoSnapshot?.nombre }}</span>
+                    <span class="text-gray-500 block">{{ item.cantidad }} x {{ item.precio | currency }}</span>
                     @if ((item.descuento || 0) > 0) {
-                      <span class="text-rose-500 text-[10px] font-bold block mt-0.5">- Desc: {{ item.descuento | currency }}</span>
+                      <span class="text-red-500 text-[10px] font-bold block mt-0.5">- Desc: {{ item.descuento | currency }}</span>
                     }
                   </div>
-                  <span class="font-bold text-emerald-600 mt-1">{{ item.subtotal | currency }}</span>
+                  <span class="font-bold text-green-600 mt-1">{{ item.subtotal | currency }}</span>
                 </div>
               }
             </div>
           </div>
 
-          <div class="space-y-1 border-t border-slate-200 pt-3 mt-2">
-            <div class="flex justify-between items-center text-xs text-slate-500">
+          <div class="space-y-1 border-t border-gray-200 pt-3 mt-2">
+            <div class="flex justify-between items-center text-xs text-gray-500">
               <span>Subtotal:</span>
               <span class="font-semibold">{{ (ventaAFacturar().subtotal || (ventaAFacturar().total / 1.16)) | currency }}</span>
             </div>
-            <div class="flex justify-between items-center text-xs text-slate-500">
+            <div class="flex justify-between items-center text-xs text-gray-500">
               <span>IVA (16%):</span>
               <span class="font-semibold">{{ (ventaAFacturar().iva || (ventaAFacturar().total - (ventaAFacturar().total / 1.16))) | currency }}</span>
             </div>
             @if ((ventaAFacturar().descuento || 0) > 0) {
-              <div class="flex justify-between items-center text-xs text-rose-500 font-bold">
+              <div class="flex justify-between items-center text-xs text-red-500 font-bold">
                 <span>Descuentos Extras:</span>
                 <span>-{{ ventaAFacturar().descuento | currency }}</span>
               </div>
             }
-            <div class="flex justify-between items-center pt-1 mt-1 border-t border-slate-100">
-              <span class="text-sm font-bold text-slate-600">Total a facturar:</span>
-              <span class="text-lg font-bold text-emerald-600">{{ ventaAFacturar().total | currency }}</span>
+            <div class="flex justify-between items-center pt-1 mt-1 border-t border-gray-100">
+              <span class="text-sm font-bold text-gray-600">Total a facturar:</span>
+              <span class="text-lg font-bold text-green-600">{{ ventaAFacturar().total | currency }}</span>
             </div>
           </div>
         </div>
 
         <div class="modal-footer">
-          <button (click)="cerrarModalFactura()" class="btn-secondary" [disabled]="facturando()">Cancelar</button>
-          <button (click)="generarFactura()" class="btn-primary flex items-center justify-center min-w-[140px]" [disabled]="facturando()">
+          <button (click)="cerrarModalFactura()" class="btn-cancel" [disabled]="facturando()">Cancelar</button>
+          <button (click)="generarFactura()" class="btn-submit flex items-center justify-center min-w-[140px]" [disabled]="facturando()">
             @if (facturando()) {
               <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
             } @else {
@@ -532,43 +546,43 @@
 <!-- MODAL DEVOLUCIÓN                                        -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarModalDevolucion()) {
-  <div class="fixed inset-0 bg-black/60 z-[80] flex items-center justify-center p-4" (click)="mostrarModalDevolucion.set(false)">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
-      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+  <div class="modal-overlay" (click)="mostrarModalDevolucion.set(false)">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header flex items-center justify-between">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">↩ Devolución</h2>
-          <p class="text-sm text-slate-500">Venta: <span class="font-mono font-bold">{{ ventaParaDevolver()?.folio }}</span></p>
+          <h2 class="modal-title">↩ Devolución</h2>
+          <p class="text-sm text-gray-500">Venta: <span class="font-mono font-bold">{{ ventaParaDevolver()?.folio }}</span></p>
         </div>
-        <button (click)="mostrarModalDevolucion.set(false)" class="text-slate-400 hover:text-slate-700">
+        <button (click)="mostrarModalDevolucion.set(false)" class="close-button text-gray-400 hover:text-gray-700">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-5 space-y-4">
-        <p class="text-sm text-slate-600">Selecciona los productos a devolver y ajusta las cantidades:</p>
+      <div class="modal-body space-y-4">
+        <p class="text-sm text-gray-600">Selecciona los productos a devolver y ajusta las cantidades:</p>
         <!-- Productos -->
         <div class="space-y-2">
           @for (item of itemsDevolucion; track item.idProducto) {
-            <div class="flex flex-col gap-2 p-3 border border-slate-200 rounded-xl"
-                 [ngClass]="item.seleccionado ? 'bg-red-50 border-red-200' : 'bg-slate-50 opacity-60'">
+            <div class="flex flex-col gap-2 p-3 border border-gray-200 rounded-xl"
+                 [ngClass]="item.seleccionado ? 'bg-red-50 border-red-200' : 'bg-gray-50 opacity-60'">
               <div class="flex items-center gap-3">
                 <input type="checkbox" [(ngModel)]="item.seleccionado" class="w-4 h-4 accent-red-500">
                 <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-slate-800 text-sm truncate">{{ item.nombre }}</p>
-                  <p class="text-xs text-slate-400">Precio: {{ item.precioUnitario | currency:'MXN':'$':'1.2-2' }}</p>
+                  <p class="font-semibold text-gray-800 text-sm truncate">{{ item.nombre }}</p>
+                  <p class="text-xs text-gray-400">Precio: {{ item.precioUnitario | currency:'MXN':'$':'1.2-2' }}</p>
                 </div>
                 <div class="flex items-center gap-1">
                   <button (click)="item.cantidad = item.cantidad > 1 ? item.cantidad - 1 : 1" [disabled]="!item.seleccionado"
-                          class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 disabled:opacity-30">−</button>
+                          class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 disabled:opacity-30">−</button>
                   <span class="w-8 text-center font-bold text-sm">{{ item.cantidad }}</span>
                   <button (click)="item.cantidad = item.cantidad < item.maxCantidad ? item.cantidad + 1 : item.maxCantidad" [disabled]="!item.seleccionado"
-                          class="w-7 h-7 rounded-full bg-slate-200 hover:bg-slate-300 font-bold text-slate-700 disabled:opacity-30">+</button>
+                          class="w-7 h-7 rounded-full bg-gray-200 hover:bg-gray-300 font-bold text-gray-700 disabled:opacity-30">+</button>
                 </div>
               </div>
               <!-- Selector de Destino -->
               @if (item.seleccionado) {
                 <div class="pl-7 pr-1 mt-1 flex items-center justify-between gap-2">
-                  <span class="text-xs font-semibold text-slate-600">Destino del Producto:</span>
-                  <select [(ngModel)]="item.destino" class="text-xs bg-white border border-slate-300 rounded px-2 py-1 text-slate-700 outline-none focus:ring-1 focus:ring-red-400">
+                  <span class="text-xs font-semibold text-gray-600">Destino del Producto:</span>
+                  <select [(ngModel)]="item.destino" class="text-xs bg-white border border-gray-300 rounded px-2 py-1 text-gray-700 outline-none focus:ring-1 focus:ring-red-400">
                     <option value="stock">📦 Al Estante (Buen Estado)</option>
                     <option value="merma">🗑️ A la Basura (Merma)</option>
                   </select>
@@ -578,27 +592,27 @@
           }
         </div>
           <!-- Motivo -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Motivo de la devolución</label>
+          <div class="form-group">
+            <label class="form-label">Motivo de la devolución</label>
             <input type="text" [(ngModel)]="motivoDevolucion" placeholder="Ej: Producto dañado, Error en pedido..."
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-red-400 focus:border-red-400">
+                   class="form-input">
           </div>
           <!-- Observaciones -->
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Observaciones</label>
+          <div class="form-group">
+            <label class="form-label">Observaciones</label>
             <textarea [(ngModel)]="observacionesDevolucion" rows="2" placeholder="Detalles adicionales opcionales..."
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-red-400 focus:border-red-400"></textarea>
+                   class="form-input"></textarea>
           </div>
         <!-- Monto -->
-        <div class="bg-slate-50 rounded-xl p-3 flex justify-between items-center border border-slate-200">
-          <span class="text-sm font-semibold text-slate-700">Monto a devolver al cliente:</span>
+        <div class="bg-gray-50 rounded-xl p-3 flex justify-between items-center border border-gray-200">
+          <span class="text-sm font-semibold text-gray-700">Monto a devolver al cliente:</span>
           <span class="text-lg font-black text-red-600">{{ montoDevolucion | currency:'MXN':'$':'1.2-2' }}</span>
         </div>
       </div>
-      <div class="px-5 py-4 border-t border-slate-100 flex justify-end gap-3">
-        <button (click)="mostrarModalDevolucion.set(false)" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50/80 transition-colors">Cancelar</button>
+      <div class="modal-footer flex justify-end gap-3">
+        <button (click)="mostrarModalDevolucion.set(false)" class="btn-cancel">Cancelar</button>
         <button (click)="confirmarDevolucion()" [disabled]="guardandoDevolucion()"
-                class="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2">
+                class="btn-submit bg-red-500 hover:bg-red-600 flex items-center gap-2">
           @if (guardandoDevolucion()) { <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> }
           Confirmar Devolución
         </button>
@@ -606,4 +620,3 @@
     </div>
   </div>
 }
-

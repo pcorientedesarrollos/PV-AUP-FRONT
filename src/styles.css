@@ -4,6 +4,24 @@
 
 @theme {
   --font-lato: 'Lato', system-ui, -apple-system, sans-serif;
+  --color-honey-primary: #F59E0B;
+  --color-honey-dark: #92400E;
+  --animate-fade-in: fade-in 0.2s ease-out;
+  --animate-slide-in: slide-in 0.3s ease-out;
+  --animate-progress: progress linear;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateY(-20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  @keyframes progress {
+    from { width: 100%; }
+    to { width: 0%; }
+  };
 }
 
 /* ── Fuente global ─────────────────────────────── */
@@ -75,6 +93,3902 @@
   .input-field {
     @apply px-3 py-2 border border-slate-300 rounded-lg text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition-colors w-full;
   }
+
+
+/* ── ESTILOS CONSOLIDADOS OAXACA MIEL ── */
+
+/* ── SECCION: TABLAS ── */
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\data\honey-table\honey-table.component.css
+---------------------------------------------------------- */
+
+/* Container */
+.honey-table-container {
+    @apply relative bg-white rounded-lg shadow-md overflow-hidden;
+}
+
+/* Loading Overlay */
+.loading-overlay {
+    @apply absolute inset-0 bg-white/90 flex items-center justify-center z-10;
+}
+
+.loading-spinner {
+    @apply flex flex-col items-center;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+    @apply overflow-x-auto;
+}
+
+.table-wrapper.sticky-header {
+    @apply max-h-screen overflow-y-auto;
+}
+
+.table-wrapper.sticky-header thead th {
+    @apply sticky top-0 z-10 bg-gray-50;
+}
+
+/* Table */
+.honey-table {
+    @apply min-w-full divide-y divide-gray-200;
+}
+
+/* Table Variants */
+.table-striped tbody tr:nth-child(even) {
+    @apply bg-gray-50;
+}
+
+.table-bordered {
+    @apply border border-gray-200;
+}
+
+.table-bordered th,
+.table-bordered td {
+    @apply border-b border-gray-200;
+}
+
+.table-hoverable tbody tr:hover {
+    @apply bg-gray-50 transition-colors;
+}
+
+/* Table Sizes */
+.table-sm th,
+.table-sm td {
+    @apply px-3 py-2 text-sm;
+}
+
+.table-lg th,
+.table-lg td {
+    @apply px-8 py-4 text-base;
+}
+
+/* Header */
+thead {
+    @apply bg-gray-50;
+}
+
+thead th {
+    @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+thead th.sortable {
+    @apply cursor-pointer select-none hover:bg-gray-100 transition-colors;
+}
+
+.th-content {
+    @apply flex items-center;
+}
+
+.sort-icon {
+    @apply text-gray-400 transition-colors;
+}
+
+thead th.sortable:hover .sort-icon {
+    @apply text-gray-600;
+}
+
+/* Body */
+tbody {
+    @apply bg-white divide-y divide-gray-200;
+}
+
+tbody td {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+}
+
+
+.edit-icon {
+    @apply text-honey-primary transition-opacity;
+}
+
+/* Actions Column */
+.actions-column {
+    @apply w-20;
+}
+
+.action-menu-button {
+    @apply w-8 h-8 rounded-full flex items-center justify-center hover:bg-gray-100 transition-colors;
+}
+
+/* Empty State */
+.empty-state {
+    @apply text-center py-12;
+}
+
+.empty-content {
+    @apply flex flex-col items-center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .honey-table {
+        @apply text-sm;
+    }
+
+    thead th,
+    tbody td {
+        @apply px-3 py-2;
+    }
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\data\table-filters\table-filters.component.css
+---------------------------------------------------------- */
+
+/* Container */
+.table-filters {
+    @apply bg-white rounded-lg shadow-md p-4 space-y-4;
+}
+
+/* Filters Row */
+.filters-row {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 items-end;
+}
+
+/* Filter Control */
+.filter-control {
+    @apply flex flex-col;
+}
+
+.filter-label {
+    @apply flex items-center text-sm font-medium text-gray-700 mb-2;
+}
+
+/* Text/Number Input */
+.filter-input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-colors placeholder-gray-400;
+}
+
+.filter-input:hover:not(:disabled) {
+    @apply border-gray-400;
+}
+
+.filter-input:disabled {
+    @apply bg-gray-100 cursor-not-allowed opacity-60;
+}
+
+/* Select */
+.filter-select {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-colors bg-white;
+}
+
+.filter-select:hover:not(:disabled) {
+    @apply border-gray-400;
+}
+
+.filter-select:disabled {
+    @apply bg-gray-100 cursor-not-allowed opacity-60;
+}
+
+/* Checkbox */
+.filter-checkbox {
+    @apply flex items-center gap-2 pt-1;
+}
+
+.checkbox-input {
+    @apply w-4 h-4 text-honey-primary border-gray-300 rounded focus:ring-2 focus:ring-honey-primary;
+}
+
+.checkbox-label {
+    @apply text-sm text-gray-700 cursor-pointer;
+}
+
+/* Actions Row */
+.actions-row {
+    @apply flex flex-wrap items-center justify-between gap-4 pt-4 border-t border-gray-200;
+}
+
+/* Active Filters */
+.active-filters {
+    @apply flex flex-wrap items-center gap-2;
+}
+
+.active-label {
+    @apply text-sm font-medium text-gray-600;
+}
+
+.no-filters-text {
+    @apply text-sm text-gray-500;
+}
+
+/* Filter Pills */
+.filter-pill {
+    @apply inline-flex items-center gap-1 px-3 py-1 text-xs font-medium rounded-full transition-all hover:shadow-md focus:outline-none focus:ring-2 focus:ring-offset-1 cursor-pointer;
+}
+
+/* Pill Colors */
+.pill-blue {
+    @apply bg-blue-100 text-blue-800 hover:bg-blue-200 focus:ring-blue-500;
+}
+
+.pill-green {
+    @apply bg-green-100 text-green-800 hover:bg-green-200 focus:ring-green-500;
+}
+
+.pill-purple {
+    @apply bg-purple-100 text-purple-800 hover:bg-purple-200 focus:ring-purple-500;
+}
+
+.pill-orange {
+    @apply bg-orange-100 text-orange-800 hover:bg-orange-200 focus:ring-orange-500;
+}
+
+.pill-pink {
+    @apply bg-pink-100 text-pink-800 hover:bg-pink-200 focus:ring-pink-500;
+}
+
+.pill-indigo {
+    @apply bg-indigo-100 text-indigo-800 hover:bg-indigo-200 focus:ring-indigo-500;
+}
+
+.pill-label {
+    @apply max-w-[200px] truncate;
+}
+
+.pill-icon {
+    @apply flex-shrink-0 transition-transform;
+}
+
+.filter-pill:hover .pill-icon {
+    @apply scale-110;
+}
+
+/* Actions */
+.actions {
+    @apply flex items-center gap-4;
+}
+
+.result-count {
+    @apply text-sm font-medium text-gray-600;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .filters-row {
+        @apply grid-cols-1;
+    }
+
+    .actions-row {
+        @apply flex-col items-stretch;
+    }
+
+    .active-filters {
+        @apply justify-center;
+    }
+
+    .actions {
+        @apply justify-between w-full;
+    }
+}
+
+@media (max-width: 640px) {
+    .table-filters {
+        @apply p-3;
+    }
+
+    .filter-input,
+    .filter-select {
+        @apply text-base;
+        /* Evitar zoom en iOS */
+    }
+
+    .pill-label {
+        @apply max-w-[120px];
+    }
+}
+
+/* Animation for pills */
+@keyframes pillSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.filter-pill {
+    animation: pillSlideIn 0.2s ease-out;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\data\table-pagination\table-pagination.component.css
+---------------------------------------------------------- */
+
+/* Container */
+.pagination-container {
+    @apply flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-white border-t border-gray-200;
+}
+
+/* Page Size Selector */
+.page-size-selector {
+    @apply flex items-center gap-2;
+}
+
+.page-size-select {
+    @apply px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-colors;
+}
+
+.page-size-select:hover {
+    @apply border-gray-400;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    @apply flex items-center gap-1;
+}
+
+/* Pagination Button */
+.pagination-button {
+    @apply px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-honey-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white transition-colors;
+}
+
+/* Page Numbers Container */
+.page-numbers {
+    @apply flex items-center gap-1;
+}
+
+/* Page Button */
+.page-button {
+    @apply min-w-[2.5rem] px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-honey-primary transition-colors;
+}
+
+.page-button.active {
+    @apply bg-honey-primary text-white border-honey-primary hover:bg-honey-dark;
+}
+
+.page-button:not(.active):hover {
+    @apply bg-gray-50;
+}
+
+/* Ellipsis */
+.page-ellipsis {
+    @apply px-2 text-gray-500 select-none;
+}
+
+/* Pagination Info */
+.pagination-info {
+    @apply flex items-center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .pagination-container {
+        @apply flex-col items-stretch gap-3;
+    }
+
+    .page-size-selector {
+        @apply justify-center;
+    }
+
+    .pagination-controls {
+        @apply justify-center;
+    }
+
+    .pagination-info {
+        @apply justify-center;
+    }
+
+    /* Ocultar algunos botones de pÃ¡gina en mobile */
+    .page-numbers {
+        @apply max-w-full overflow-x-auto;
+    }
+}
+
+@media (max-width: 480px) {
+
+    /* En pantallas muy pequeÃ±as, solo mostrar controles bÃ¡sicos */
+    .page-button:not(.active) {
+        @apply hidden;
+    }
+
+    .page-button.active {
+        @apply inline-flex;
+    }
+
+    /* Mantener solo primera/Ãºltima/actual */
+    .page-numbers {
+        @apply gap-2;
+    }
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\data\editable-cell\editable-cell.component.css
+---------------------------------------------------------- */
+
+/* Container */
+.editable-cell {
+    @apply w-full;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+    @apply flex items-center gap-2;
+}
+
+/* Input Field */
+.editable-input {
+    @apply flex-1 px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-all;
+}
+
+.editable-input:hover:not(:disabled) {
+    @apply border-gray-400;
+}
+
+.editable-input.has-error {
+    @apply border-red-300 focus:ring-red-500 focus:border-red-500;
+}
+
+.editable-input.saving {
+    @apply bg-gray-50 cursor-wait;
+}
+
+.editable-input:disabled {
+    @apply bg-gray-50 cursor-not-allowed opacity-75;
+}
+
+/* Action Buttons */
+.action-buttons {
+    @apply flex items-center gap-1 flex-shrink-0;
+}
+
+.action-button {
+    @apply w-7 h-7 rounded flex items-center justify-center transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1;
+}
+
+.action-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* Save Button */
+.save-button {
+    @apply text-green-600 hover:bg-green-50 focus:ring-green-500;
+}
+
+.save-button:disabled {
+    @apply text-gray-400 hover:bg-transparent;
+}
+
+/* Cancel Button */
+.cancel-button {
+    @apply text-red-600 hover:bg-red-50 focus:ring-red-500;
+}
+
+/* Spinner */
+.spinner {
+    @apply flex items-center justify-center w-7 h-7;
+}
+
+/* Validation Error */
+.validation-error {
+    @apply flex items-center gap-1 mt-1 text-xs text-red-600;
+}
+
+.error-icon {
+    @apply flex-shrink-0;
+}
+
+.error-text {
+    @apply flex-1;
+}
+
+/* Helper Text */
+.helper-text {
+    @apply mt-1 text-xs text-gray-500 text-right;
+}
+
+/* Animations */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+.editable-input.has-error {
+    animation: shake 0.3s ease-in-out;
+}
+
+/* Number Input - Remove Spinners */
+.editable-input[type="number"]::-webkit-inner-spin-button,
+.editable-input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.editable-input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+/* Focus State Enhancement */
+.editable-input:focus {
+    @apply shadow-sm;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .editable-input {
+        @apply text-base;
+        /* Evitar zoom en iOS */
+    }
+
+    .action-button {
+        @apply w-8 h-8;
+        /* Botones mÃ¡s grandes en mobile */
+    }
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\data\action-menu\action-menu.component.css
+---------------------------------------------------------- */
+
+/* Menu Container - âœ… FIXED para estar siempre visible */
+.action-menu {
+    position: fixed; /* âœ… Fixed para salir del flujo de la tabla */
+    @apply w-48 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden;
+    z-index: 9999; /* âœ… Z-index muy alto para estar siempre encima */
+}
+
+/* âœ… DirecciÃ³n: Hacia abajo (default) */
+.action-menu.direction-down {
+    animation: slideDown 0.15s ease-out;
+}
+
+/* âœ… DirecciÃ³n: Hacia arriba */
+.action-menu.direction-up {
+    animation: slideUp 0.15s ease-out;
+}
+
+/* PosiciÃ³n horizontal - Ya no se usan porque usamos ngStyle con posiciÃ³n calculada
+.action-menu.position-left {
+    @apply left-0;
+}
+
+.action-menu.position-right {
+    @apply right-0;
+} */
+
+/* Animaciones */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Section Header */
+.section-header {
+    @apply px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide bg-gray-50 border-b border-gray-200;
+}
+
+/* Menu Item */
+.menu-item {
+    @apply w-full flex items-center gap-2 px-4 py-2.5 text-sm text-left text-gray-700 hover:bg-gray-50 transition-colors duration-150;
+}
+
+.menu-item:focus {
+    @apply outline-none bg-gray-50;
+}
+
+.menu-item.disabled {
+    @apply text-gray-400 cursor-not-allowed opacity-50 hover:bg-transparent;
+}
+
+/* Item Icon */
+.item-icon {
+    @apply flex-shrink-0 text-gray-500;
+}
+
+.menu-item:not(.disabled):hover .item-icon {
+    @apply text-gray-700;
+}
+
+/* Item Label */
+.item-label {
+    @apply flex-1;
+}
+
+/* Variants */
+.menu-item.variant-primary {
+    @apply text-blue-600;
+}
+
+.menu-item.variant-primary:hover:not(.disabled) {
+    @apply bg-blue-50 text-blue-700;
+}
+
+.menu-item.variant-success {
+    @apply text-green-600;
+}
+
+.menu-item.variant-success:hover:not(.disabled) {
+    @apply bg-green-50 text-green-700;
+}
+
+.menu-item.variant-warning {
+    @apply text-amber-600;
+}
+
+.menu-item.variant-warning:hover:not(.disabled) {
+    @apply bg-amber-50 text-amber-700;
+}
+
+.menu-item.variant-danger {
+    @apply text-red-600;
+}
+
+.menu-item.variant-danger:hover:not(.disabled) {
+    @apply bg-red-50 text-red-700;
+}
+
+.menu-item.variant-info {
+    @apply text-blue-600;
+}
+
+.menu-item.variant-info:hover:not(.disabled) {
+    @apply bg-blue-50 text-blue-700;
+}
+
+/* Separators */
+.separator {
+    @apply border-t border-gray-200 my-1;
+}
+
+.section-separator {
+    @apply border-t border-gray-200;
+}
+
+/* Confirmation Dialog */
+.confirmation-dialog {
+    @apply p-4;
+}
+
+.confirmation-header {
+    @apply flex items-center gap-2 mb-3;
+}
+
+.confirmation-message {
+    @apply text-sm text-gray-600 mb-4;
+}
+
+.confirmation-actions {
+    @apply flex gap-2 justify-end;
+}
+
+.btn-cancel,
+.btn-confirm {
+    @apply px-4 py-2 text-sm font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.btn-cancel {
+    @apply text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-gray-500;
+}
+
+.btn-confirm {
+    @apply text-white bg-honey-primary hover:bg-honey-dark focus:ring-honey-primary;
+}
+
+.btn-confirm.btn-danger {
+    @apply bg-red-600 hover:bg-red-700 focus:ring-red-500;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .action-menu {
+        @apply w-56;
+    }
+}
+
+/* ── SECCION: MODALES ── */
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\modal\modal.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸªŸ MODAL STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ * 
+ * Estilos del componente Modal con backdrop y animaciones
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+   BACKDROP / OVERLAY
+   ============================================================================ */
+
+.modal-backdrop {
+    @apply fixed inset-0 z-50;
+    @apply bg-black/50 backdrop-blur-sm;
+    @apply flex items-center justify-center;
+    @apply p-4;
+    @apply overflow-y-auto;
+    @apply animate-fade-in;
+}
+
+/* ============================================================================
+   MODAL CONTENT
+   ============================================================================ */
+
+.modal-content {
+    @apply bg-white rounded-lg shadow-2xl;
+    @apply w-full;
+    @apply max-h-[90vh];
+    @apply flex flex-col;
+    @apply animate-slide-in;
+    @apply my-auto;
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.modal-header {
+    @apply flex items-center justify-between;
+    @apply px-6 py-4;
+    @apply border-b border-gray-200;
+    @apply flex-shrink-0;
+}
+
+.modal-title {
+    @apply flex-1 min-w-0;
+}
+
+.modal-title h3 {
+    @apply text-lg font-bold text-gray-900;
+    @apply truncate;
+}
+
+.modal-close-button {
+    @apply ml-4 p-2 rounded-lg;
+    @apply text-gray-400 hover:text-gray-600 hover:bg-gray-100;
+    @apply transition-all duration-200;
+    @apply flex-shrink-0;
+    @apply focus:outline-none focus:ring-2 focus:ring-honey-primary;
+}
+
+.modal-close-button:active {
+    @apply transform scale-90;
+}
+
+/* ============================================================================
+   BODY
+   ============================================================================ */
+
+.modal-body {
+    @apply px-6 py-4;
+    @apply overflow-y-auto;
+    @apply flex-1;
+    @apply text-gray-700;
+}
+
+/* Estilos de scrollbar personalizado */
+.modal-body::-webkit-scrollbar {
+    @apply w-2;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-lg;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-lg;
+    @apply hover:bg-gray-400;
+}
+
+/* Si el body estÃ¡ vacÃ­o, ocultarlo */
+.modal-body:empty {
+    @apply hidden;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.modal-footer {
+    @apply px-6 py-4;
+    @apply border-t border-gray-200;
+    @apply flex items-center justify-end gap-2;
+    @apply flex-shrink-0;
+    @apply bg-gray-50;
+}
+
+/* Si el footer estÃ¡ vacÃ­o, ocultarlo */
+.modal-footer:empty {
+    @apply hidden;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 640px) {
+
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        @apply px-4 py-3;
+    }
+
+    .modal-content {
+        @apply max-h-[95vh];
+    }
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.animate-fade-in {
+    animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+/* Focus visible para navegaciÃ³n por teclado */
+.modal-close-button:focus-visible {
+    @apply ring-2 ring-honey-primary ring-offset-2;
+}
+
+/* Prevenir scroll en dispositivos tÃ¡ctiles cuando modal estÃ¡ abierto */
+body.modal-open {
+    @apply overflow-hidden;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\pdf-viewer\pdf-viewer-modal.component.css
+---------------------------------------------------------- */
+
+/* ============================================================================
+   PDF VIEWER MODAL - ESTILOS SIMPLIFICADOS
+   ============================================================================ */
+
+/* Overlay */
+.pdf-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Container */
+.pdf-modal-container {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    width: 95vw;
+    height: 95vh;
+    max-width: 1200px;
+    animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Header */
+.pdf-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    border-top-left-radius: 0.5rem;
+    border-top-right-radius: 0.5rem;
+}
+
+.pdf-modal-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.pdf-modal-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Action buttons */
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.action-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.action-btn-primary {
+    background-color: #F59E0B;
+    color: #ffffff;
+}
+
+.action-btn-primary:hover {
+    background-color: #d97706;
+}
+
+/* Close button */
+.close-btn {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    color: #6b7280;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-left: 0.25rem;
+}
+
+.close-btn:hover {
+    background-color: #fef2f2;
+    color: #dc2626;
+}
+
+/* Content - iframe container */
+.pdf-modal-content {
+    flex: 1;
+    background-color: #4b5563;
+    overflow: hidden;
+}
+
+.pdf-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Footer */
+.pdf-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: #ffffff;
+    border-top: 1px solid #e5e7eb;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
+}
+
+.footer-filename {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .pdf-modal-container {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+    }
+
+    .pdf-modal-header,
+    .pdf-modal-footer {
+        border-radius: 0;
+    }
+
+    .pdf-modal-title {
+        font-size: 0.875rem;
+    }
+
+    .action-btn span {
+        display: none;
+    }
+
+    .action-btn {
+        padding: 0.5rem;
+    }
+}
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\acopiador\apicultor-detail-modal\apicultor-detail-modal.component.css
+---------------------------------------------------------- */
+
+/* ============================================================================
+   ðŸ APICULTOR DETAIL MODAL STYLES
+   ============================================================================ */
+
+/* Modal Overlay */
+.modal-overlay {
+    @apply fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Container */
+.modal-container {
+    @apply bg-white rounded-xl shadow-2xl max-w-5xl w-full max-h-[90vh] flex flex-col overflow-hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.modal-header {
+    @apply bg-gradient-to-r from-honey-primary/10 to-amber-100/50 border-b border-amber-200;
+}
+
+.header-content {
+    @apply flex items-center justify-between p-6;
+}
+
+.icon-wrapper {
+    @apply w-14 h-14 bg-gradient-to-br from-honey-primary/20 to-amber-100 rounded-xl flex items-center justify-center mr-4;
+}
+
+.modal-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.separator {
+    @apply mx-2 text-gray-400;
+}
+
+.close-button {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900;
+}
+
+/* ============================================================================
+   TABS NAVIGATION
+   ============================================================================ */
+
+.tabs-nav {
+    @apply flex border-t border-amber-200 bg-white;
+}
+
+.tab-button {
+    @apply flex items-center space-x-2 px-6 py-3 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 transition-all;
+}
+
+.tab-button.active {
+    @apply text-honey-primary border-honey-primary bg-honey-primary/5;
+}
+
+/* ============================================================================
+   BODY
+   ============================================================================ */
+
+.modal-body {
+    @apply flex-1 overflow-y-auto p-6;
+}
+
+.tab-content {
+    @apply space-y-6;
+}
+
+/* Info Sections */
+.info-section {
+    @apply bg-gray-50 rounded-lg p-6 space-y-4;
+}
+
+.section-title {
+    @apply flex items-center space-x-2 text-sm font-bold text-gray-700 uppercase tracking-wide mb-4 pb-3 border-b border-gray-200;
+}
+
+.info-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.info-item {
+    @apply flex flex-col space-y-2;
+}
+
+.info-item label {
+    @apply text-xs text-gray-500 uppercase tracking-wide font-medium;
+}
+
+.info-item span {
+    @apply text-sm text-gray-900 font-medium;
+}
+
+/* Info Note */
+.info-note {
+    @apply flex items-start space-x-3 p-4 bg-blue-50 rounded-lg border border-blue-200;
+}
+
+/* ============================================================================
+   APIARIOS TAB
+   ============================================================================ */
+
+.apiarios-header {
+    @apply mb-4 pb-4 border-b border-gray-200 flex items-center justify-between;
+}
+
+/* BotÃ³n Nuevo Apiario */
+.btn-new-apiario {
+    background: linear-gradient(to right, #10B981, #059669);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-new-apiario:hover {
+    background: linear-gradient(to right, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-new-apiario:active {
+    transform: translateY(0);
+}
+
+/* ============================================================================
+   PROVEEDORES TAB
+   ============================================================================ */
+
+.proveedores-header {
+    @apply mb-4 pb-4 border-b border-gray-200;
+}
+
+.empty-proveedores {
+    @apply flex flex-col items-center justify-center py-12 text-center bg-gray-50 rounded-lg;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.modal-footer {
+    @apply flex items-center justify-end space-x-3 p-6 bg-gray-50 border-t border-gray-200;
+}
+
+.footer-button {
+    @apply flex items-center space-x-2 px-6 py-2.5 rounded-lg font-medium transition-all;
+}
+
+.footer-button.secondary {
+    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50;
+}
+
+.footer-button.primary {
+    @apply bg-honey-primary text-white hover:bg-honey-dark;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .modal-container {
+        @apply max-h-[95vh] mx-2;
+    }
+
+    .header-content {
+        @apply flex-col items-start space-y-4;
+    }
+
+    .icon-wrapper {
+        @apply mr-0;
+    }
+
+    .close-button {
+        @apply absolute top-4 right-4;
+    }
+
+    .info-grid {
+        @apply grid-cols-1;
+    }
+
+    .tabs-nav {
+        @apply overflow-x-auto;
+    }
+
+    .tab-button {
+        @apply flex-shrink-0 px-4 py-2 text-xs;
+    }
+
+    .modal-header {
+        @apply p-4;
+    }
+
+    .modal-body {
+        @apply p-4;
+    }
+
+    .modal-footer {
+        @apply p-4;
+    }
+}
+
+/* ============================================================================
+   SCROLLBAR CUSTOM
+   ============================================================================ */
+
+.modal-body::-webkit-scrollbar {
+    @apply w-2;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-full;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+
+.font-mono {
+    @apply font-mono text-xs tracking-wider;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\apiarios\apiario-detail-modal\apiario-detail-modal.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ  APIARIO DETAIL MODAL - STYLES
+ * ============================================================================
+ */
+
+/* Overlay */
+.modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center;
+    @apply bg-black/50 backdrop-blur-sm;
+    @apply p-4;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Container */
+.modal-container {
+    @apply bg-white rounded-xl shadow-2xl;
+    @apply w-full max-w-3xl max-h-[90vh];
+    @apply flex flex-col;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Header */
+.modal-header {
+    @apply flex items-center justify-between;
+    @apply px-6 py-5 border-b border-gray-200;
+    @apply bg-gradient-to-r from-amber-50 to-orange-50;
+}
+
+.icon-wrapper-modal {
+    @apply w-12 h-12 rounded-full;
+    @apply bg-white shadow-md;
+    @apply flex items-center justify-center;
+}
+
+.modal-title {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.close-button {
+    @apply w-10 h-10 rounded-full;
+    @apply hover:bg-gray-200 transition-colors;
+    @apply flex items-center justify-center;
+    @apply text-gray-500 hover:text-gray-700;
+}
+
+/* Content */
+.modal-content {
+    @apply flex-1 overflow-y-auto;
+    @apply px-6 py-5 space-y-6;
+}
+
+/* Sections */
+.detail-section {
+    @apply bg-gray-50 rounded-lg p-5;
+    @apply border border-gray-200;
+}
+
+.section-title {
+    @apply flex items-center space-x-2;
+    @apply text-lg font-semibold text-gray-800 mb-4;
+}
+
+/* Grid */
+.detail-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.detail-item {
+    @apply flex flex-col space-y-1;
+}
+
+.detail-item.col-span-2 {
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+    .detail-item.col-span-2 {
+        grid-column: span 2;
+    }
+}
+
+.detail-label {
+    @apply text-sm font-medium text-gray-500;
+}
+
+.detail-value {
+    @apply text-base font-semibold text-gray-900;
+}
+
+/* Badge */
+.badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+    @apply w-fit;
+}
+
+.badge-success {
+    @apply bg-green-100 text-green-800;
+}
+
+.badge-danger {
+    @apply bg-red-100 text-red-800;
+}
+
+/* Map Link */
+.map-link {
+    @apply inline-flex items-center space-x-2;
+    @apply px-4 py-2 rounded-lg;
+    @apply bg-blue-600 hover:bg-blue-700;
+    @apply text-white font-medium;
+    @apply transition-colors;
+    @apply w-fit;
+}
+
+/* No Data Message */
+.no-data-message {
+    @apply flex flex-col items-center justify-center;
+    @apply py-8 text-gray-500;
+}
+
+.no-data-message p {
+    @apply mt-2 text-sm;
+}
+
+/* Footer */
+.modal-footer {
+    @apply flex justify-end items-center space-x-3;
+    @apply px-6 py-4 border-t border-gray-200;
+    @apply bg-gray-50;
+}
+
+.btn-close {
+    @apply inline-flex items-center space-x-2;
+    @apply px-4 py-2 rounded-lg;
+    @apply bg-gray-600 hover:bg-gray-700;
+    @apply text-white font-medium;
+    @apply transition-colors;
+}
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\apiarios\apiario-form-modal\apiario-form-modal.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * APIARIO FORM MODAL - STYLES
+ * ============================================================================
+ */
+
+/* ============================================================================
+   OVERLAY
+   ============================================================================ */
+
+.modal-overlay {
+    @apply fixed inset-0 flex items-center justify-center;
+    @apply bg-black/50 backdrop-blur-sm;
+    @apply p-4;
+    z-index: 60; /* Mayor que el modal de apicultor (z-50) */
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ============================================================================
+   CONTAINER
+   ============================================================================ */
+
+.modal-container {
+    @apply bg-white rounded-xl shadow-2xl;
+    @apply w-full max-w-2xl max-h-[90vh];
+    @apply flex flex-col;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.modal-header {
+    @apply flex items-center justify-between;
+    @apply px-6 py-5 border-b border-gray-200;
+    @apply bg-gradient-to-r from-amber-50 to-orange-50;
+    @apply rounded-t-xl;
+}
+
+.header-content {
+    @apply flex items-center space-x-4;
+}
+
+.icon-wrapper {
+    @apply w-12 h-12 rounded-full;
+    @apply bg-white shadow-md;
+    @apply flex items-center justify-center;
+}
+
+.modal-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.separator {
+    @apply mx-2 text-gray-400;
+}
+
+.apicultor-name {
+    @apply font-semibold text-honey-primary;
+}
+
+.close-button {
+    @apply w-10 h-10 rounded-full;
+    @apply hover:bg-gray-200 transition-colors;
+    @apply flex items-center justify-center;
+    @apply text-gray-500 hover:text-gray-700;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* ============================================================================
+   BODY
+   ============================================================================ */
+
+.modal-body {
+    @apply flex-1 overflow-y-auto;
+    @apply px-6 py-5;
+}
+
+/* ============================================================================
+   FORM SECTIONS
+   ============================================================================ */
+
+.form-section {
+    @apply bg-gray-50 rounded-lg p-5 mb-5;
+    @apply border border-gray-200;
+}
+
+.form-section:last-child {
+    @apply mb-0;
+}
+
+.section-title {
+    @apply flex items-center space-x-2;
+    @apply text-base font-semibold text-gray-800 mb-4;
+    @apply pb-3 border-b border-gray-200;
+}
+
+/* ============================================================================
+   FORM GRID
+   ============================================================================ */
+
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.form-group {
+    @apply flex flex-col space-y-1.5;
+}
+
+.form-group.col-span-2 {
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+    .form-group.col-span-2 {
+        grid-column: span 2;
+    }
+}
+
+/* ============================================================================
+   FORM INPUTS
+   ============================================================================ */
+
+.form-label {
+    @apply text-sm font-semibold text-gray-700;
+}
+
+.form-label .required {
+    @apply text-red-500;
+}
+
+.form-input {
+    @apply px-4 py-2.5 border border-gray-300 rounded-lg;
+    @apply focus:ring-2 focus:ring-honey-primary focus:border-honey-primary;
+    @apply transition-all text-gray-900 placeholder-gray-400;
+}
+
+.form-input:disabled {
+    @apply bg-gray-100 text-gray-500 cursor-not-allowed;
+}
+
+.form-input.error {
+    @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+/* ============================================================================
+   FORM MESSAGES
+   ============================================================================ */
+
+.error-message {
+    @apply text-xs text-red-600 font-medium;
+}
+
+.help-text {
+    @apply text-xs text-gray-500;
+}
+
+/* ============================================================================
+   PRODUCCIÃ“N ANUAL CARD
+   ============================================================================ */
+
+.produccion-anual-card {
+    @apply mt-4 p-4 bg-gradient-to-br from-honey-primary/10 to-amber-50;
+    @apply border-2 border-honey-primary/30 rounded-xl;
+}
+
+.produccion-content {
+    @apply flex items-center space-x-4;
+}
+
+.icon-produccion {
+    @apply w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-md;
+}
+
+.produccion-label {
+    @apply text-sm text-gray-600 font-medium;
+}
+
+.produccion-value {
+    @apply text-2xl font-bold text-honey-primary;
+}
+
+.produccion-formula {
+    @apply text-xs text-gray-500 mt-1;
+}
+
+/* ============================================================================
+   GEOLOCALIZACIÃ“N
+   ============================================================================ */
+
+.geolocation-wrapper {
+    @apply space-y-3 mb-4;
+}
+
+.btn-geolocation {
+    @apply w-full md:w-auto flex items-center justify-center space-x-2;
+    @apply px-5 py-2.5 bg-blue-500 hover:bg-blue-600 text-white;
+    @apply font-medium rounded-lg transition-all;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.geolocation-error {
+    @apply flex items-center space-x-2;
+    @apply p-3 bg-red-50 border border-red-200 rounded-lg;
+    @apply text-sm text-red-700;
+}
+
+.map-preview {
+    @apply mt-4 p-4 bg-white border border-gray-200 rounded-lg;
+    @apply flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3;
+}
+
+.map-preview-text {
+    @apply flex items-center space-x-2 text-sm text-gray-700 font-medium;
+}
+
+.map-preview-link {
+    @apply inline-flex items-center space-x-2;
+    @apply text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.modal-footer {
+    @apply flex justify-end items-center space-x-3;
+    @apply px-6 py-4 border-t border-gray-200;
+    @apply bg-gray-50 rounded-b-xl;
+}
+
+.btn-cancel,
+.btn-submit {
+    @apply flex items-center justify-center space-x-2;
+    @apply px-5 py-2.5 font-medium rounded-lg transition-all;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-cancel {
+    @apply bg-white hover:bg-gray-100 text-gray-700;
+    @apply border border-gray-300;
+}
+
+.btn-submit {
+    @apply bg-honey-primary hover:bg-honey-dark text-white;
+}
+
+/* ============================================================================
+   SPINNER
+   ============================================================================ */
+
+.spinner-small {
+    @apply w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 640px) {
+    .modal-container {
+        @apply max-h-[95vh];
+    }
+
+    .modal-header {
+        @apply px-4 py-4;
+    }
+
+    .modal-body {
+        @apply px-4 py-4;
+    }
+
+    .form-section {
+        @apply p-4;
+    }
+
+    .modal-footer {
+        @apply px-4 py-3 flex-col-reverse space-x-0 space-y-2 space-y-reverse;
+    }
+
+    .btn-cancel,
+    .btn-submit {
+        @apply w-full;
+    }
+}
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\apicultores\apicultor-detail-modal\apicultor-detail-modal.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ APICULTOR DETAIL MODAL STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ */
+
+/* ============================================================================
+   OVERLAY
+   ============================================================================ */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   MODAL CONTAINER
+   ============================================================================ */
+.modal-container {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    max-width: 1200px;
+    width: 100%;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+.modal-header {
+    background: linear-gradient(to right, #F59E0B, #D97706);
+    color: white;
+    padding: 1.5rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+}
+
+.header-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.icon-wrapper {
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.modal-subtitle {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+.separator {
+    margin: 0 0.5rem;
+}
+
+.close-button {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.close-button:hover {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* ============================================================================
+   TABS NAVIGATION
+   ============================================================================ */
+.tabs-nav {
+    display: flex;
+    gap: 0.5rem;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.tab-button {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    opacity: 0.7;
+}
+
+.tab-button:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tab-button.active {
+    opacity: 1;
+    border-bottom-color: white;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* ============================================================================
+   BODY
+   ============================================================================ */
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+.tab-content {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* ============================================================================
+   INFO GRID (TAB GENERAL)
+   ============================================================================ */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.info-section {
+    background-color: #F9FAFB;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #E5E7EB;
+}
+
+.section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #F59E0B;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #E5E7EB;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-item label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6B7280;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.info-item span {
+    font-size: 0.875rem;
+    color: #111827;
+}
+
+/* ============================================================================
+   PROVEEDORES/APIARIOS HEADER
+   ============================================================================ */
+.proveedores-header,
+.apiarios-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #E5E7EB;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* BotÃ³n Nuevo Apiario */
+.btn-new-apiario {
+    background: linear-gradient(to right, #10B981, #059669);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn-new-apiario:hover {
+    background: linear-gradient(to right, #059669, #047857);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.btn-new-apiario:active {
+    transform: translateY(0);
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+.modal-footer {
+    padding: 1.5rem;
+    border-top: 1px solid #E5E7EB;
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    background-color: #F9FAFB;
+    border-bottom-left-radius: 1rem;
+    border-bottom-right-radius: 1rem;
+}
+
+.footer-button {
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    border: none;
+}
+
+.footer-button.secondary {
+    background-color: #6B7280;
+    color: white;
+}
+
+.footer-button.secondary:hover {
+    background-color: #4B5563;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+/* ============================================================================
+   MIEL POR TIPO TAB
+   ============================================================================ */
+
+.miel-header {
+    @apply mb-4;
+}
+
+.miel-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.miel-card {
+    @apply bg-gradient-to-br from-white to-amber-50 border border-amber-200 rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg;
+}
+
+.card-header {
+    @apply bg-gradient-to-r from-honey-primary/10 to-amber-100 px-4 py-3 border-b border-amber-200;
+}
+
+.card-title {
+    @apply text-base font-bold text-gray-900;
+}
+
+.card-body {
+    @apply p-4 space-y-3;
+}
+
+.miel-item {
+    @apply flex justify-between items-center py-2 border-b border-gray-200;
+}
+
+.item-label {
+    @apply text-sm text-gray-600 font-medium;
+}
+
+.item-value {
+    @apply text-base font-bold font-mono;
+}
+
+.miel-item-destacado {
+    @apply flex justify-between items-center py-3 bg-honey-primary/10 rounded-lg px-4 mt-2 border-2 border-honey-primary/30;
+}
+
+.item-label-destacado {
+    @apply text-sm text-honey-dark font-bold uppercase tracking-wide;
+}
+
+.item-value-destacado {
+    @apply text-xl font-black font-mono text-honey-dark;
+}
+
+.empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .modal-container {
+        max-width: 95%;
+        max-height: 95vh;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .tabs-nav {
+        flex-wrap: wrap;
+    }
+
+    .tab-button {
+        padding: 0.5rem 1rem;
+        font-size: 0.75rem;
+    }
+
+    .apiarios-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .btn-new-apiario {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\proveedores\proveedor-detail-modal.component.css
+---------------------------------------------------------- */
+
+/* ============================================================================
+   ðŸ¢ PROVEEDOR DETAIL MODAL STYLES
+   ============================================================================ */
+
+/* Modal Overlay */
+.modal-overlay {
+    @apply fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4;
+    animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* Modal Container */
+.modal-container {
+    @apply bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] flex flex-col overflow-hidden;
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* ============================================================================
+   HEADER
+   ============================================================================ */
+
+.modal-header {
+    @apply bg-gradient-to-r from-honey-primary/10 to-amber-100/50 border-b border-amber-200;
+}
+
+.header-content {
+    @apply flex items-center justify-between p-6;
+}
+
+.icon-wrapper {
+    @apply w-14 h-14 bg-gradient-to-br from-honey-primary/20 to-amber-100 rounded-xl flex items-center justify-center;
+}
+
+.modal-title {
+    @apply text-xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.separator {
+    @apply mx-2 text-gray-400;
+}
+
+.close-button {
+    @apply w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-200 transition-colors text-gray-600 hover:text-gray-900;
+}
+
+/* Tabs Navigation */
+.tabs-nav {
+    @apply flex border-t border-amber-200 bg-white;
+}
+
+.tab-button {
+    @apply flex items-center space-x-2 px-6 py-3 text-sm font-medium text-gray-600 border-b-2 border-transparent hover:bg-gray-50 hover:text-gray-900 transition-all;
+}
+
+.tab-button.active {
+    @apply text-honey-primary border-honey-primary bg-honey-primary/5;
+}
+
+/* ============================================================================
+   BODY
+   ============================================================================ */
+
+.modal-body {
+    @apply flex-1 overflow-y-auto p-6;
+}
+
+.tab-content {
+    @apply space-y-6;
+}
+
+/* Info Grid */
+.info-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6;
+}
+
+.info-section {
+    @apply bg-gray-50 rounded-lg p-4 space-y-4;
+}
+
+.section-title {
+    @apply text-sm font-bold text-gray-700 uppercase tracking-wide mb-3 pb-2 border-b border-gray-200;
+}
+
+.info-item {
+    @apply flex flex-col space-y-1;
+}
+
+.info-item label {
+    @apply text-xs text-gray-500 uppercase tracking-wide;
+}
+
+.info-item span {
+    @apply text-sm text-gray-900;
+}
+
+/* Apicultores Tab */
+.apicultores-header {
+    @apply mb-4 pb-4 border-b border-gray-200;
+}
+
+/* Pagination */
+.pagination-container {
+    @apply flex items-center justify-between mt-4 pt-4 border-t border-gray-200;
+}
+
+.pagination-button {
+    @apply flex items-center space-x-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+.pagination-button:hover:not(:disabled) {
+    @apply bg-honey-primary/10 border-honey-primary text-honey-dark;
+}
+
+.pagination-info {
+    @apply text-sm text-gray-600 font-medium;
+}
+
+/* ============================================================================
+   INVENTARIO TAB
+   ============================================================================ */
+
+.inventario-header {
+    @apply mb-4;
+}
+
+.inventario-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+.inventario-card {
+    @apply bg-gradient-to-br from-white to-amber-50 border border-amber-200 rounded-xl shadow-md overflow-hidden transition-all hover:shadow-lg;
+}
+
+.card-header {
+    @apply bg-gradient-to-r from-honey-primary/10 to-amber-100 px-4 py-3 border-b border-amber-200;
+}
+
+.card-title {
+    @apply text-base font-bold text-gray-900;
+}
+
+.card-body {
+    @apply p-4 space-y-3;
+}
+
+.inventario-item {
+    @apply flex justify-between items-center py-2 border-b border-gray-200;
+}
+
+.item-label {
+    @apply text-sm text-gray-600 font-medium;
+}
+
+.item-value {
+    @apply text-base font-bold font-mono;
+}
+
+.inventario-item-destacado {
+    @apply flex justify-between items-center py-3 bg-honey-primary/10 rounded-lg px-4 mt-2 border-2 border-honey-primary/30;
+}
+
+.item-label-destacado {
+    @apply text-sm text-honey-dark font-bold uppercase tracking-wide;
+}
+
+.item-value-destacado {
+    @apply text-xl font-black font-mono text-honey-dark;
+}
+
+.empty-state {
+    @apply flex flex-col items-center justify-center py-12 text-center;
+}
+
+/* Mapa Tab */
+.map-section {
+    @apply space-y-6;
+}
+
+.map-info {
+    @apply flex flex-wrap gap-6 p-4 bg-gray-50 rounded-lg;
+}
+
+.coordinate-item {
+    @apply flex items-center space-x-3;
+}
+
+.coordinate-item label {
+    @apply text-xs text-gray-500 uppercase;
+}
+
+.coordinate-item span {
+    @apply text-sm text-gray-900;
+}
+
+.map-placeholder {
+    @apply h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-center;
+}
+
+/* ============================================================================
+   FOOTER
+   ============================================================================ */
+
+.modal-footer {
+    @apply flex items-center justify-end space-x-3 p-6 bg-gray-50 border-t border-gray-200;
+}
+
+.footer-button {
+    @apply flex items-center space-x-2 px-6 py-2.5 rounded-lg font-medium transition-all;
+}
+
+.footer-button.secondary {
+    @apply bg-white text-gray-700 border border-gray-300 hover:bg-gray-50;
+}
+
+.footer-button.primary {
+    @apply bg-honey-primary text-white hover:bg-honey-dark;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 768px) {
+    .modal-container {
+        @apply max-h-[95vh] mx-2;
+    }
+
+    .info-grid {
+        @apply grid-cols-1;
+    }
+
+    .tabs-nav {
+        @apply overflow-x-auto;
+    }
+
+    .tab-button {
+        @apply flex-shrink-0 px-4 py-2 text-xs;
+    }
+
+    .modal-header {
+        @apply p-4;
+    }
+
+    .modal-body {
+        @apply p-4;
+    }
+
+    .modal-footer {
+        @apply p-4;
+    }
+}
+
+/* ============================================================================
+   SCROLLBAR CUSTOM
+   ============================================================================ */
+
+.modal-body::-webkit-scrollbar {
+    @apply w-2;
+}
+
+.modal-body::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+}
+
+.modal-body::-webkit-scrollbar-thumb {
+    @apply bg-gray-400 rounded-full;
+}
+
+.modal-body::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+}
+
+/* ── SECCION: FORMULARIOS ── */
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\choferes\chofer-form\chofer-form.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸš› CHOFER FORM COMPONENT STYLES (MODAL)
+ * ============================================================================
+ */
+
+/* ============================================================================
+   MODAL OVERLAY
+   ============================================================================ */
+.chofer-form-modal-overlay {
+    @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4;
+}
+
+/* ============================================================================
+   MODAL CONTAINER
+   ============================================================================ */
+.chofer-form-modal {
+    @apply bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col;
+}
+
+/* ============================================================================
+   MODAL HEADER
+   ============================================================================ */
+.modal-header {
+    @apply flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-amber-50 to-white;
+}
+
+.modal-title {
+    @apply text-2xl font-bold text-gray-900;
+}
+
+.modal-subtitle {
+    @apply text-sm text-gray-600 mt-1;
+}
+
+.modal-close-btn {
+    @apply p-2 hover:bg-gray-100 rounded-lg transition-colors;
+}
+
+/* ============================================================================
+   ALERTS
+   ============================================================================ */
+.alert {
+    @apply flex items-center space-x-3 p-4 rounded-lg mx-6 mt-4;
+}
+
+.alert-error {
+    @apply bg-red-50 border border-red-200 text-red-800;
+}
+
+/* ============================================================================
+   MODAL BODY (SCROLLABLE)
+   ============================================================================ */
+.modal-body {
+    @apply flex-1 overflow-y-auto p-6;
+}
+
+/* ============================================================================
+   FORM GRID
+   ============================================================================ */
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6;
+}
+
+/* ============================================================================
+   FORM GROUPS
+   ============================================================================ */
+.form-group {
+    @apply space-y-2;
+}
+
+.form-group-full {
+    @apply md:col-span-2;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+.required {
+    @apply text-red-500;
+}
+
+.form-input,
+.form-select,
+.form-textarea {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-all;
+}
+
+.form-input.error,
+.form-select.error,
+.form-textarea.error {
+    @apply border-red-500 focus:ring-red-500;
+}
+
+.help-text {
+    @apply text-xs text-gray-500;
+}
+
+.error-text {
+    @apply text-sm text-red-600 mt-1;
+}
+
+/* ============================================================================
+   MODAL FOOTER (BOTONES)
+   ============================================================================ */
+.modal-footer {
+    @apply flex items-center justify-end space-x-3 p-6 border-t border-gray-200 bg-gray-50;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+.btn {
+    @apply inline-flex items-center space-x-2 px-5 py-2.5 rounded-lg font-medium transition-all;
+}
+
+.btn-primary {
+    @apply bg-honey-primary hover:bg-honey-dark text-white disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* ============================================================================
+   LOADING SPINNER (pequeÃ±o para botÃ³n)
+   ============================================================================ */
+.spinner-small {
+    @apply w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\usuarios\usuario-form\usuario-form.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ‘¤ USUARIO FORM COMPONENT STYLES
+ * ============================================================================
+ */
+
+/* ============================================================================
+   CONTAINER
+   ============================================================================ */
+.usuario-form-container {
+    @apply p-6 max-w-5xl mx-auto;
+}
+
+/* ============================================================================
+   PAGE HEADER
+   ============================================================================ */
+.page-header {
+    @apply mb-6;
+}
+
+.page-title {
+    @apply text-3xl font-bold text-gray-900;
+}
+
+.page-subtitle {
+    @apply text-gray-600 mt-1;
+}
+
+/* ============================================================================
+   ALERTS
+   ============================================================================ */
+.alert {
+    @apply flex items-center space-x-3 p-4 rounded-lg mb-6;
+}
+
+.alert-error {
+    @apply bg-red-50 border border-red-200 text-red-800;
+}
+
+/* ============================================================================
+   LOADING
+   ============================================================================ */
+.loading-container {
+    @apply flex flex-col items-center justify-center py-12;
+}
+
+.spinner {
+    @apply w-12 h-12 border-4 border-honey-primary border-t-transparent rounded-full animate-spin;
+}
+
+.loading-text {
+    @apply mt-4 text-gray-600;
+}
+
+/* ============================================================================
+   FORM CARD
+   ============================================================================ */
+.form-card {
+    @apply bg-white rounded-lg shadow-md border border-gray-200 p-6;
+}
+
+/* ============================================================================
+   FORM GRID
+   ============================================================================ */
+.form-grid {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-6 mb-6;
+}
+
+/* ============================================================================
+   FORM GROUPS
+   ============================================================================ */
+.form-group {
+    @apply space-y-2;
+}
+
+.form-group-full {
+    @apply md:col-span-2;
+}
+
+.form-label {
+    @apply block text-sm font-medium text-gray-700;
+}
+
+.form-input,
+.form-select {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-honey-primary focus:border-transparent transition-all;
+}
+
+.form-input[readonly] {
+    @apply bg-gray-100 cursor-not-allowed;
+}
+
+.form-input.error,
+.form-select.error {
+    @apply border-red-500 focus:ring-red-500;
+}
+
+.error-text {
+    @apply text-sm text-red-600 mt-1;
+}
+
+.help-text {
+    @apply text-sm text-gray-500 mt-1;
+}
+
+.required {
+    @apply text-red-500;
+}
+
+/* ============================================================================
+   PASSWORD REQUIREMENTS
+   ============================================================================ */
+.password-requirements {
+    @apply mt-3 p-4 bg-gray-50 rounded-lg;
+}
+
+.requirement {
+    @apply flex items-center space-x-2 text-sm text-gray-700;
+}
+
+.requirement.valid {
+    @apply text-green-700;
+}
+
+/* ============================================================================
+   FORM ACTIONS
+   ============================================================================ */
+.form-actions {
+    @apply flex items-center justify-end space-x-3 pt-6 border-t border-gray-200;
+}
+
+/* ============================================================================
+   BUTTONS
+   ============================================================================ */
+.btn {
+    @apply inline-flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors;
+}
+
+.btn-primary {
+    @apply bg-honey-primary text-white hover:bg-honey-dark disabled:bg-gray-300 disabled:cursor-not-allowed;
+}
+
+.btn-secondary {
+    @apply bg-gray-200 text-gray-700 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .usuario-form-container {
+        @apply p-4;
+    }
+
+    .page-title {
+        @apply text-2xl;
+    }
+
+    .form-grid {
+        @apply grid-cols-1;
+    }
+
+    .form-actions {
+        @apply flex-col space-y-2 space-x-0;
+    }
+
+    .form-actions button {
+        @apply w-full justify-center;
+    }
+}
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\visitas\accesos\acceso-form\acceso-form.component.css
+---------------------------------------------------------- */
+
+.modal-backdrop  { @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4; }
+.modal-container { @apply bg-white rounded-2xl shadow-2xl w-full; }
+.modal-md        { @apply max-w-lg; }
+.modal-header    { @apply flex items-start justify-between px-6 py-4 border-b border-gray-200; }
+.modal-title     { @apply text-lg font-bold text-gray-900; }
+.modal-subtitle  { @apply text-sm text-gray-500 mt-0.5; }
+.modal-body      { @apply px-6 py-4 flex flex-col gap-4; }
+.modal-footer    { @apply px-6 py-4 border-t border-gray-200 flex justify-end gap-3; }
+
+.btn-close  { @apply p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors; }
+.form-field { @apply flex flex-col gap-1; }
+.form-label { @apply text-sm font-medium text-gray-700; }
+.form-input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-honey-primary/30 focus:border-honey-primary; }
+.input-error { @apply border-red-500 focus:ring-red-200 focus:border-red-500; }
+.field-error { @apply text-xs text-red-600; }
+.alert-error { @apply bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3; }
+
+.btn         { @apply px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2; }
+.btn-secondary { @apply bg-gray-100 text-gray-700 hover:bg-gray-200; }
+.btn-primary   { @apply bg-honey-primary text-white hover:bg-honey-dark disabled:opacity-50 disabled:cursor-not-allowed; }
+.spinner-sm    { @apply w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin; }
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\visitas\programadas\visita-form\visita-form.component.css
+---------------------------------------------------------- */
+
+.modal-backdrop  { @apply fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4; }
+.modal-container { @apply bg-white rounded-2xl shadow-2xl w-full; }
+.modal-md        { @apply max-w-lg; }
+.modal-header    { @apply flex items-start justify-between px-6 py-4 border-b border-gray-200; }
+.modal-title     { @apply text-lg font-bold text-gray-900; }
+.modal-subtitle  { @apply text-sm text-gray-500 mt-0.5; }
+.modal-body      { @apply px-6 py-4 flex flex-col gap-4; }
+.modal-footer    { @apply px-6 py-4 border-t border-gray-200 flex justify-end gap-3; }
+
+.btn-close  { @apply p-1 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors; }
+.form-field { @apply flex flex-col gap-1; }
+.form-label { @apply text-sm font-medium text-gray-700; }
+.form-input { @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-honey-primary/30 focus:border-honey-primary bg-white; }
+.input-error { @apply border-red-500 focus:ring-red-200 focus:border-red-500; }
+.field-error { @apply text-xs text-red-600; }
+.alert-error { @apply bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3; }
+
+.tipo-options  { @apply flex gap-3; }
+.tipo-option   { @apply flex-1 text-center px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium cursor-pointer transition-all hover:border-honey-primary; }
+.tipo-selected { @apply border-honey-primary bg-honey-primary/10 text-honey-dark; }
+
+.btn           { @apply px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2; }
+.btn-secondary { @apply bg-gray-100 text-gray-700 hover:bg-gray-200; }
+.btn-primary   { @apply bg-honey-primary text-white hover:bg-honey-dark disabled:opacity-50 disabled:cursor-not-allowed; }
+.spinner-sm    { @apply w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin; }
+
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\features\admin\visitas\reportes\admin-fill-form\admin-fill-form.component.css
+---------------------------------------------------------- */
+
+/* Top bar */
+.topbar {
+  @apply sticky top-0 z-20 flex items-center gap-4 px-6 py-3
+         bg-white border-b border-gray-200 shadow-sm;
+}
+.back-btn     { @apply p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors; }
+.topbar-info  { @apply flex flex-col; }
+.topbar-title { @apply font-semibold text-gray-900; }
+.topbar-sub   { @apply text-xs text-gray-500; }
+.topbar-actions { @apply flex items-center gap-3 ml-auto; }
+
+.saving-badge {
+  @apply flex items-center gap-1.5 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full;
+}
+.mini-spinner {
+  @apply w-3 h-3 border border-gray-400 border-t-transparent rounded-full animate-spin;
+}
+
+.btn-finalizar {
+  @apply px-5 py-2 bg-honey-primary text-white text-sm font-semibold rounded-lg
+         hover:bg-honey-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors;
+}
+
+/* Creating overlay */
+.creating-overlay {
+  @apply flex flex-col items-center justify-center py-32 gap-4 text-gray-400;
+}
+.spinner { @apply w-8 h-8 border-2 border-honey-primary border-t-transparent rounded-full animate-spin; }
+
+/* Form */
+.form-container {
+  @apply max-w-4xl mx-auto px-4 sm:px-6 py-6 flex flex-col gap-5;
+}
+
+.section-card {
+  @apply bg-white rounded-xl border border-gray-200 p-5 shadow-sm;
+}
+.section-title { @apply text-base font-semibold text-gray-800 mb-4; }
+.section-sub   { @apply text-xs font-medium text-gray-500 uppercase tracking-wide mb-2; }
+
+/* Grids */
+.grid-2 { @apply grid grid-cols-1 gap-4 sm:grid-cols-2; }
+.grid-3 { @apply grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3; }
+
+/* Fields */
+.field       { @apply flex flex-col gap-1; }
+.field-label { @apply text-xs font-medium text-gray-600 uppercase tracking-wide; }
+.field-input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm
+         focus:outline-none focus:ring-2 focus:ring-honey-primary/30 focus:border-honey-primary;
+}
+
+/* Radios */
+.radio-row { @apply flex flex-wrap gap-2; }
+.radio-opt {
+  @apply flex items-center px-3 py-1.5 text-sm border border-gray-200 rounded-lg
+         cursor-pointer hover:border-honey-primary hover:bg-amber-50 transition-colors select-none;
+}
+.radio-active {
+  @apply border-honey-primary bg-amber-50 text-honey-dark font-medium;
+}
+
+/* Checkboxes */
+.checkbox-grid { @apply flex flex-wrap gap-2; }
+.checkbox-row  { @apply flex flex-wrap gap-2; }
+.checkbox-opt {
+  @apply flex items-center px-3 py-1.5 text-sm border border-gray-200 rounded-lg
+         cursor-pointer hover:border-honey-primary hover:bg-amber-50 transition-colors select-none;
+}
+.checkbox-active {
+  @apply border-honey-primary bg-amber-50 text-honey-dark font-medium;
+}
+
+/* ── SECCION: UI_COMPONENTS ── */
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\alert\alert.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸš¨ ALERT STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ * 
+ * Estilos del componente Alert con variantes de tipo
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+.alert-base {
+    @apply rounded-lg border-l-4 shadow-md;
+    @apply transition-all duration-300 ease-in-out;
+    @apply overflow-hidden;
+    @apply animate-slide-in;
+}
+
+.alert-hidden {
+    @apply opacity-0 transform translate-x-full;
+}
+
+/* ============================================================================
+   CONTENT LAYOUT
+   ============================================================================ */
+
+.alert-content {
+    @apply flex items-start p-4 gap-3;
+}
+
+/* ============================================================================
+   ICON
+   ============================================================================ */
+
+.alert-icon {
+    @apply flex-shrink-0;
+}
+
+/* ============================================================================
+   TEXT
+   ============================================================================ */
+
+.alert-text {
+    @apply flex-1 min-w-0;
+}
+
+.alert-title {
+    @apply font-bold text-sm mb-1;
+}
+
+.alert-message {
+    @apply text-sm;
+}
+
+/* ============================================================================
+   CLOSE BUTTON
+   ============================================================================ */
+
+.alert-close {
+    @apply flex-shrink-0 p-1 rounded-md;
+    @apply transition-all duration-150;
+    @apply hover:opacity-70;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+}
+
+.alert-close:active {
+    @apply transform scale-90;
+}
+
+/* ============================================================================
+   VARIANTS - SUCCESS (Verde)
+   ============================================================================ */
+
+.alert-success {
+    @apply bg-green-50 border-green-500;
+}
+
+.alert-success .alert-icon {
+    @apply text-green-500;
+}
+
+.alert-success .alert-title {
+    @apply text-green-800;
+}
+
+.alert-success .alert-message {
+    @apply text-green-700;
+}
+
+.alert-success .alert-close {
+    @apply text-green-500 hover:bg-green-100;
+    @apply focus:ring-green-500;
+}
+
+/* ============================================================================
+   VARIANTS - ERROR (Rojo)
+   ============================================================================ */
+
+.alert-error {
+    @apply bg-red-50 border-red-500;
+}
+
+.alert-error .alert-icon {
+    @apply text-red-500;
+}
+
+.alert-error .alert-title {
+    @apply text-red-800;
+}
+
+.alert-error .alert-message {
+    @apply text-red-700;
+}
+
+.alert-error .alert-close {
+    @apply text-red-500 hover:bg-red-100;
+    @apply focus:ring-red-500;
+}
+
+/* ============================================================================
+   VARIANTS - WARNING (Amarillo)
+   ============================================================================ */
+
+.alert-warning {
+    @apply bg-yellow-50 border-yellow-500;
+}
+
+.alert-warning .alert-icon {
+    @apply text-yellow-500;
+}
+
+.alert-warning .alert-title {
+    @apply text-yellow-800;
+}
+
+.alert-warning .alert-message {
+    @apply text-yellow-700;
+}
+
+.alert-warning .alert-close {
+    @apply text-yellow-500 hover:bg-yellow-100;
+    @apply focus:ring-yellow-500;
+}
+
+/* ============================================================================
+   VARIANTS - INFO (Azul)
+   ============================================================================ */
+
+.alert-info {
+    @apply bg-blue-50 border-blue-500;
+}
+
+.alert-info .alert-icon {
+    @apply text-blue-500;
+}
+
+.alert-info .alert-title {
+    @apply text-blue-800;
+}
+
+.alert-info .alert-message {
+    @apply text-blue-700;
+}
+
+.alert-info .alert-close {
+    @apply text-blue-500 hover:bg-blue-100;
+    @apply focus:ring-blue-500;
+}
+
+/* ============================================================================
+   PROGRESS BAR (Auto-close)
+   ============================================================================ */
+
+.alert-progress-container {
+    @apply h-1 bg-black/10;
+}
+
+.alert-progress-bar {
+    @apply h-full bg-current;
+    @apply animate-progress;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes slide-in {
+    from {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes progress {
+    from {
+        width: 100%;
+    }
+
+    to {
+        width: 0%;
+    }
+}
+
+.animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+}
+
+.animate-progress {
+    animation: progress linear;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\badge\badge.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ·ï¸ BADGE STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ * 
+ * Estilos del componente Badge con variantes de color
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+.badge-base {
+    @apply inline-flex items-center justify-center;
+    @apply font-medium rounded-full;
+    @apply transition-all duration-200 ease-in-out;
+    @apply whitespace-nowrap;
+}
+
+/* ============================================================================
+   SIZES
+   ============================================================================ */
+
+.badge-sm {
+    @apply px-2 py-0.5 text-xs;
+    @apply gap-1;
+}
+
+.badge-md {
+    @apply px-2.5 py-0.5 text-sm;
+    @apply gap-1.5;
+}
+
+.badge-lg {
+    @apply px-3 py-1 text-base;
+    @apply gap-2;
+}
+
+/* ============================================================================
+   VARIANTS - SUCCESS (Verde)
+   ============================================================================ */
+
+.badge-success {
+    @apply bg-green-100 text-green-800;
+    @apply border border-green-200;
+}
+
+.badge-success .badge-dot {
+    @apply bg-green-500;
+}
+
+/* ============================================================================
+   VARIANTS - WARNING (Amarillo)
+   ============================================================================ */
+
+.badge-warning {
+    @apply bg-yellow-100 text-yellow-800;
+    @apply border border-yellow-200;
+}
+
+.badge-warning .badge-dot {
+    @apply bg-yellow-500;
+}
+
+/* ============================================================================
+   VARIANTS - DANGER (Rojo)
+   ============================================================================ */
+
+.badge-danger {
+    @apply bg-red-100 text-red-800;
+    @apply border border-red-200;
+}
+
+.badge-danger .badge-dot {
+    @apply bg-red-500;
+}
+
+/* ============================================================================
+   VARIANTS - INFO (Azul)
+   ============================================================================ */
+
+.badge-info {
+    @apply bg-blue-100 text-blue-800;
+    @apply border border-blue-200;
+}
+
+.badge-info .badge-dot {
+    @apply bg-blue-500;
+}
+
+/* ============================================================================
+   VARIANTS - DEFAULT (Gris)
+   ============================================================================ */
+
+.badge-default {
+    @apply bg-gray-100 text-gray-800;
+    @apply border border-gray-200;
+}
+
+.badge-default .badge-dot {
+    @apply bg-gray-500;
+}
+
+/* ============================================================================
+   DOT INDICATOR
+   ============================================================================ */
+
+.badge-dot {
+    @apply w-2 h-2 rounded-full;
+    @apply flex-shrink-0;
+}
+
+/* ============================================================================
+   ICON
+   ============================================================================ */
+
+.badge-icon {
+    @apply flex-shrink-0;
+}
+
+/* ============================================================================
+   TEXT
+   ============================================================================ */
+
+.badge-text {
+    @apply leading-none;
+}
+
+/* ============================================================================
+   REMOVE BUTTON
+   ============================================================================ */
+
+.badge-remove {
+    @apply ml-1 flex-shrink-0;
+    @apply hover:opacity-70;
+    @apply transition-opacity duration-150;
+    @apply focus:outline-none;
+}
+
+.badge-remove:active {
+    @apply transform scale-90;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\button\button.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ”˜ BUTTON STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ * 
+ * Estilos del componente Button con variantes y estados
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+.button-base {
+    @apply inline-flex items-center justify-center;
+    @apply font-semibold rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply cursor-pointer;
+    @apply border border-transparent;
+}
+
+.button-base:active:not(.button-disabled) {
+    @apply transform scale-95;
+}
+
+/* ============================================================================
+   SIZES
+   ============================================================================ */
+
+.button-sm {
+    @apply px-3 py-1.5 text-sm;
+}
+
+.button-md {
+    @apply px-4 py-2 text-base;
+}
+
+.button-lg {
+    @apply px-6 py-3 text-lg;
+}
+
+/* ============================================================================
+   VARIANTS - PRIMARY (Honey Theme)
+   ============================================================================ */
+
+.button-primary {
+    @apply bg-honey-primary text-white;
+    @apply hover:bg-honey-dark;
+    @apply focus:ring-honey-primary;
+    @apply shadow-md hover:shadow-lg;
+}
+
+/* ============================================================================
+   VARIANTS - SECONDARY (Gray)
+   ============================================================================ */
+
+.button-secondary {
+    @apply bg-gray-100 text-gray-700;
+    @apply hover:bg-gray-200;
+    @apply focus:ring-gray-400;
+    @apply border-gray-300;
+}
+
+/* ============================================================================
+   VARIANTS - DANGER (Red)
+   ============================================================================ */
+
+.button-danger {
+    @apply bg-red-600 text-white;
+    @apply hover:bg-red-700;
+    @apply focus:ring-red-500;
+    @apply shadow-md hover:shadow-lg;
+}
+
+/* ============================================================================
+   VARIANTS - SUCCESS (Green)
+   ============================================================================ */
+
+.button-success {
+    @apply bg-green-600 text-white;
+    @apply hover:bg-green-700;
+    @apply focus:ring-green-500;
+    @apply shadow-md hover:shadow-lg;
+}
+
+/* ============================================================================
+   VARIANTS - OUTLINE
+   ============================================================================ */
+
+.button-outline {
+    @apply bg-transparent text-honey-primary;
+    @apply border-2 border-honey-primary;
+    @apply hover:bg-honey-primary hover:text-white;
+    @apply focus:ring-honey-primary;
+}
+
+/* ============================================================================
+   DISABLED STATE
+   ============================================================================ */
+
+.button-disabled {
+    @apply opacity-50 cursor-not-allowed;
+    @apply pointer-events-none;
+    @apply shadow-none;
+}
+
+/* ============================================================================
+   ANIMATIONS
+   ============================================================================ */
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\card\card.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸŽ´ CARD STYLES - SISTEMA OAXACA MIEL
+ * ============================================================================
+ * 
+ * Estilos del componente Card con secciones y estados
+ * 
+ * ============================================================================
+ */
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+
+.card-base {
+    @apply bg-white rounded-lg;
+    @apply transition-all duration-200 ease-in-out;
+    @apply overflow-hidden;
+}
+
+.card-base:not(.card-no-shadow) {
+    @apply shadow-md;
+}
+
+/* ============================================================================
+   HOVERABLE STATE
+   ============================================================================ */
+
+.card-hoverable {
+    @apply cursor-pointer;
+}
+
+.card-hoverable:hover {
+    @apply shadow-xl;
+    @apply transform -translate-y-1;
+}
+
+/* ============================================================================
+   BORDER VARIANT
+   ============================================================================ */
+
+.card-border {
+    @apply border-l-4;
+}
+
+/* ============================================================================
+   NO SHADOW VARIANT
+   ============================================================================ */
+
+.card-no-shadow {
+    @apply shadow-none border border-gray-200;
+}
+
+/* ============================================================================
+   HEADER SECTION
+   ============================================================================ */
+
+.card-header {
+    @apply bg-gray-50 px-6 py-4 border-b border-gray-200;
+    @apply font-semibold text-gray-800;
+}
+
+/* Si el header estÃ¡ vacÃ­o, no lo mostramos */
+.card-header:empty {
+    @apply hidden;
+}
+
+/* ============================================================================
+   BODY SECTION
+   ============================================================================ */
+
+.card-body {
+    @apply text-gray-700;
+}
+
+/* ============================================================================
+   FOOTER SECTION
+   ============================================================================ */
+
+.card-footer {
+    @apply bg-gray-50 px-6 py-4 border-t border-gray-200;
+    @apply flex items-center justify-end gap-2;
+}
+
+/* Si el footer estÃ¡ vacÃ­o, no lo mostramos */
+.card-footer:empty {
+    @apply hidden;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 640px) {
+
+    .card-header,
+    .card-footer {
+        @apply px-4 py-3;
+    }
+}
+
+/* ARCHIVO: src\app\shared\components\ui\toast\toast.component.css — (vacío) */
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\ui\autocomplete-select\autocomplete-select.component.css
+---------------------------------------------------------- */
+
+/**
+ * ============================================================================
+ * ðŸ” AUTOCOMPLETE SELECT - STYLES
+ * ============================================================================
+ */
+
+/* ============================================================================
+   CONTAINER
+   ============================================================================ */
+
+.autocomplete-container {
+    @apply relative w-full;
+}
+
+.autocomplete-label {
+    @apply block text-sm font-semibold text-gray-700 mb-2;
+}
+
+/* ============================================================================
+   INPUT WRAPPER
+   ============================================================================ */
+
+.autocomplete-input-wrapper {
+    @apply relative flex items-center bg-white border border-gray-300 rounded-lg transition-all;
+}
+
+.autocomplete-input-wrapper:focus-within {
+    @apply ring-2 ring-honey-primary border-honey-primary;
+}
+
+.autocomplete-input-wrapper.disabled {
+    @apply bg-gray-100 cursor-not-allowed;
+}
+
+.autocomplete-input-wrapper.error {
+    @apply border-red-500;
+}
+
+.autocomplete-input-wrapper.error:focus-within {
+    @apply ring-red-500 border-red-500;
+}
+
+/* ============================================================================
+   INPUT
+   ============================================================================ */
+
+.autocomplete-input {
+    @apply flex-1 px-4 py-2.5 bg-transparent border-0 outline-none text-gray-900 placeholder-gray-400;
+}
+
+.autocomplete-input:disabled {
+    @apply text-gray-500 cursor-not-allowed;
+}
+
+/* ============================================================================
+   ACTIONS (Clear & Chevron)
+   ============================================================================ */
+
+.autocomplete-actions {
+    @apply flex items-center space-x-1 pr-2;
+}
+
+.clear-button,
+.chevron-button {
+    @apply p-1 rounded hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700;
+}
+
+.clear-button:hover {
+    @apply bg-red-50 text-red-600;
+}
+
+.chevron-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+}
+
+/* ============================================================================
+   DROPDOWN
+   ============================================================================ */
+
+.autocomplete-dropdown {
+    @apply absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden;
+    animation: dropdownFadeIn 0.15s ease-out;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============================================================================
+   OPTIONS LIST
+   ============================================================================ */
+
+.autocomplete-options {
+    @apply overflow-y-auto;
+    scrollbar-width: thin;
+    scrollbar-color: #D1D5DB #F3F4F6;
+}
+
+.autocomplete-options::-webkit-scrollbar {
+    @apply w-2;
+}
+
+.autocomplete-options::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+}
+
+.autocomplete-options::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full;
+}
+
+.autocomplete-options::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+}
+
+/* ============================================================================
+   OPTION ITEM
+   ============================================================================ */
+
+.autocomplete-option {
+    @apply w-full text-left px-4 py-3 transition-colors border-0 bg-transparent cursor-pointer;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option.highlighted {
+    @apply bg-honey-primary/10;
+}
+
+.autocomplete-option.selected {
+    @apply bg-honey-primary/20;
+}
+
+.autocomplete-option:active {
+    @apply bg-honey-primary/30;
+}
+
+.option-content {
+    @apply flex items-center justify-between space-x-2;
+}
+
+.option-text {
+    @apply text-sm text-gray-900 flex-1 truncate;
+}
+
+/* ============================================================================
+   NO RESULTS
+   ============================================================================ */
+
+.no-results {
+    @apply flex flex-col items-center justify-center space-y-2 py-8 px-4 text-gray-500;
+}
+
+.no-results span {
+    @apply text-sm text-center;
+}
+
+/* ============================================================================
+   ERROR MESSAGE
+   ============================================================================ */
+
+.error-message {
+    @apply flex items-center space-x-2 mt-2 text-xs text-red-600 font-medium;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+
+@media (max-width: 640px) {
+    .autocomplete-input {
+        @apply text-base;
+        /* Evitar zoom en iOS */
+    }
+
+    .autocomplete-dropdown {
+        @apply max-h-64;
+        /* Limitar altura en mÃ³viles */
+    }
+}
+
+/* ============================================================================
+   ACCESSIBILITY
+   ============================================================================ */
+
+.autocomplete-option:focus {
+    @apply outline-none ring-2 ring-honey-primary ring-inset;
+}
+
+/* Mejorar contraste para lectores de pantalla */
+@media (prefers-contrast: high) {
+    .autocomplete-option.highlighted {
+        @apply bg-honey-primary/30;
+    }
+}
+
+/* --------------------------------------------------------
+   ARCHIVO: src\app\shared\components\bee-loader\bee-loader.component.css
+---------------------------------------------------------- */
+
+/* AnimaciÃ³n de los puntos de carga */
+.dot-animation {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out both;
+}
+
+.animation-delay-200 {
+    animation-delay: -0.32s;
+}
+
+.animation-delay-400 {
+    animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+
+    0%,
+    80%,
+    100% {
+        transform: scale(0);
+        opacity: 0.5;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Efecto hover en la animaciÃ³n Lottie */
+.lottie-animation {
+    filter: drop-shadow(0 4px 6px rgba(245, 158, 11, 0.2));
+}
+
+/* ── Clases de Tabla Personalizadas de Oaxaca Miel/AUP ── */
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  background-color: #ffffff;
+}
+.table-custom {
+  width: 100%;
+  text-align: left;
+  font-size: 0.875rem;
+  color: #334155;
+  border-collapse: collapse;
+  background-color: #ffffff;
+}
+.table-custom thead th {
+  background-color: #0f172a;
+  color: #f8fafc;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid #e2e8f0;
+}
+.table-custom tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background-color 150ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.table-custom tbody tr:hover {
+  background-color: rgba(245, 158, 11, 0.05); /* amber hover glow */
+}
+.table-custom td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  color: #1e293b;
+}
+
 }
 
 /* ── Animaciones personalizadas ────────────────── */

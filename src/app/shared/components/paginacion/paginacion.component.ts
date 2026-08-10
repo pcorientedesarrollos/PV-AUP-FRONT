@@ -15,7 +15,7 @@ export class PaginacionComponent implements OnChanges {
 
   @Output() paginaCambiada = new EventEmitter<number>();
 
-  paginasMostradas = computed(() => {
+  paginasMostradas() {
     const paginas = [];
     const total = this.totalPaginas;
     const actual = this.paginaActual;
@@ -34,16 +34,16 @@ export class PaginacionComponent implements OnChanges {
       }
     }
     return paginas;
-  });
+  }
 
-  rangoInicio = computed(() => {
+  rangoInicio() {
     if (this.totalRegistros === 0) return 0;
     return (this.paginaActual - 1) * this.tamanoPagina + 1;
-  });
+  }
 
-  rangoFin = computed(() => {
+  rangoFin() {
     return Math.min(this.paginaActual * this.tamanoPagina, this.totalRegistros);
-  });
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     // Validar que la pagina actual no sea mayor al total (sucede al filtrar)

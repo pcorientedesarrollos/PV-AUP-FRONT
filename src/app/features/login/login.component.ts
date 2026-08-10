@@ -12,6 +12,7 @@ import { ToastService } from '../../core/services/toast.service';
   standalone: true,
   imports: [FormsModule, CommonModule],
   templateUrl: './login.component.html',
+  styleUrl: './login.component.css',
 })
 export class LoginComponent {
   credenciales = { user: '', password: '' };

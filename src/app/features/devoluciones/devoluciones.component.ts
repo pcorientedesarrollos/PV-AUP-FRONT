@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { ExportService } from '../../core/services/export.service';
 
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 
@@ -50,7 +51,7 @@ export class DevolucionesComponent implements OnInit {
     return h;
   }
 
-  constructor(private http: HttpClient, private auth: AuthService) {}
+  constructor(private http: HttpClient, private auth: AuthService, public exportService: ExportService) {}
 
   ngOnInit() { this.cargarDevoluciones(); }
 
@@ -70,5 +71,31 @@ export class DevolucionesComponent implements OnInit {
 
   cerrarDetalles() {
     this.devolucionSeleccionada.set(null);
+  }
+
+  exportarExcel() {
+    const data = this.devolucionesFiltradas().map((d: any) => ({
+      'ID Devolución': d.idDevolucion,
+      'Fecha': new Date(d.fechaDevolucion).toLocaleString(),
+      'Venta/Ticket': d.venta?.folio || d.venta?.idVenta || 'N/A',
+      'Monto Devuelto': d.montoDevuelto,
+      'Motivo': d.motivo || 'N/A',
+      'Cajero': d.usuario?.nombreUsuario || 'N/A',
+      'Sucursal': d.sucursal?.nombre || 'N/A'
+    }));
+    this.exportService.exportToExcel(data, 'Reporte_Devoluciones');
+  }
+
+  exportarPDF() {
+    const headers = ['ID', 'Fecha', 'Ticket', 'Monto', 'Motivo', 'Cajero'];
+    const data = this.devolucionesFiltradas().map((d: any) => [
+      d.idDevolucion.toString(),
+      new Date(d.fechaDevolucion).toLocaleString(),
+      d.venta?.folio || d.venta?.idVenta?.toString() || 'N/A',
+      `$${d.montoDevuelto}`,
+      d.motivo || 'N/A',
+      d.usuario?.nombreUsuario || 'N/A'
+    ]);
+    this.exportService.exportToPdf(headers, data, 'Reporte de Devoluciones', 'Reporte_Devoluciones', 'l');
   }
 }

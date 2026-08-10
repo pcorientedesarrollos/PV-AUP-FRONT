@@ -38,10 +38,13 @@ export class App {
 
     // Si el usuario ya tiene sesión y hay una ruta guardada, restaurarla
     if (this.auth.isLoggedIn()) {
-      const saved = sessionStorage.getItem(this.LAST_ROUTE_KEY);
-      if (saved && !this.SKIP_ROUTES.includes(saved)) {
-        // Navegar a la ruta guardada después de que el router esté listo
-        setTimeout(() => this.router.navigateByUrl(saved), 0);
+      const isInitialRoutePos = typeof window !== 'undefined' && window.location.pathname.startsWith('/pos');
+      if (!isInitialRoutePos) {
+        const saved = sessionStorage.getItem(this.LAST_ROUTE_KEY);
+        if (saved && !this.SKIP_ROUTES.includes(saved)) {
+          // Navegar a la ruta guardada después de que el router esté listo
+          setTimeout(() => this.router.navigateByUrl(saved), 0);
+        }
       }
     }
 

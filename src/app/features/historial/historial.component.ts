@@ -561,8 +561,8 @@ export class HistorialComponent implements OnInit {
       'Total': v.total,
       'Método Pago': v.metodoPago,
       'Estatus': v.estatus,
-      'Cajero': v.usuario?.nombre || 'N/A',
-      'Cliente': v.cliente?.nombre || 'Público en General'
+      'Cajero': v.usuario?.nombre || v.usuarioNombre || 'N/A',
+      'Cliente': v.cliente?.nombre || v.nombre || 'Público en General'
     }));
     this.exportService.exportToExcel(data, 'Historial_Ventas');
   }
@@ -585,8 +585,8 @@ export class HistorialComponent implements OnInit {
       `$${v.total}`,
       v.metodoPago,
       v.estatus,
-      v.usuario?.nombre || 'N/A',
-      v.cliente?.nombre || 'Público'
+      v.usuario?.nombre || v.usuarioNombre || 'N/A',
+      v.cliente?.nombre || v.nombre || 'Público'
     ]);
     this.exportService.exportToPdf(headers, data, 'Historial de Ventas', 'Historial_Ventas', 'l');
   }

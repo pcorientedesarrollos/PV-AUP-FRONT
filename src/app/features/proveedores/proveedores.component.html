@@ -3,13 +3,13 @@
   <!-- Encabezado y Acciones -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
     <div class="flex items-center gap-3">
-      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">
+      <h1 class="page-title">
         Directorio de Proveedores
       </h1>
     </div>
     
     <div class="flex items-center gap-4 w-full sm:w-auto">
-      <button (click)="cargarProveedores()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+      <button (click)="cargarProveedores()" class="btn-cancel w-full sm:w-auto flex items-center justify-center gap-2">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
         Actualizar
       </button>
@@ -17,7 +17,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
         Importar
       </button>
-      <button (click)="abrirModalCrear()" class="bg-amber-500 hover:bg-amber-600 text-white font-medium py-2 px-4 rounded-md shadow-sm transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+      <button (click)="abrirModalCrear()" class="btn-submit w-full sm:w-auto flex items-center justify-center gap-2">
         <span>+</span> Nuevo Proveedor
       </button>
     </div>
@@ -25,110 +25,120 @@
 
   <!-- Tarjetas de resumen -->
   <div class="flex gap-4 mb-6">
-    <article class="bg-white rounded-lg shadow p-4 flex flex-col min-w-[200px]">
-      <span class="text-sm font-medium text-slate-500">Total Proveedores</span>
-      <span class="text-3xl font-bold text-slate-800 mt-1">{{ proveedoresFiltrados().length }}</span>
+    <article class="metric-card min-w-[200px]">
+      <div class="flex flex-col">
+        <span class="text-sm font-medium text-gray-500">Total Proveedores</span>
+        <span class="text-3xl font-bold text-gray-900 mt-1">{{ proveedoresFiltrados().length }}</span>
+      </div>
     </article>
   </div>
 
   <!-- Contenido Principal: Card -->
-  <article class="flex-1 bg-white rounded-lg shadow flex flex-col overflow-hidden border border-slate-200">
+  <article class="flex-1 bg-white rounded-lg shadow flex flex-col overflow-hidden border border-gray-200">
     
     <!-- Barra de Filtros -->
-    <div class="p-4 border-b border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between bg-slate-50">
-      <div class="relative w-full md:max-w-md">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-          </svg>
+    <div class="table-filters">
+      <div class="filters-row">
+        <div class="filter-control w-full md:max-w-md relative">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none mt-7">
+            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <label class="filter-label">Buscar Proveedor</label>
+          <input type="search" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" placeholder="Buscar por nombre, RFC o contacto..." class="filter-input pl-9">
         </div>
-        <input type="search" [ngModel]="busqueda()" (ngModelChange)="busqueda.set($event)" placeholder="Buscar por nombre, RFC o contacto..." class="pl-9 bg-white w-full rounded-md border-slate-300 shadow-sm focus:border-amber-500 focus:ring-amber-500">
       </div>
     </div>
 
     <!-- Tabla -->
-    <div class="flex-1 overflow-auto bg-white">
-      @if (cargando()) {
-        <div class="flex justify-center items-center h-full py-20">
-          <div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div>
-        </div>
-      } @else if (proveedoresFiltrados().length === 0) {
-        <div class="flex flex-col items-center justify-center py-20 text-slate-400">
-          <span class="text-5xl mb-3">🏭</span>
-          <p class="font-semibold">Sin proveedores registrados</p>
-          <p class="text-sm">Haz clic en "Nuevo Proveedor" para agregar uno</p>
-        </div>
-      } @else {
-        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
-            <tr>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Proveedor</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">RFC</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Forma de Pago</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Método de Pago</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Uso de CFDI</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">C.P.</th>
-              <th class="py-3 px-4 font-semibold text-center w-32 whitespace-nowrap">Acciones</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
-            @for (p of proveedoresPaginados(); track p.idProveedor) {
-              <tr class="hover:bg-slate-50/80 transition-colors transition-colors">
-                <td class="py-3 px-4 font-medium text-slate-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ p.nombre }}</td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (p.rfc) {
-                    {{ p.rfc }}
-                  } @else {
-                    <span class="text-slate-400 italic">No registrado</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (p.formaPago) {
-                    {{ getNombreFormaPago(p.formaPago) }}
-                  } @else {
-                    <span class="text-slate-400 italic">-</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (p.metodoPago) {
-                    {{ p.metodoPago }}
-                  } @else {
-                    <span class="text-slate-400 italic">-</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (p.usoCfdi) {
-                    {{ getNombreUsoCfdi(p.usoCfdi) }}
-                  } @else {
-                    <span class="text-slate-400 italic">-</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-slate-600 whitespace-nowrap">
-                  @if (p.cp) {
-                    {{ p.cp }}
-                  } @else {
-                    <span class="text-slate-400 italic">-</span>
-                  }
-                </td>
-                <td class="py-3 px-4 text-center">
-                  <div class="flex items-center justify-center gap-2">
-                    <button (click)="cargarComprasDeProveedor(p)" class="text-slate-400 hover:text-indigo-600 transition-colors p-1" title="Ver Compras">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                    </button>
-                    <button (click)="abrirModalEditar(p)" class="text-slate-400 hover:text-amber-600 transition-colors p-1" title="Editar">
-                      <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
-                    </button>
-                    <button (click)="eliminarProveedor(p)" class="text-slate-400 hover:text-rose-600 transition-colors p-1" title="Eliminar">
-                      <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                  </div>
-                </td>
+    <div class="honey-table-container flex-1">
+      <div class="table-wrapper h-full">
+        @if (cargando()) {
+          <div class="flex justify-center items-center h-full py-20">
+            <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-amber-500"></div>
+          </div>
+        } @else if (proveedoresFiltrados().length === 0) {
+          <div class="empty-state text-gray-400">
+            <span class="text-5xl mb-3 block">🏭</span>
+            <p class="font-semibold">Sin proveedores registrados</p>
+            <p class="text-sm">Haz clic en "Nuevo Proveedor" para agregar uno</p>
+          </div>
+        } @else {
+          <table class="honey-table table-hoverable table-bordered">
+            <thead class="bg-gray-50">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFC</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Forma de Pago</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Método de Pago</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uso de CFDI</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">C.P.</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider actions-column">Acciones</th>
               </tr>
-            }
-        </table>
-      }
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              @for (p of proveedoresPaginados(); track p.idProveedor) {
+                <tr>
+                  <td class="px-6 py-4 text-sm text-gray-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ p.nombre }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    @if (p.rfc) {
+                      {{ p.rfc }}
+                    } @else {
+                      <span class="text-gray-400 italic">No registrado</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    @if (p.formaPago) {
+                      {{ getNombreFormaPago(p.formaPago) }}
+                    } @else {
+                      <span class="text-gray-400 italic">-</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    @if (p.metodoPago) {
+                      {{ p.metodoPago }}
+                    } @else {
+                      <span class="text-gray-400 italic">-</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    @if (p.usoCfdi) {
+                      {{ getNombreUsoCfdi(p.usoCfdi) }}
+                    } @else {
+                      <span class="text-gray-400 italic">-</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    @if (p.cp) {
+                      {{ p.cp }}
+                    } @else {
+                      <span class="text-gray-400 italic">-</span>
+                    }
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                    <div class="flex items-center justify-center gap-2">
+                      <button (click)="cargarComprasDeProveedor(p)" class="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Ver Compras">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                      </button>
+                      <button (click)="abrirModalEditar(p)" class="text-gray-400 hover:text-amber-600 transition-colors p-1" title="Editar">
+                        <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
+                      </button>
+                      <button (click)="eliminarProveedor(p)" class="text-gray-400 hover:text-red-600 transition-colors p-1" title="Eliminar">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
     </div>
-    <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="proveedoresFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+    <div class="pagination-container">
+      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="proveedoresFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+    </div>
   </article>
 </div>
 
@@ -136,10 +146,10 @@
 <!-- MODAL PROVEEDOR                                         -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarModalProveedor()) {
-  <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" (click)="mostrarModalProveedor.set(false)">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg" (click)="$event.stopPropagation()">
-      <div class="p-6 border-b border-slate-100 flex justify-between items-center">
-        <h2 class="text-lg font-bold text-slate-800">{{ modoProveedor() === 'crear' ? 'Nuevo Proveedor' : 'Editar Proveedor' }}</h2>
+  <div class="modal-overlay" (click)="mostrarModalProveedor.set(false)">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header flex justify-between items-center">
+        <h2 class="modal-title">{{ modoProveedor() === 'crear' ? 'Nuevo Proveedor' : 'Editar Proveedor' }}</h2>
         <div>
           <input type="file" accept="application/pdf" class="hidden" #fileConstanciaProv (change)="onConstanciaSelected($event)">
           <button type="button" (click)="fileConstanciaProv.click()" [disabled]="cargandoConstancia()" class="text-xs bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold px-3 py-1.5 rounded-lg border border-indigo-200 transition-colors flex items-center gap-1 disabled:opacity-50">
@@ -153,74 +163,74 @@
           </button>
         </div>
       </div>
-      <div class="p-6 space-y-4">
-        <div class="relative">
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre / Razón Social *</label>
+      <div class="modal-body space-y-4">
+        <div class="form-group relative">
+          <label class="form-label">Nombre / Razón Social *</label>
           <input type="text" [(ngModel)]="proveedorActual.nombre" placeholder="Distribuidora XYZ S.A. de C.V."
-                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                 class="form-input">
           @if (coincidenciasNombre().length > 0) {
-            <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
+            <ul class="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
               @for (item of coincidenciasNombre(); track item.idProveedor) {
-                <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
+                <li class="px-4 py-2.5 text-sm border-b border-gray-100 last:border-0 text-gray-700 hover:bg-gray-50 transition-colors">
                   {{ item.nombre }}
                 </li>
               }
             </ul>
           }
           @if (duplicadoNombre) {
-            <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Ya existe un proveedor idéntico con este nombre.</p>
+            <p class="error-message flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Ya existe un proveedor idéntico con este nombre.</p>
           }
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div class="relative">
-            <label class="block text-sm font-semibold text-slate-700 mb-1">RFC</label>
+        <div class="form-grid">
+          <div class="form-group relative">
+            <label class="form-label">RFC</label>
             <input type="text" [(ngModel)]="proveedorActual.rfc" placeholder="XYZS010101ABC"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
             @if (coincidenciasRfc().length > 0) {
-              <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
+              <ul class="absolute z-50 w-full bg-white border border-gray-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
                 @for (item of coincidenciasRfc(); track item.idProveedor) {
-                  <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
+                  <li class="px-4 py-2.5 text-sm border-b border-gray-100 last:border-0 text-gray-700 hover:bg-gray-50 transition-colors">
                     <span class="font-mono text-amber-600 font-semibold">{{ item.rfc }}</span> &mdash; {{ item.nombre }}
                   </li>
                 }
               </ul>
             }
             @if (duplicadoRfc) {
-              <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Este RFC exacto ya está registrado.</p>
+              <p class="error-message flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Este RFC exacto ya está registrado.</p>
             }
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Teléfono</label>
+          <div class="form-group">
+            <label class="form-label">Teléfono</label>
             <input type="text" [(ngModel)]="proveedorActual.telefono" placeholder="55 1234 5678"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre de Contacto</label>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nombre de Contacto</label>
             <input type="text" [(ngModel)]="proveedorActual.contacto" placeholder="Juan López"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Correo</label>
+          <div class="form-group">
+            <label class="form-label">Correo</label>
             <input type="email" [(ngModel)]="proveedorActual.correo" placeholder="ventas@proveedor.com"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Dirección</label>
+        <div class="form-group">
+          <label class="form-label">Dirección</label>
           <input type="text" [(ngModel)]="proveedorActual.direccion" placeholder="Calle, No., Colonia, Ciudad"
-                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                 class="form-input">
         </div>
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Código Postal</label>
-            <input type="text" [(ngModel)]="proveedorActual.cp" placeholder="Ej. 97000" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Código Postal</label>
+            <input type="text" [(ngModel)]="proveedorActual.cp" placeholder="Ej. 97000" class="form-input">
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Régimen Fiscal</label>
-            <select [(ngModel)]="proveedorActual.regimenFiscal" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          <div class="form-group">
+            <label class="form-label">Régimen Fiscal</label>
+            <select [(ngModel)]="proveedorActual.regimenFiscal" class="form-input">
               @for (r of regimenes; track r.id) {
                 <option [value]="r.id">{{ r.id }} - {{ r.nombre }}</option>
               }
@@ -228,18 +238,18 @@
           </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Uso de CFDI</label>
-            <select [(ngModel)]="proveedorActual.usoCfdi" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Uso de CFDI</label>
+            <select [(ngModel)]="proveedorActual.usoCfdi" class="form-input">
               @for (u of usos; track u.id) {
                 <option [value]="u.id">{{ u.id }} - {{ u.nombre }}</option>
               }
             </select>
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Forma de Pago (Default)</label>
-            <select [(ngModel)]="proveedorActual.formaPago" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+          <div class="form-group">
+            <label class="form-label">Forma de Pago (Default)</label>
+            <select [(ngModel)]="proveedorActual.formaPago" class="form-input">
               @for (fp of formasPago; track fp.id) {
                 <option [value]="fp.id">{{ fp.id }} - {{ fp.nombre }}</option>
               }
@@ -247,18 +257,18 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Método de Pago (Default)</label>
-          <select [(ngModel)]="proveedorActual.metodoPago" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+        <div class="form-group">
+          <label class="form-label">Método de Pago (Default)</label>
+          <select [(ngModel)]="proveedorActual.metodoPago" class="form-input">
             @for (mp of metodosPago; track mp.id) {
               <option [value]="mp.id">{{ mp.id }} - {{ mp.nombre }}</option>
             }
           </select>
         </div>
       </div>
-      <div class="px-6 pb-6 flex justify-end gap-3">
-        <button (click)="mostrarModalProveedor.set(false)" class="px-4 py-2 text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50/80 transition-colors">Cancelar</button>
-        <button (click)="guardarProveedor()" class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors">Guardar</button>
+      <div class="modal-footer">
+        <button (click)="mostrarModalProveedor.set(false)" class="btn-cancel">Cancelar</button>
+        <button (click)="guardarProveedor()" class="btn-submit">Guardar</button>
       </div>
     </div>
   </div>
@@ -268,19 +278,19 @@
 <!-- PANEL COMPRAS LATERAL                                   -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarPanelCompras()) {
-  <div class="fixed inset-0 bg-black/50 z-50 flex justify-end" (click)="mostrarPanelCompras.set(false)">
+  <div class="modal-overlay flex justify-end" (click)="mostrarPanelCompras.set(false)">
     <div class="bg-white w-full max-w-2xl h-full flex flex-col shadow-2xl" (click)="$event.stopPropagation()">
       <!-- Header -->
-      <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+      <div class="p-5 border-b border-gray-200 flex items-center justify-between bg-gray-50">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">📦 Compras — {{ proveedorSeleccionado()?.nombre }}</h2>
-          <p class="text-sm text-slate-500">Total acumulado: <span class="font-bold text-emerald-600">{{ totalCompras() | currency:'MXN':'$':'1.2-2' }}</span></p>
+          <h2 class="text-lg font-bold text-gray-900">📦 Compras — {{ proveedorSeleccionado()?.nombre }}</h2>
+          <p class="text-sm text-gray-600">Total acumulado: <span class="font-bold text-emerald-600">{{ totalCompras() | currency:'MXN':'$':'1.2-2' }}</span></p>
         </div>
         <div class="flex gap-2">
-          <button (click)="abrirModalCompra()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg text-sm transition-colors">
+          <button (click)="abrirModalCompra()" class="btn-submit text-sm">
             + Nueva Compra
           </button>
-          <button (click)="mostrarPanelCompras.set(false)" class="text-slate-400 hover:text-slate-700">
+          <button (click)="mostrarPanelCompras.set(false)" class="close-button flex items-center justify-center text-gray-500">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
@@ -288,31 +298,31 @@
       <!-- Cuerpo -->
       <div class="flex-1 overflow-y-auto p-5 space-y-3">
         @if (cargandoCompras()) {
-          <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div></div>
+          <div class="flex justify-center py-10"><div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-amber-500"></div></div>
         } @else if (compras().length === 0) {
-          <div class="flex flex-col items-center justify-center py-20 text-slate-400">
-            <span class="text-4xl mb-2">📂</span>
+          <div class="empty-state text-gray-400">
+            <span class="text-4xl mb-2 block">📂</span>
             <p>Sin compras registradas para este proveedor</p>
           </div>
         } @else {
           @for (c of compras(); track c.idCompra) {
-            <div class="bg-slate-50 rounded-xl border border-slate-200 p-4 hover:border-amber-300 transition-colors">
+            <div class="card-base border border-gray-200 p-4 hover:border-amber-300 transition-colors">
               <div class="flex items-start justify-between">
                 <div>
                   <div class="flex items-center gap-2 mb-1">
-                    <span class="font-bold text-slate-800 text-sm">{{ c.folio }}</span>
+                    <span class="font-bold text-gray-900 text-sm">{{ c.folio }}</span>
                     @if (c.urlFacturaPdf || c.urlFacturaXml) {
-                      <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-semibold">📎 Factura</span>
+                      <span class="badge-success">📎 Factura</span>
                     }
                   </div>
-                  <p class="text-xs text-slate-500">{{ c.fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <p class="text-xs text-gray-500">{{ c.fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
                   @if (c.folioFacturaProveedor) {
-                    <p class="text-xs text-slate-500 mt-0.5">Factura proveedor: <span class="font-mono font-bold">{{ c.folioFacturaProveedor }}</span></p>
+                    <p class="text-xs text-gray-500 mt-0.5">Factura proveedor: <span class="font-mono font-bold">{{ c.folioFacturaProveedor }}</span></p>
                   }
-                  <p class="text-xs text-slate-400 mt-1">{{ c.detalles?.length || 0 }} producto(s)</p>
+                  <p class="text-xs text-gray-400 mt-1">{{ c.detalles?.length || 0 }} producto(s)</p>
                 </div>
                 <div class="text-right">
-                  <p class="font-black text-lg text-slate-800">{{ c.total | currency:'MXN':'$':'1.2-2' }}</p>
+                  <p class="font-black text-lg text-gray-900">{{ c.total | currency:'MXN':'$':'1.2-2' }}</p>
                   <button (click)="verDetalleCompra(c)" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold mt-1">Ver detalle →</button>
                 </div>
               </div>
@@ -328,32 +338,32 @@
 <!-- MODAL NUEVA COMPRA                                      -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarModalCompra()) {
-  <div class="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" (click)="mostrarModalCompra.set(false)">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
-      <div class="p-5 border-b border-slate-100">
-        <h2 class="text-lg font-bold text-slate-800">+ Nueva Compra</h2>
-        <p class="text-sm text-slate-500">Proveedor: <strong>{{ proveedorSeleccionado()?.nombre }}</strong></p>
+  <div class="modal-overlay" (click)="mostrarModalCompra.set(false)">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">+ Nueva Compra</h2>
+        <p class="text-sm text-gray-600 mt-1">Proveedor: <strong>{{ proveedorSeleccionado()?.nombre }}</strong></p>
       </div>
-      <div class="flex-1 overflow-y-auto p-5 space-y-5">
+      <div class="modal-body space-y-5">
 
         <!-- Info factura proveedor -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Folio / No. Factura del Proveedor</label>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Folio / No. Factura del Proveedor</label>
             <input type="text" [(ngModel)]="compraActual.folioFacturaProveedor" placeholder="Ej: A-00123"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
           </div>
-          <div>
-            <label class="block text-sm font-semibold text-slate-700 mb-1">Notas</label>
+          <div class="form-group">
+            <label class="form-label">Notas</label>
             <input type="text" [(ngModel)]="compraActual.notas" placeholder="Observaciones opcionales"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                   class="form-input">
           </div>
         </div>
 
         <!-- Adjuntar Factura -->
         <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
           <p class="text-sm font-bold text-indigo-800 mb-3">📎 Adjuntar Factura del Proveedor <span class="font-normal text-indigo-500">(opcional)</span></p>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="form-grid">
             <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-lg p-3 cursor-pointer hover:bg-indigo-100 transition-colors">
               <span class="text-2xl">📄</span>
               <span class="text-xs font-semibold text-indigo-700">{{ archivoPdf ? archivoPdf.name : 'Subir PDF' }}</span>
@@ -368,16 +378,16 @@
         </div>
 
         <!-- Buscar producto -->
-        <div class="relative">
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Agregar Productos</label>
+        <div class="form-group relative">
+          <label class="form-label">Agregar Productos</label>
           <input type="text" [(ngModel)]="busquedaProducto" placeholder="🔍 Buscar producto por nombre o código..."
-                 class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                 class="form-input">
           @if (busquedaProducto.length > 0 && productosFiltrados().length > 0) {
-            <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-xl mt-1 max-h-44 overflow-y-auto">
+            <ul class="absolute z-10 w-full bg-white border border-gray-200 shadow-lg rounded-xl mt-1 max-h-44 overflow-y-auto">
               @for (prod of productosFiltrados().slice(0, 10); track prod.idProducto) {
-                <li (click)="agregarProducto(prod)" class="px-4 py-2.5 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0 flex justify-between items-center">
-                  <span class="font-medium text-slate-800">{{ prod.nombre }}</span>
-                  <span class="text-xs text-slate-400">Stock: {{ prod.stockActual }}</span>
+                <li (click)="agregarProducto(prod)" class="px-4 py-2.5 hover:bg-amber-50 cursor-pointer text-sm border-b border-gray-100 last:border-0 flex justify-between items-center">
+                  <span class="font-medium text-gray-900">{{ prod.nombre }}</span>
+                  <span class="text-xs text-gray-500">Stock: {{ prod.stockActual }}</span>
                 </li>
               }
             </ul>
@@ -386,47 +396,49 @@
 
         <!-- Tabla de detalles -->
         @if (detallesCompra.length > 0) {
-          <div class="border border-slate-200 rounded-xl overflow-hidden">
-            <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-              <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
-                <tr>
-                  <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
-                  <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
-                  <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Costo Unit.</th>
-                  <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Subtotal</th>
-                  <th class="px-3 py-2"></th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 text-sm">
-                @for (d of detallesCompra; track d.idProducto; let i = $index) {
+          <div class="honey-table-container">
+            <div class="table-wrapper">
+              <table class="honey-table table-bordered">
+                <thead class="bg-gray-50">
                   <tr>
-                    <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.nombre }}</td>
-                    <td class="px-3 py-2">
-                      <input type="number" [(ngModel)]="d.cantidad" (ngModelChange)="recalcularTotal()" min="1"
-                             class="w-16 text-center border border-slate-300 rounded px-1 py-1 text-sm">
-                    </td>
-                    <td class="px-3 py-2">
-                      <input type="number" [(ngModel)]="d.precioCosto" (ngModelChange)="recalcularTotal()" min="0" step="0.01"
-                             placeholder="$0.00" class="w-24 text-center border border-slate-300 rounded px-1 py-1 text-sm">
-                    </td>
-                    <td class="px-3 py-2 text-right text-sm font-bold text-slate-700">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
-                    <td class="px-3 py-2 text-center">
-                      <button (click)="quitarProducto(i)" class="text-red-400 hover:text-red-600">✕</button>
-                    </td>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider actions-column"></th>
                   </tr>
-                }
-              </tbody>
-            </table>
-            <div class="bg-slate-50 px-4 py-3 flex justify-end">
-              <span class="font-black text-lg text-slate-800">Total: {{ (compraActual.total || 0) | currency:'MXN':'$':'1.2-2' }}</span>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  @for (d of detallesCompra; track d.idProducto; let i = $index) {
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ d.nombre }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <input type="number" [(ngModel)]="d.cantidad" (ngModelChange)="recalcularTotal()" min="1"
+                               class="w-16 text-center form-input px-1 py-1">
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                        <input type="number" [(ngModel)]="d.precioCosto" (ngModelChange)="recalcularTotal()" min="0" step="0.01"
+                               placeholder="$0.00" class="w-24 text-center form-input px-1 py-1">
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                        <button (click)="quitarProducto(i)" class="text-red-500 hover:text-red-700 font-bold">✕</button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
+              <span class="font-black text-lg text-gray-900">Total: {{ (compraActual.total || 0) | currency:'MXN':'$':'1.2-2' }}</span>
             </div>
           </div>
         }
       </div>
-      <div class="px-5 py-4 border-t border-slate-100 flex justify-end gap-3">
-        <button (click)="mostrarModalCompra.set(false)" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg hover:bg-slate-50/80 transition-colors">Cancelar</button>
+      <div class="modal-footer">
+        <button (click)="mostrarModalCompra.set(false)" class="btn-cancel">Cancelar</button>
         <button (click)="guardarCompra()" [disabled]="guardandoCompra()"
-                class="px-6 py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg transition-colors disabled:opacity-60 flex items-center gap-2">
+                class="btn-submit flex items-center gap-2 disabled:opacity-60">
           @if (guardandoCompra()) { <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> }
           Guardar Compra
         </button>
@@ -439,35 +451,35 @@
 <!-- MODAL DETALLE COMPRA                                    -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarDetalle() && compraDetalle()) {
-  <div class="fixed inset-0 bg-black/60 z-[70] flex items-center justify-center p-4" (click)="mostrarDetalle.set(false)">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col" (click)="$event.stopPropagation()">
-      <div class="p-5 border-b border-slate-100 flex justify-between items-start">
+  <div class="modal-overlay" (click)="mostrarDetalle.set(false)">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+      <div class="modal-header flex justify-between items-start">
         <div>
-          <h2 class="text-lg font-bold text-slate-800">{{ compraDetalle().folio }}</h2>
-          <p class="text-sm text-slate-500">{{ compraDetalle().fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
+          <h2 class="modal-title">{{ compraDetalle().folio }}</h2>
+          <p class="text-sm text-gray-600 mt-1">{{ compraDetalle().fechaCompra | date:'dd/MM/yyyy HH:mm' }}</p>
         </div>
-        <button (click)="mostrarDetalle.set(false)" class="text-slate-400 hover:text-slate-700">
+        <button (click)="mostrarDetalle.set(false)" class="close-button flex items-center justify-center text-gray-500">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
-      <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <div class="modal-body space-y-4">
         <!-- Sección de Factura -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm space-y-3">
-          <h3 class="font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-2">
+        <div class="card-base border border-gray-200 p-4 space-y-3">
+          <h3 class="font-bold text-gray-900 flex items-center gap-2 border-b border-gray-200 pb-2">
             <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             Archivos de Factura
           </h3>
           
           <div class="flex flex-wrap gap-4">
             <!-- Bloque PDF -->
-            <div class="flex-1 min-w-[200px] bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-col justify-between">
+            <div class="flex-1 min-w-[200px] bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between">
               <div class="flex items-center gap-2 mb-3">
                 <div class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                 </div>
                 <div>
-                  <p class="font-bold text-slate-700 text-sm">Factura PDF</p>
-                  <p class="text-[10px] text-slate-500 uppercase">{{ compraDetalle().urlFacturaPdf ? 'Adjuntado' : 'Faltante' }}</p>
+                  <p class="font-bold text-gray-700 text-sm">Factura PDF</p>
+                  <p class="text-[10px] text-gray-500 uppercase">{{ compraDetalle().urlFacturaPdf ? 'Adjuntado' : 'Faltante' }}</p>
                 </div>
               </div>
               
@@ -477,7 +489,7 @@
                 </button>
               } @else {
                 <input type="file" #filePdf hidden accept=".pdf" (change)="adjuntarFacturaExistente($event, 'pdf')">
-                <button (click)="filePdf.click()" [disabled]="subiendoFactura()" class="w-full flex items-center justify-center gap-1 bg-slate-800 text-white hover:bg-slate-700 font-bold py-1.5 rounded-md text-xs transition-colors disabled:opacity-50">
+                <button (click)="filePdf.click()" [disabled]="subiendoFactura()" class="w-full flex items-center justify-center gap-1 bg-gray-800 text-white hover:bg-gray-700 font-bold py-1.5 rounded-md text-xs transition-colors disabled:opacity-50">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   Adjuntar PDF
                 </button>
@@ -485,14 +497,14 @@
             </div>
 
             <!-- Bloque XML -->
-            <div class="flex-1 min-w-[200px] bg-slate-50 border border-slate-200 rounded-lg p-3 flex flex-col justify-between">
+            <div class="flex-1 min-w-[200px] bg-gray-50 border border-gray-200 rounded-lg p-3 flex flex-col justify-between">
               <div class="flex items-center gap-2 mb-3">
                 <div class="w-8 h-8 bg-indigo-100 text-indigo-600 rounded flex items-center justify-center font-black font-mono text-xs">
                   &lt;/&gt;
                 </div>
                 <div>
-                  <p class="font-bold text-slate-700 text-sm">Factura XML</p>
-                  <p class="text-[10px] text-slate-500 uppercase">{{ compraDetalle().urlFacturaXml ? 'Adjuntado' : 'Faltante' }}</p>
+                  <p class="font-bold text-gray-700 text-sm">Factura XML</p>
+                  <p class="text-[10px] text-gray-500 uppercase">{{ compraDetalle().urlFacturaXml ? 'Adjuntado' : 'Faltante' }}</p>
                 </div>
               </div>
               
@@ -502,7 +514,7 @@
                 </button>
               } @else {
                 <input type="file" #fileXml hidden accept=".xml" (change)="adjuntarFacturaExistente($event, 'xml')">
-                <button (click)="fileXml.click()" [disabled]="subiendoFactura()" class="w-full flex items-center justify-center gap-1 bg-slate-800 text-white hover:bg-slate-700 font-bold py-1.5 rounded-md text-xs transition-colors disabled:opacity-50">
+                <button (click)="fileXml.click()" [disabled]="subiendoFactura()" class="w-full flex items-center justify-center gap-1 bg-gray-800 text-white hover:bg-gray-700 font-bold py-1.5 rounded-md text-xs transition-colors disabled:opacity-50">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                   Adjuntar XML
                 </button>
@@ -511,35 +523,42 @@
           </div>
         </div>
         @if (compraDetalle().folioFacturaProveedor) {
-          <p class="text-sm text-slate-600">Factura proveedor: <span class="font-mono font-bold">{{ compraDetalle().folioFacturaProveedor }}</span></p>
+          <p class="text-sm text-gray-600">Factura proveedor: <span class="font-mono font-bold">{{ compraDetalle().folioFacturaProveedor }}</span></p>
         }
         @if (compraDetalle().notas) {
-          <p class="text-sm text-slate-500 italic">📝 {{ compraDetalle().notas }}</p>
+          <p class="text-sm text-gray-500 italic">📝 {{ compraDetalle().notas }}</p>
         }
         <!-- Detalle productos -->
-        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
-            <tr>
-              <th class="px-3 py-2 text-left text-xs font-bold text-slate-500 uppercase">Producto</th>
-              <th class="px-3 py-2 text-center text-xs font-bold text-slate-500 uppercase">Cant.</th>
-              <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Costo</th>
-              <th class="px-3 py-2 text-right text-xs font-bold text-slate-500 uppercase">Subtotal</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
-            @for (d of compraDetalle().detalles; track d.idDetalleCompra) {
-              <tr>
-                <td class="px-3 py-2 text-sm font-medium text-slate-800">{{ d.producto?.nombre || '—' }}</td>
-                <td class="px-3 py-2 text-sm text-center text-slate-600">{{ d.cantidad }}</td>
-                <td class="px-3 py-2 text-sm text-right text-slate-600">{{ d.precioCosto | currency:'MXN':'$':'1.2-2' }}</td>
-                <td class="px-3 py-2 text-sm text-right font-bold text-slate-800">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-        <div class="flex justify-end">
-          <span class="font-black text-lg text-slate-800">Total: {{ compraDetalle().total | currency:'MXN':'$':'1.2-2' }}</span>
+        <div class="honey-table-container">
+          <div class="table-wrapper">
+            <table class="honey-table table-bordered">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                  <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Costo</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                @for (d of compraDetalle().detalles; track d.idDetalleCompra) {
+                  <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ d.producto?.nombre || '—' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{{ d.cantidad }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{{ d.precioCosto | currency:'MXN':'$':'1.2-2' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
         </div>
+        <div class="flex justify-end">
+          <span class="font-black text-lg text-gray-900">Total: {{ compraDetalle().total | currency:'MXN':'$':'1.2-2' }}</span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button (click)="mostrarDetalle.set(false)" class="btn-cancel">Cerrar</button>
       </div>
     </div>
   </div>

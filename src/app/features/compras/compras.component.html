@@ -1,65 +1,66 @@
-<div class="h-full flex flex-col bg-slate-50 relative p-4 sm:p-6 lg:p-8 animate-fade-in custom-scrollbar overflow-y-auto">
-  <div class="max-w-7xl mx-auto w-full space-y-6">
+<div class="bg-gray-50 min-h-screen p-6">
+  <div class="form-container">
 
     <!-- Encabezado -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+        <h1 class="page-title flex items-center gap-3">
           <span class="text-3xl">📦</span> Historial de Compras
         </h1>
-<div class="mt-2 flex gap-2 no-print">
-      <div class="flex items-center gap-2">
-        <button (click)="exportarExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          Excel
-        </button>
-        <button (click)="exportarPDF()" class="bg-rose-600 hover:bg-rose-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          PDF
-        </button>
+        <div class="mt-2 flex gap-2 no-print">
+          <div class="flex items-center gap-2">
+            <button (click)="exportarExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              Excel
+            </button>
+            <button (click)="exportarPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg text-sm font-bold shadow transition-colors flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+        <p class="page-subtitle">Control de mercancía y relación con proveedores</p>
       </div>
-</div>
-
-        <p class="text-slate-500 mt-1">Control de mercancía y relación con proveedores</p>
-      </div>
-      <button (click)="irANuevaCompra()" class="btn-primary flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm transition-all">
+      <button (click)="irANuevaCompra()" class="btn-submit flex items-center gap-2">
         <span class="text-lg">+</span> Nueva Orden de Compra
       </button>
     </div>
 
     <!-- Controles Superiores: Buscador y Pestañas -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-      <div class="relative w-full max-w-md">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
-          </svg>
+    <div class="table-filters">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="filter-control relative w-full max-w-md">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <svg class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <input
+            type="search"
+            [ngModel]="busqueda()"
+            (ngModelChange)="busqueda.set($event)"
+            placeholder="Buscar por folio, proveedor, factura o producto..."
+            class="filter-input pl-9"
+          />
         </div>
-        <input
-          type="search"
-          [ngModel]="busqueda()"
-          (ngModelChange)="busqueda.set($event)"
-          placeholder="Buscar por folio, proveedor, factura o producto..."
-          class="pl-9 py-2 bg-white w-full rounded-lg border border-slate-200 shadow-sm focus:border-indigo-400 focus:ring-indigo-400 text-sm"
-        />
-      </div>
 
-      <!-- Pestañas -->
-      <div class="flex bg-slate-200/50 p-1 rounded-lg">
-        <button 
-          (click)="vistaActual.set('facturas')" 
-          [ngClass]="vistaActual() === 'facturas' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'"
-          class="px-4 py-1.5 rounded-md text-sm transition-all"
-        >
-          Historial Facturas
-        </button>
-        <button 
-          (click)="vistaActual.set('conceptos')" 
-          [ngClass]="vistaActual() === 'conceptos' ? 'bg-white text-indigo-700 shadow-sm font-bold' : 'text-slate-500 hover:text-slate-700 font-medium'"
-          class="px-4 py-1.5 rounded-md text-sm transition-all"
-        >
-          Conceptos Facturados
-        </button>
+        <!-- Pestañas -->
+        <div class="flex bg-gray-200 p-1 rounded-lg">
+          <button 
+            (click)="vistaActual.set('facturas')" 
+            [ngClass]="vistaActual() === 'facturas' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 font-medium'"
+            class="px-4 py-1.5 rounded-md text-sm transition-all"
+          >
+            Historial Facturas
+          </button>
+          <button 
+            (click)="vistaActual.set('conceptos')" 
+            [ngClass]="vistaActual() === 'conceptos' ? 'bg-white text-gray-900 shadow-sm font-bold' : 'text-gray-500 hover:text-gray-700 font-medium'"
+            class="px-4 py-1.5 rounded-md text-sm transition-all"
+          >
+            Conceptos Facturados
+          </button>
+        </div>
       </div>
     </div>
 
@@ -67,212 +68,210 @@
     @if (vistaActual() === 'facturas') {
       <div class="flex gap-6 items-start">
 
-      <!-- Tabla de Compras -->
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex-1 min-w-0">
-        <div class="overflow-auto flex-1">
-          <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
-              <tr>
-                <th class="py-3 px-4 font-semibold">Folio</th>
-                <th class="py-3 px-4 font-semibold">Fecha</th>
-                <th class="py-3 px-4 font-semibold">Proveedor</th>
-                <th class="py-3 px-4 font-semibold">Factura Prov.</th>
-                <th class="py-3 px-4 font-semibold text-right">Total</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 text-sm">
-              @for (compra of registrosPaginados(); track compra.idCompra) {
-                <tr
-                  (click)="verDetalle(compra)"
-                  class="hover:bg-indigo-50 transition-colors cursor-pointer"
-                  [ngClass]="compraDetalle()?.idCompra === compra.idCompra ? 'bg-indigo-50 border-l-4 border-l-indigo-500' : ''"
-                >
-                  <td class="p-4 font-bold text-slate-800">{{ compra.folio }}</td>
-                  <td class="p-4 text-slate-600">{{ compra.fechaCompra | date:'medium' }}</td>
-                  <td class="p-4 text-slate-700 font-medium">{{ compra.proveedor?.nombre || 'Sin Proveedor' }}</td>
-                  <td class="p-4 text-slate-500">{{ compra.folioFacturaProveedor || '-' }}</td>
-                  <td class="p-4 text-right font-black text-indigo-600">{{ compra.total | currency:'MXN':'symbol':'1.2-2' }}</td>
-                </tr>
-              }
-              @if (comprasFiltradas().length === 0) {
+        <!-- Tabla de Compras -->
+        <div class="honey-table-container flex-1 min-w-0">
+          <div class="table-wrapper">
+            <table class="honey-table table-hoverable table-bordered">
+              <thead class="bg-gray-50">
                 <tr>
-                  <td colspan="5" class="p-8 text-center text-slate-400">
-                    @if (busqueda()) {
-                      No se encontraron compras para "<strong>{{ busqueda() }}</strong>".
-                    } @else {
-                      No hay compras registradas. Haz clic en "Nueva Orden de Compra" para comenzar.
-                    }
-                  </td>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
+                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Factura Prov.</th>
+                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                 </tr>
-              }
-            </tbody>
-          </table>
-        </div>
-        <!-- Controles de Paginación -->
-        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="comprasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
-      </div>
-
-      <!-- Panel de Detalle -->
-      @if (compraDetalle() || cargandoDetalle()) {
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 w-full max-w-md flex-shrink-0 overflow-hidden">
-
-          <!-- Header del panel -->
-          <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
-            <div>
-              <h2 class="font-black text-lg tracking-tight">Detalle de Compra</h2>
-              @if (compraDetalle()) {
-                <p class="text-slate-400 text-xs mt-0.5 font-mono">{{ compraDetalle().folio }}</p>
-              }
-            </div>
-            <button (click)="cerrarDetalle()" class="text-slate-400 hover:text-white transition-colors">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-              </svg>
-            </button>
-          </div>
-
-          @if (cargandoDetalle()) {
-            <div class="p-10 flex justify-center items-center text-slate-400">
-              <svg class="animate-spin h-6 w-6 mr-2 text-indigo-500" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
-              </svg>
-              Cargando...
-            </div>
-          } @else if (compraDetalle()) {
-            <div class="p-5 space-y-4">
-
-              <!-- Info general -->
-              <div class="bg-slate-50 rounded-lg p-4 space-y-2 text-sm border border-slate-100">
-                <div class="flex justify-between">
-                  <span class="text-slate-500 font-medium">Proveedor</span>
-                  <span class="font-semibold text-slate-800">{{ compraDetalle().proveedor?.nombre || '-' }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-slate-500 font-medium">Fecha</span>
-                  <span class="font-semibold text-slate-800">{{ compraDetalle().fechaCompra | date:'medium' }}</span>
-                </div>
-                @if (compraDetalle().folioFacturaProveedor) {
-                  <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">Factura Prov.</span>
-                    <span class="font-semibold text-slate-800 font-mono">{{ compraDetalle().folioFacturaProveedor }}</span>
-                  </div>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200 text-sm text-gray-900">
+                @for (compra of registrosPaginados(); track compra.idCompra) {
+                  <tr
+                    (click)="verDetalle(compra)"
+                    class="cursor-pointer"
+                    [ngClass]="compraDetalle()?.idCompra === compra.idCompra ? 'bg-amber-50 border-l-4 border-l-amber-500' : ''"
+                  >
+                    <td class="px-6 py-4 whitespace-nowrap font-bold">{{ compra.folio }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ compra.fechaCompra | date:'medium' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap font-medium">{{ compra.proveedor?.nombre || 'Sin Proveedor' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ compra.folioFacturaProveedor || '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900">{{ compra.total | currency:'MXN':'symbol':'1.2-2' }}</td>
+                  </tr>
                 }
-                @if (compraDetalle().usuario) {
-                  <div class="flex justify-between">
-                    <span class="text-slate-500 font-medium">Registrado por</span>
-                    <span class="font-semibold text-slate-800">{{ compraDetalle().usuario?.nombreCompleto || compraDetalle().usuario?.nombreUsuario }}</span>
-                  </div>
-                }
-                @if (compraDetalle().notas) {
-                  <div class="pt-2 border-t border-slate-200">
-                    <span class="text-slate-500 font-medium block mb-1">Notas</span>
-                    <p class="text-slate-700 text-xs bg-white rounded p-2 border border-slate-200">{{ compraDetalle().notas }}</p>
-                  </div>
-                }
-              </div>
-
-              <!-- Tabla de artículos -->
-              <div>
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Artículos comprados</h3>
-                <div class="border border-slate-200 rounded-lg overflow-hidden">
-                  <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-                    <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
-                      <tr>
-                        <th class="py-2 px-3 text-left font-semibold">Producto</th>
-                        <th class="py-2 px-3 text-center font-semibold">Cant.</th>
-                        <th class="py-2 px-3 text-right font-semibold">Costo Unit.</th>
-                        <th class="py-2 px-3 text-right font-semibold">Subtotal</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100 text-sm">
-                      @for (det of compraDetalle().detalles; track det.idDetalleCompra) {
-                        <tr>
-                          <td class="py-2 px-3 font-medium text-slate-800 max-w-[140px] truncate" [title]="det.producto?.nombre">
-                            {{ det.producto?.nombre || 'Producto' }}
-                          </td>
-                          <td class="py-2 px-3 text-center font-bold text-slate-700">{{ det.cantidad }}</td>
-                          <td class="py-2 px-3 text-right text-slate-600">${{ det.precioCosto | number:'1.2-2' }}</td>
-                          <td class="py-2 px-3 text-right font-semibold text-slate-800">${{ (det.cantidad * det.precioCosto) | number:'1.2-2' }}</td>
-                        </tr>
+                @if (comprasFiltradas().length === 0) {
+                  <tr>
+                    <td colspan="5" class="empty-state text-gray-500">
+                      @if (busqueda()) {
+                        No se encontraron compras para "<strong>{{ busqueda() }}</strong>".
+                      } @else {
+                        No hay compras registradas. Haz clic en "Nueva Orden de Compra" para comenzar.
                       }
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <!-- Totales -->
-              <div class="bg-indigo-50 rounded-lg p-4 border border-indigo-100 flex items-center justify-between">
-                <div>
-                  <p class="text-xs text-indigo-400 font-semibold uppercase tracking-wider">{{ totalItems }} artículo(s)</p>
-                  <p class="text-xs text-slate-500 mt-0.5">{{ (compraDetalle().detalles || []).length }} producto(s) distintos</p>
-                </div>
-                <div class="text-right">
-                  <p class="text-xs text-slate-500">Total</p>
-                  <p class="text-xl font-black text-indigo-700">{{ compraDetalle().total | currency:'MXN':'symbol':'1.2-2' }}</p>
-                </div>
-              </div>
-
-            </div>
-          }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <!-- Controles de Paginación -->
+          <div class="pagination-container">
+            <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="comprasFiltradas().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+          </div>
         </div>
-      }
 
+        <!-- Panel de Detalle -->
+        @if (compraDetalle() || cargandoDetalle()) {
+          <div class="card-base w-full max-w-md flex-shrink-0">
+            <!-- Header del panel -->
+            <div class="bg-gray-100 border-b border-gray-200 px-5 py-4 flex items-center justify-between">
+              <div>
+                <h2 class="font-bold text-lg text-gray-900 tracking-tight">Detalle de Compra</h2>
+                @if (compraDetalle()) {
+                  <p class="text-gray-500 text-xs mt-0.5 font-mono">{{ compraDetalle().folio }}</p>
+                }
+              </div>
+              <button (click)="cerrarDetalle()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+
+            @if (cargandoDetalle()) {
+              <div class="p-10 flex justify-center items-center text-gray-400">
+                <svg class="animate-spin h-6 w-6 mr-2 text-amber-500" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+                </svg>
+                Cargando...
+              </div>
+            } @else if (compraDetalle()) {
+              <div class="p-5 space-y-4">
+                <!-- Info general -->
+                <div class="bg-gray-50 rounded-lg p-4 space-y-2 text-sm border border-gray-200">
+                  <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Proveedor</span>
+                    <span class="font-semibold text-gray-900">{{ compraDetalle().proveedor?.nombre || '-' }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-500 font-medium">Fecha</span>
+                    <span class="font-semibold text-gray-900">{{ compraDetalle().fechaCompra | date:'medium' }}</span>
+                  </div>
+                  @if (compraDetalle().folioFacturaProveedor) {
+                    <div class="flex justify-between">
+                      <span class="text-gray-500 font-medium">Factura Prov.</span>
+                      <span class="font-semibold text-gray-900 font-mono">{{ compraDetalle().folioFacturaProveedor }}</span>
+                    </div>
+                  }
+                  @if (compraDetalle().usuario) {
+                    <div class="flex justify-between">
+                      <span class="text-gray-500 font-medium">Registrado por</span>
+                      <span class="font-semibold text-gray-900">{{ compraDetalle().usuario?.nombreCompleto || compraDetalle().usuario?.nombreUsuario }}</span>
+                    </div>
+                  }
+                  @if (compraDetalle().notas) {
+                    <div class="pt-2 border-t border-gray-200">
+                      <span class="text-gray-500 font-medium block mb-1">Notas</span>
+                      <p class="text-gray-700 text-xs bg-white rounded p-2 border border-gray-200">{{ compraDetalle().notas }}</p>
+                    </div>
+                  }
+                </div>
+
+                <!-- Tabla de artículos -->
+                <div>
+                  <h3 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Artículos comprados</h3>
+                  <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <table class="w-full text-left text-sm text-gray-900 whitespace-nowrap">
+                      <thead class="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                        <tr>
+                          <th class="py-2 px-3 text-left font-medium">Producto</th>
+                          <th class="py-2 px-3 text-center font-medium">Cant.</th>
+                          <th class="py-2 px-3 text-right font-medium">Costo Unit.</th>
+                          <th class="py-2 px-3 text-right font-medium">Subtotal</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-gray-200 text-sm bg-white">
+                        @for (det of compraDetalle().detalles; track det.idDetalleCompra) {
+                          <tr>
+                            <td class="py-2 px-3 font-medium text-gray-900 max-w-[140px] truncate" [title]="det.producto?.nombre">
+                              {{ det.producto?.nombre || 'Producto' }}
+                            </td>
+                            <td class="py-2 px-3 text-center font-bold text-gray-700">{{ det.cantidad }}</td>
+                            <td class="py-2 px-3 text-right text-gray-600">${{ det.precioCosto | number:'1.2-2' }}</td>
+                            <td class="py-2 px-3 text-right font-semibold text-gray-900">${{ (det.cantidad * det.precioCosto) | number:'1.2-2' }}</td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <!-- Totales -->
+                <div class="bg-amber-50 rounded-lg p-4 border border-amber-100 flex items-center justify-between">
+                  <div>
+                    <p class="text-xs text-amber-800 font-semibold uppercase tracking-wider">{{ totalItems }} artículo(s)</p>
+                    <p class="text-xs text-amber-700 mt-0.5">{{ (compraDetalle().detalles || []).length }} producto(s) distintos</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-amber-700">Total</p>
+                    <p class="text-xl font-black text-amber-900">{{ compraDetalle().total | currency:'MXN':'symbol':'1.2-2' }}</p>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
     }
 
     <!-- Vista de Conceptos Facturados -->
     @if (vistaActual() === 'conceptos') {
-      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 flex flex-col flex-1 min-w-0 overflow-hidden">
-        <div class="overflow-auto flex-1">
-          <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
+      <div class="honey-table-container">
+        <div class="table-wrapper">
+          <table class="honey-table table-hoverable table-bordered">
+            <thead class="bg-gray-50">
               <tr>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider">Fecha / Folio</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider">Proveedor / RFC</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider">Descripción</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider text-center">Cant.</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider text-right">P. Unitario</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider text-right">Importe</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider text-right">IVA</th>
-                <th class="py-3 px-4 font-bold uppercase tracking-wider text-right">Total</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Folio</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor / RFC</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Descripción</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">P. Unitario</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Importe</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">IVA</th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 text-sm">
+            <tbody class="bg-white divide-y divide-gray-200">
               @for (det of registrosPaginados(); track $index) {
-                <tr class="hover:bg-indigo-50 transition-colors">
-                  <td class="p-3 border-l-2 border-transparent hover:border-indigo-500">
-                    <p class="font-bold text-slate-800">{{ det.compraFolio }}</p>
-                    <span class="text-[11px] text-slate-500 font-mono">{{ det.compraFecha | date:'dd/MM/yy HH:mm' }}</span>
+                <tr>
+                  <td class="px-6 py-4 whitespace-nowrap border-l-2 border-transparent hover:border-amber-500">
+                    <p class="font-bold text-gray-900">{{ det.compraFolio }}</p>
+                    <span class="text-[11px] text-gray-500 font-mono">{{ det.compraFecha | date:'dd/MM/yy HH:mm' }}</span>
                   </td>
-                  <td class="p-3">
-                    <p class="font-bold text-slate-800 text-xs">{{ det.compraProveedor?.nombre || 'Desconocido' }}</p>
-                    <p class="text-[10px] font-mono text-slate-500">{{ det.compraProveedor?.rfc || 'XAXX010101000' }}</p>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <p class="font-bold text-gray-900 text-xs">{{ det.compraProveedor?.nombre || 'Desconocido' }}</p>
+                    <p class="text-[10px] font-mono text-gray-500">{{ det.compraProveedor?.rfc || 'XAXX010101000' }}</p>
                   </td>
-                  <td class="p-3">
-                    <p class="font-bold text-slate-800 text-xs">{{ det.producto?.nombre }}</p>
-                    <p class="text-[10px] text-slate-500">Clave: {{ det.producto?.codigoBarras || det.producto?.idProducto }}</p>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <p class="font-bold text-gray-900 text-xs">{{ det.producto?.nombre }}</p>
+                    <p class="text-[10px] text-gray-500">Clave: {{ det.producto?.codigoBarras || det.producto?.idProducto }}</p>
                   </td>
-                  <td class="p-3 text-center font-black text-slate-700">
+                  <td class="px-6 py-4 whitespace-nowrap text-center font-black text-gray-900">
                     {{ det.cantidad | number:'1.0-0' }}
                   </td>
-                  <td class="p-3 text-right text-slate-600 font-medium">
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600 font-medium">
                     {{ det.precioCosto | currency }}
                   </td>
-                  <td class="p-3 text-right font-bold text-slate-700">
+                  <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-gray-900">
                     {{ (det.cantidad * det.precioCosto) | currency }}
                   </td>
-                  <td class="p-3 text-right text-slate-500 text-[11px]">
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-[11px]">
                     {{ (det.cantidad * det.precioCosto * 0.16) | currency }}
                   </td>
-                  <td class="p-3 text-right font-black text-indigo-700">
+                  <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900">
                     {{ (det.cantidad * det.precioCosto * 1.16) | currency }}
                   </td>
                 </tr>
               }
               @if (conceptosFiltrados().length === 0) {
                 <tr>
-                  <td colspan="8" class="p-8 text-center text-slate-400">
+                  <td colspan="8" class="empty-state text-gray-500">
                     @if (busqueda()) {
                       No se encontraron conceptos para "<strong>{{ busqueda() }}</strong>".
                     } @else {
@@ -284,28 +283,30 @@
             </tbody>
           </table>
         </div>
-
-        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="conceptosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
         
+        <div class="pagination-container border-b">
+          <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="conceptosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+        </div>
+
         <!-- Totales Fijos (Bottom Bar) -->
-        <div class="bg-slate-50 border-t border-slate-200 p-4 flex justify-between items-center flex-shrink-0">
+        <div class="bg-gray-50 p-4 flex justify-between items-center flex-shrink-0">
           <div>
-            <p class="text-sm font-semibold text-slate-600">{{ conceptosFiltrados().length }} concepto(s) encontrado(s)</p>
+            <p class="text-sm font-semibold text-gray-600">{{ conceptosFiltrados().length }} concepto(s) encontrado(s)</p>
           </div>
           <div class="flex gap-6 text-right items-center">
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Suma Importe</p>
-              <p class="text-sm font-bold text-slate-700">{{ totalImporteConceptos() | currency }}</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Suma Importe</p>
+              <p class="text-sm font-bold text-gray-900">{{ totalImporteConceptos() | currency }}</p>
             </div>
-            <div class="text-slate-300 font-light text-2xl">|</div>
+            <div class="text-gray-300 font-light text-2xl">|</div>
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">IVA Total</p>
-              <p class="text-sm font-bold text-slate-700">{{ totalImporteConceptos() * 0.16 | currency }}</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">IVA Total</p>
+              <p class="text-sm font-bold text-gray-900">{{ totalImporteConceptos() * 0.16 | currency }}</p>
             </div>
-            <div class="text-slate-300 font-light text-2xl">|</div>
+            <div class="text-gray-300 font-light text-2xl">|</div>
             <div>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Gran Total</p>
-              <p class="text-lg font-black text-emerald-600">{{ totalImporteConceptos() * 1.16 | currency }}</p>
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Gran Total</p>
+              <p class="text-lg font-black text-green-600">{{ totalImporteConceptos() * 1.16 | currency }}</p>
             </div>
           </div>
         </div>

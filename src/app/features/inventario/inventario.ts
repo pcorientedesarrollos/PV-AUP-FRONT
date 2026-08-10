@@ -500,12 +500,12 @@ export class InventarioComponent implements OnInit {
 
   exportarExcel() {
     const data = this.productosStockFiltrados().map((p: any) => ({
-      'Código': p.producto?.codigoBarras || 'N/A',
-      'Producto': p.producto?.nombre || 'N/A',
-      'Categoría': p.producto?.categoria?.nombre || 'N/A',
+      'Código': p.codigoBarras || 'N/A',
+      'Producto': p.nombre || 'N/A',
+      'Categoría': p.categoria?.nombre || 'N/A',
       'Stock Actual': p.stockActual || 0,
-      'Precio Venta': p.producto?.precioPublico || 0,
-      'Costo': p.producto?.precioUnitario || 0,
+      'Precio Venta': p.precioPublico || 0,
+      'Costo': p.precioUnitario || 0,
       'Sucursal': p.sucursal?.nombre || 'N/A'
     }));
     this.exportService.exportToExcel(data, 'Cardex_Inventario');
@@ -514,12 +514,12 @@ export class InventarioComponent implements OnInit {
   exportarPDF() {
     const headers = ['Código', 'Producto', 'Categoría', 'Stock', 'Precio', 'Costo', 'Sucursal'];
     const data = this.productosStockFiltrados().map((p: any) => [
-      p.producto?.codigoBarras || 'N/A',
-      p.producto?.nombre || 'N/A',
-      p.producto?.categoria?.nombre || 'N/A',
+      p.codigoBarras || 'N/A',
+      p.nombre || 'N/A',
+      p.categoria?.nombre || 'N/A',
       p.stockActual?.toString() || '0',
-      `$${p.producto?.precioPublico || 0}`,
-      `$${p.producto?.precioUnitario || 0}`,
+      `$${p.precioPublico || 0}`,
+      `$${p.precioUnitario || 0}`,
       p.sucursal?.nombre || 'N/A'
     ]);
     this.exportService.exportToPdf(headers, data, 'Reporte de Inventario (Cardex)', 'Cardex_Inventario', 'l');

@@ -462,7 +462,7 @@ export class ClientesComponent implements OnInit {
       'Nombre': c.nombre,
       'RFC': c.rfc || 'N/A',
       'Teléfono': c.telefono || 'N/A',
-      'Email': c.email || 'N/A',
+      'Email': c.correo || 'N/A',
       'Régimen Fiscal': c.regimenFiscal || 'N/A'
     }));
     this.exportService.exportToExcel(data, 'Clientes');
@@ -474,7 +474,7 @@ export class ClientesComponent implements OnInit {
       c.nombre,
       c.rfc || 'N/A',
       c.telefono || 'N/A',
-      c.email || 'N/A',
+      c.correo || 'N/A',
       c.regimenFiscal || 'N/A'
     ]);
     this.exportService.exportToPdf(headers, data, 'Catálogo de Clientes', 'Clientes', 'p');

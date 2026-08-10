@@ -2,12 +2,15 @@
   
   <!-- Encabezado con Botones de Acción -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Gestión de Usuarios</h1>
+    <div class="flex flex-col gap-1">
+      <h1 class="page-title">Gestión de Usuarios</h1>
+      <p class="page-subtitle">Administración de accesos del sistema</p>
+    </div>
     
     <div class="flex items-center gap-3">
       <button 
         (click)="abrirModal()"
-        class="flex items-center gap-2 bg-amber-500 text-white px-5 py-2.5 rounded-lg font-bold hover:bg-amber-600 transition-colors shadow-md text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
+        class="btn-submit flex items-center gap-2">
         <span>+</span> Nuevo Usuario
       </button>
     </div>
@@ -15,90 +18,88 @@
 
   <!-- Filtros Soporte -->
   @if (isSoporte()) {
-    <div class="flex gap-4 p-4 mb-8 bg-slate-900 rounded-xl shadow-inner border border-slate-700">
-      <div class="flex items-center gap-3">
-        <label class="text-sm font-bold text-amber-500 uppercase tracking-wider">🏢 Empresa:</label>
-        <select [ngModel]="filtroEmpresa()" (ngModelChange)="filtroEmpresa.set($event)" class="bg-slate-800 border-slate-700 text-white rounded-lg px-3 py-1.5 focus:ring-amber-500 focus:border-amber-500">
-          <option value="todas">Todas</option>
-          @for (emp of empresas(); track emp.idEmpresa) {
-            <option [ngValue]="emp.idEmpresa">{{emp.nombre}}</option>
-          }
-        </select>
-      </div>
-      <div class="flex items-center gap-3">
-        <label class="text-sm font-bold text-amber-500 uppercase tracking-wider">🏪 Sucursal:</label>
-        <select [ngModel]="filtroSucursal()" (ngModelChange)="filtroSucursal.set($event)" class="bg-slate-800 border-slate-700 text-white rounded-lg px-3 py-1.5 focus:ring-amber-500 focus:border-amber-500">
-          <option value="todas">Todas</option>
-          @for (suc of sucursalesFiltradas(); track suc.idSucursal) {
-            <option [ngValue]="suc.idSucursal">{{suc.nombre}} ({{suc.empresa?.nombre}})</option>
-          }
-        </select>
+    <div class="table-filters mb-8">
+      <div class="filters-row">
+        <div class="filter-control">
+          <label class="filter-label">🏢 Empresa:</label>
+          <select [ngModel]="filtroEmpresa()" (ngModelChange)="filtroEmpresa.set($event)" class="filter-select">
+            <option value="todas">Todas</option>
+            @for (emp of empresas(); track emp.idEmpresa) {
+              <option [ngValue]="emp.idEmpresa">{{emp.nombre}}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-control">
+          <label class="filter-label">🏪 Sucursal:</label>
+          <select [ngModel]="filtroSucursal()" (ngModelChange)="filtroSucursal.set($event)" class="filter-select">
+            <option value="todas">Todas</option>
+            @for (suc of sucursalesFiltradas(); track suc.idSucursal) {
+              <option [ngValue]="suc.idSucursal">{{suc.nombre}} ({{suc.empresa?.nombre}})</option>
+            }
+          </select>
+        </div>
       </div>
     </div>
   }
 
-  <div class="flex-1 relative bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col flex-1 min-h-0 relative z-10 overflow-hidden flex flex-col">
+  <div class="honey-table-container flex-1 flex flex-col">
     @if (cargando()) {
       <div class="flex items-center justify-center h-full min-h-[300px]">
         <div class="animate-spin rounded-full h-12 w-12 border-4 border-amber-200 border-t-amber-500"></div>
       </div>
     } @else {
-      <div class="overflow-auto flex-1 flex-1">
-        <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-          <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
+      <div class="table-wrapper flex-1">
+        <table class="honey-table table-hoverable table-bordered">
+          <thead class="bg-gray-50">
             <tr>
-              <th class="py-3 px-4 font-semibold w-24 text-center whitespace-nowrap">ID</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Nombre de Usuario</th>
-              <th class="py-3 px-4 font-semibold whitespace-nowrap">Perfil / Nivel de Acceso</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">ID</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre de Usuario</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Perfil / Nivel de Acceso</th>
               @if (isSoporte()) {
-                <th class="py-3 px-4 font-semibold text-center whitespace-nowrap">Estado</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               }
-              <th class="py-3 px-4 font-semibold text-center w-24 whitespace-nowrap">Acciones</th>
+              <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 actions-column">Acciones</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 text-sm">
+          <tbody class="bg-white divide-y divide-gray-200">
             @for (usr of usuariosFiltrados(); track usr.idUsuario) {
-              <tr class="hover:bg-slate-50/80 transition-colors transition-colors group">
-                <td class="py-3 px-4 text-center text-slate-500 font-medium whitespace-nowrap">#{{ usr.idUsuario }}</td>
-                <td class="py-3 px-4 font-medium text-slate-900 whitespace-nowrap">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 text-sm font-medium">#{{ usr.idUsuario }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                   {{ usr.usuario }}
                 </td>
-                <td class="py-3 px-4 whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   @if (usr.idPerfil === 1) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200">
+                    <span class="badge-warning inline-flex items-center gap-1.5 font-bold">
                       <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Administrador
                     </span>
                   } @else if (usr.idPerfil === 3) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200">
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-purple-800 bg-purple-100 border border-purple-200">
                       <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span> Soporte
                     </span>
                   } @else {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200">
-                      <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span> Empleado / Cajero
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-gray-800 bg-gray-100 border border-gray-200">
+                      <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span> Empleado / Cajero
                     </span>
                   }
                 </td>
                 @if (isSoporte()) {
-                  <td class="py-3 px-4 text-center whitespace-nowrap">
+                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                     @if (usr.oculto === 1) {
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200">
-                        Inactivo
-                      </span>
+                      <span class="badge-danger font-bold text-[10px]">Inactivo</span>
                     } @else {
-                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200">
-                        Activo
-                      </span>
+                      <span class="badge-success font-bold text-[10px]">Activo</span>
                     }
                   </td>
                 }
-                <td class="py-3 px-4 text-center whitespace-nowrap">
+                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                   <div class="flex items-center justify-center gap-2">
-                    <button (click)="abrirModal(usr)" class="text-slate-400 hover:text-amber-600 transition-colors p-1" title="Editar Usuario">
+                    <button (click)="abrirModal(usr)" class="text-gray-400 hover:text-amber-600 transition-colors p-1" title="Editar Usuario">
                       <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>
                     </button>
                     @if (isSoporte()) {
                       <button (click)="toggleActivo(usr)" 
-                              [ngClass]="usr.oculto === 1 ? 'text-emerald-400 hover:text-emerald-600' : 'text-slate-400 hover:text-rose-600'" 
+                              [ngClass]="usr.oculto === 1 ? 'text-emerald-500 hover:text-emerald-700' : 'text-gray-400 hover:text-red-600'" 
                               class="transition-colors p-1" 
                               [title]="usr.oculto === 1 ? 'Activar Usuario' : 'Desactivar Usuario'">
                         @if (usr.oculto === 1) {
@@ -113,7 +114,7 @@
               </tr>
             } @empty {
               <tr>
-                <td [attr.colspan]="isSoporte() ? 5 : 4" class="text-center py-12 text-slate-400">
+                <td [attr.colspan]="isSoporte() ? 5 : 4" class="px-6 py-12 text-center text-gray-400">
                   <p class="text-lg mb-2">No se encontraron usuarios activos</p>
                   <p class="text-sm">Usa el botón superior para crear el primero.</p>
                 </td>
@@ -122,7 +123,9 @@
           </tbody>
         </table>
       </div>
-      <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="usuariosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+      <div class="pagination-container">
+        <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="usuariosFiltrados().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+      </div>
     }
   </div>
 
@@ -130,15 +133,15 @@
 
 <!-- Modal Nuevo Usuario -->
 @if (modalAbierto()) {
-  <div class="modal-backdrop">
-    <div class="modal-panel flex flex-col slideInDown">
+  <div class="modal-overlay">
+    <div class="modal-container slideInDown">
       
       <!-- Modal Header -->
       <div class="modal-header">
         <h3 class="modal-title">
           {{ editandoId() ? 'Editar Usuario' : 'Crear Nuevo Usuario' }}
         </h3>
-        <button (click)="cerrarModal()" class="text-slate-400 hover:text-rose-500 transition-colors focus:outline-none">
+        <button (click)="cerrarModal()" class="close-button flex items-center justify-center text-gray-500">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
       </div>
@@ -146,36 +149,36 @@
       <!-- Modal Body -->
       <div class="modal-body space-y-4">
         
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nombre de Usuario</label>
+        <div class="form-group">
+          <label class="form-label">Nombre de Usuario</label>
           <input 
             type="text" 
             [(ngModel)]="nuevoUsuario.usuario" 
             placeholder="Ej. emma_admin"
             maxlength="15"
-            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm transition-all"
+            class="form-input"
           >
-          <p class="text-[10px] text-slate-400 mt-1">Máximo 15 caracteres.</p>
+          <p class="text-[10px] text-gray-500 mt-1">Máximo 15 caracteres.</p>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Contraseña (PIN)</label>
+        <div class="form-group">
+          <label class="form-label">Contraseña (PIN)</label>
           <input 
             type="password" 
             [(ngModel)]="nuevoUsuario.password" 
             placeholder="••••••••"
-            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm transition-all"
+            class="form-input"
           >
-          <p class="text-[10px] text-slate-400 mt-1">
+          <p class="text-[10px] text-gray-500 mt-1">
             {{ editandoId() ? 'Déjalo en blanco si no quieres cambiar la contraseña.' : 'Se encriptará de forma segura automáticamente.' }}
           </p>
         </div>
 
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nivel de Acceso (Perfil)</label>
+        <div class="form-group">
+          <label class="form-label">Nivel de Acceso (Perfil)</label>
           <select 
             [(ngModel)]="nuevoUsuario.idPerfil"
-            class="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm transition-all"
+            class="form-input"
           >
             <option [value]="2">Cajero / Empleado (Punto de Venta)</option>
             <option [value]="1">Administrador (Acceso Total)</option>
@@ -191,13 +194,13 @@
       <div class="modal-footer">
         <button 
           (click)="cerrarModal()" 
-          class="btn-secondary">
+          class="btn-cancel">
           Cancelar
         </button>
         <button 
           (click)="guardarUsuario()"
           [disabled]="guardando()"
-          class="btn-primary flex items-center gap-2">
+          class="btn-submit flex items-center gap-2">
           @if (guardando()) {
             <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
             Guardando...

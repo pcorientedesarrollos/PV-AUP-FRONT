@@ -1,4 +1,4 @@
-﻿import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../../core/services/pos.service';
@@ -28,6 +28,9 @@ export class CatalogoComponent implements OnInit {
 
   productosFiltrados = computed(() => {
     const q = this.busqueda().toLowerCase().trim();
+    if (!q) {
+      return [];
+    }
     const familia = this.filtroFamilia();
 
     return this.productos().filter((p) => {

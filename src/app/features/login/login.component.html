@@ -1,110 +1,135 @@
-<div class="min-h-screen flex items-center justify-center bg-slate-900 px-4 relative overflow-hidden">
-  
-  <!-- Subtle Background Pattern (Neutral Grid) -->
-  <div class="absolute inset-0 pointer-events-none opacity-[0.03]">
-    <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-          <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1"/>
-        </pattern>
-      </defs>
-      <rect width="100%" height="100%" fill="url(#grid)" />
-    </svg>
+<div class="min-h-screen flex items-center justify-center bg-gray-900 px-4 relative overflow-hidden">
+
+  <!-- Patrón de fondo tipo honeycomb sutil -->
+  <div class="absolute inset-0 pointer-events-none opacity-[0.04]"
+       style="background-image: radial-gradient(circle at 25px 25px, white 1px, transparent 0); background-size: 50px 50px;">
   </div>
 
-  <!-- Decorative Glow -->
-  <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-slate-800 rounded-full blur-[120px] pointer-events-none opacity-50"></div>
+  <!-- Glow amber (como el sistema de miel) -->
+  <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-amber-500/10 rounded-full blur-[100px] pointer-events-none"></div>
+  <div class="absolute bottom-0 right-0 w-[400px] h-[400px] bg-amber-500/5 rounded-full blur-[120px] pointer-events-none"></div>
 
-  <!-- Login Card -->
-  <div class="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl shadow-black/40 p-8 space-y-8 animate-fade-in-up border border-slate-100">
+  <!-- Card de Login -->
+  <div class="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl shadow-black/40 overflow-hidden border border-gray-100">
 
-    <!-- Header / Dynamic Logo -->
-    <div class="text-center">
-      <div class="inline-flex items-center justify-center p-4 bg-slate-50 rounded-2xl mb-5 border border-slate-200 w-32 h-32 overflow-hidden shadow-sm transition-all duration-300">
-        <img [src]="empresaLogo()" [alt]="empresaNombre() + ' Logo'" class="w-full h-full object-contain" onerror="this.src='/logo.png'">
-      </div>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tight">{{ empresaNombre() === 'AUP POS' ? 'Bienvenido a AUP' : empresaNombre() }}</h1>
-      <p class="text-slate-500 font-medium text-sm mt-1">Ingresa tus credenciales de acceso</p>
-    </div>
+    <!-- Barra superior amber (identidad AUP) -->
+    <div class="h-1 w-full bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600"></div>
 
-    <!-- Login Form -->
-    <form (ngSubmit)="onLogin()" class="space-y-5" #loginForm="ngForm">
-      
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Usuario</label>
-        <div class="relative group">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-          </span>
-          <input
-            id="usuario-input"
-            type="text"
-            [(ngModel)]="credenciales.user"
-            name="user"
-            (blur)="buscarEmpresa()"
-            required
-            autocomplete="username"
-            placeholder="Ej. AdminPOS"
-            class="w-full pl-11 pr-4 py-3.5 bg-slate-50 border-2 border-transparent rounded-xl text-slate-800 text-sm focus:outline-none focus:bg-white focus:border-slate-300 transition-all placeholder-slate-400 font-medium"
-          />
+    <div class="p-8 space-y-7">
+
+      <!-- Logo y nombre de empresa -->
+      <div class="text-center">
+        <div class="inline-flex items-center justify-center w-24 h-24 rounded-2xl bg-gray-50 border border-gray-200 mb-5 overflow-hidden shadow-sm">
+          <img [src]="empresaLogo()" [alt]="empresaNombre() + ' Logo'"
+               class="w-full h-full object-contain"
+               onerror="this.src='/logo.png'">
         </div>
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">
+          {{ empresaNombre() === 'AUP POS' ? 'Bienvenido a AUP' : empresaNombre() }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">Ingresa tus credenciales de acceso</p>
       </div>
 
-      <div class="space-y-1.5">
-        <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider pl-1">Contraseña</label>
-        <div class="relative group">
-          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-slate-600 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-          </span>
-          <input
-            id="password-input"
-            [type]="mostrarPassword() ? 'text' : 'password'"
-            [(ngModel)]="credenciales.password"
-            name="password"
-            required
-            autocomplete="current-password"
-            placeholder="••••••••"
-            class="w-full pl-11 pr-12 py-3.5 bg-slate-50 border-2 border-transparent rounded-xl text-slate-800 text-sm focus:outline-none focus:bg-white focus:border-slate-300 transition-all placeholder-slate-400 font-medium"
-          />
+      <!-- Formulario -->
+      <form (ngSubmit)="onLogin()" class="space-y-4" #loginForm="ngForm">
+
+        <!-- Usuario -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Usuario
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+              </svg>
+            </span>
+            <input
+              id="usuario-input"
+              type="text"
+              [(ngModel)]="credenciales.user"
+              name="user"
+              (blur)="buscarEmpresa()"
+              required
+              autocomplete="username"
+              placeholder="Ej. AdminPOS"
+              class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all placeholder-gray-400 font-medium"
+            />
+          </div>
+        </div>
+
+        <!-- Contraseña -->
+        <div class="space-y-1">
+          <label class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            Contraseña
+          </label>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              </svg>
+            </span>
+            <input
+              id="password-input"
+              [type]="mostrarPassword() ? 'text' : 'password'"
+              [(ngModel)]="credenciales.password"
+              name="password"
+              required
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="w-full pl-10 pr-11 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-gray-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition-all placeholder-gray-400 font-medium"
+            />
+            <button
+              type="button"
+              (click)="mostrarPassword.set(!mostrarPassword())"
+              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">
+              @if (mostrarPassword()) {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                </svg>
+              } @else {
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                </svg>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Botón ingresar -->
+        <div class="pt-1">
           <button
-            type="button"
-            (click)="mostrarPassword.set(!mostrarPassword())"
-            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none"
-          >
-            @if (mostrarPassword()) {
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
+            id="btn-login"
+            type="submit"
+            [disabled]="cargando()"
+            [style.background-color]="empresaColor() !== '#f59e0b' ? empresaColor() : '#F59E0B'"
+            class="w-full py-3 text-white font-semibold rounded-lg shadow-md hover:brightness-90 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 text-sm flex items-center justify-center gap-2">
+            @if (cargando()) {
+              <svg class="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Verificando...</span>
             } @else {
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+              <span>Ingresar al Sistema</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
             }
           </button>
         </div>
+
+      </form>
+
+      <!-- Footer -->
+      <div class="text-center">
+        <p class="text-[11px] text-gray-300 uppercase tracking-widest font-medium">AUP POS System v1.0</p>
       </div>
-
-      <div class="pt-2">
-        <button
-          id="btn-login"
-          type="submit"
-          [disabled]="cargando()"
-          [style.background-color]="empresaColor() !== '#f59e0b' ? empresaColor() : '#0f172a'"
-          class="w-full py-3.5 text-white font-bold rounded-xl shadow-lg hover:brightness-110 hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 text-sm tracking-wide flex items-center justify-center gap-2"
-        >
-          @if (cargando()) {
-            <svg class="animate-spin w-5 h-5 text-white" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            <span>Verificando...</span>
-          } @else {
-            <span>Ingresar al Sistema</span>
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-          }
-        </button>
-      </div>
-
-    </form>
-
-    <div class="mt-8 text-center">
-      <p class="text-[11px] font-medium text-slate-400 uppercase tracking-widest">AUP POS System v1.0</p>
     </div>
   </div>
 </div>
