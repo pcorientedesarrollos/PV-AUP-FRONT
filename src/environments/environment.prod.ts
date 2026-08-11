@@ -3,5 +3,5 @@
 export const environment = {
   production: true,
   // apiUrl: 'http://TU-SERVIDOR-AQUI:3000', // ← CAMBIAR ESTE VALOR antes del deploy
-  apiUrl: 'pv-aup-back-production.up.railway.app',
+  apiUrl: 'https://pv-aup-back-production.up.railway.app',
 };

@@ -3,7 +3,7 @@
 export const environment = {
   production: false,
   // apiUrl: 'http://localhost:3000',
-    apiUrl: 'pv-aup-back-production.up.railway.app',
+  apiUrl: 'https://pv-aup-back-production.up.railway.app',
 
 };
 
