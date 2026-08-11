@@ -62,8 +62,11 @@
                 <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
                   <span>{{ item.producto.precioUnitario | currency }} c/u</span>
                   @if (item.descuento) {
-                    <span class="text-rose-500">Desc: -{{ item.descuento | currency }}</span>
+                    <span class="text-rose-500 font-bold">Desc: -{{ item.descuento | currency }}</span>
                   }
+                  <button (click)="abrirModalDescuentoItem(item.producto.idProducto, item.descuento || 0)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors ml-2 flex items-center gap-1 shadow-sm" title="Aplicar descuento por ítem">
+                    🏷️ Descuento
+                  </button>
                 </div>
               </div>
 
@@ -254,90 +257,132 @@
             <p class="text-4xl font-black text-honey-primary">{{ totalPagarFinal() | currency }}</p>
           </div>
 
-          <!-- Metodo de Pago -->
-          <div class="mb-6">
-            <label class="form-label mb-3">Método de Pago</label>
-            <div class="grid grid-cols-3 gap-3">
-              <button
-                (click)="metodoPago.set('Efectivo')"
-                [class.bg-emerald-600]="metodoPago() === 'Efectivo'"
-                [class.text-white]="metodoPago() === 'Efectivo'"
-                [class.border-emerald-500]="metodoPago() === 'Efectivo'"
-                [class.bg-gray-50]="metodoPago() !== 'Efectivo'"
-                [class.text-slate-500]="metodoPago() !== 'Efectivo'"
-                [class.border-gray-200]="metodoPago() !== 'Efectivo'"
-                class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                Efectivo
-              </button>
-              <button
-                (click)="metodoPago.set('Tarjeta')"
-                [class.bg-emerald-600]="metodoPago() === 'Tarjeta'"
-                [class.text-white]="metodoPago() === 'Tarjeta'"
-                [class.border-emerald-500]="metodoPago() === 'Tarjeta'"
-                [class.bg-gray-50]="metodoPago() !== 'Tarjeta'"
-                [class.text-slate-500]="metodoPago() !== 'Tarjeta'"
-                [class.border-gray-200]="metodoPago() !== 'Tarjeta'"
-                class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
-                Tarjeta
-              </button>
-              <button
-                (click)="metodoPago.set('Transferencia')"
-                [class.bg-emerald-600]="metodoPago() === 'Transferencia'"
-                [class.text-white]="metodoPago() === 'Transferencia'"
-                [class.border-emerald-500]="metodoPago() === 'Transferencia'"
-                [class.bg-gray-50]="metodoPago() !== 'Transferencia'"
-                [class.text-slate-500]="metodoPago() !== 'Transferencia'"
-                [class.border-gray-200]="metodoPago() !== 'Transferencia'"
-                class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
-              >
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                Transf.
-              </button>
+          @if (!requierePagoSecundario()) {
+            <!-- Metodo de Pago Principal -->
+            <div class="mb-6">
+              <label class="form-label mb-3">Método de Pago</label>
+              <div class="grid grid-cols-3 gap-3">
+                <button
+                  (click)="metodoPago.set('Efectivo')"
+                  [class.bg-emerald-600]="metodoPago() === 'Efectivo'"
+                  [class.text-white]="metodoPago() === 'Efectivo'"
+                  [class.border-emerald-500]="metodoPago() === 'Efectivo'"
+                  [class.bg-gray-50]="metodoPago() !== 'Efectivo'"
+                  [class.text-slate-500]="metodoPago() !== 'Efectivo'"
+                  [class.border-gray-200]="metodoPago() !== 'Efectivo'"
+                  class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                  Efectivo
+                </button>
+                <button
+                  (click)="metodoPago.set('Tarjeta')"
+                  [class.bg-emerald-600]="metodoPago() === 'Tarjeta'"
+                  [class.text-white]="metodoPago() === 'Tarjeta'"
+                  [class.border-emerald-500]="metodoPago() === 'Tarjeta'"
+                  [class.bg-gray-50]="metodoPago() !== 'Tarjeta'"
+                  [class.text-slate-500]="metodoPago() !== 'Tarjeta'"
+                  [class.border-gray-200]="metodoPago() !== 'Tarjeta'"
+                  class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                  Tarjeta
+                </button>
+                <button
+                  (click)="metodoPago.set('Transferencia')"
+                  [class.bg-emerald-600]="metodoPago() === 'Transferencia'"
+                  [class.text-white]="metodoPago() === 'Transferencia'"
+                  [class.border-emerald-500]="metodoPago() === 'Transferencia'"
+                  [class.bg-gray-50]="metodoPago() !== 'Transferencia'"
+                  [class.text-slate-500]="metodoPago() !== 'Transferencia'"
+                  [class.border-gray-200]="metodoPago() !== 'Transferencia'"
+                  class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                  Transf.
+                </button>
+              </div>
             </div>
-          </div>
 
-          <!-- Entrada de Efectivo y Cambio -->
-          @if (metodoPago() === 'Efectivo') {
-            <div class="mb-6 space-y-4">
-              <div>
-                <label class="form-label mb-1.5">Efectivo Recibido</label>
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span class="text-slate-400 font-bold">$</span>
+            <!-- Entrada de Efectivo y Cambio -->
+            @if (metodoPago() === 'Efectivo') {
+              <div class="mb-6 space-y-4">
+                <div>
+                  <label class="form-label mb-1.5">Efectivo Recibido</label>
+                  <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span class="text-slate-400 font-bold">$</span>
+                    </div>
+                    <input
+                      type="number"
+                      [ngModel]="cantidadRecibida()"
+                      (ngModelChange)="cantidadRecibida.set($event)"
+                      placeholder="0.00"
+                      class="form-input w-full pl-8 pr-4 py-3 text-xl font-bold text-gray-900 text-right"
+                      autocomplete="off"
+                    />
                   </div>
-                  <input
-                    type="number"
-                    [ngModel]="cantidadRecibida()"
-                    (ngModelChange)="cantidadRecibida.set($event)"
-                    placeholder="0.00"
-                    class="form-input w-full pl-8 pr-4 py-3 text-xl font-bold text-gray-900 text-right"
-                    autocomplete="off"
-                  />
+                </div>
+
+                <!-- Atajos de billetes -->
+                <div class="flex gap-2">
+                  @for (monto of [100, 200, 500, 1000]; track monto) {
+                    <button (click)="cantidadRecibida.set(monto)" class="flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 rounded text-sm font-bold transition-colors">
+                      ${{ monto }}
+                    </button>
+                  }
+                </div>
+
+                <button (click)="cantidadRecibida.set(totalPagarFinal())" class="w-full mt-2 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300 rounded text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Cobro Exacto
+                </button>
+
+                <div class="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-200 rounded-lg mt-4">
+                  <span class="text-sm font-bold text-emerald-700">Cambio a devolver:</span>
+                  <span class="text-2xl font-black text-emerald-600">{{ cambio() | currency }}</span>
                 </div>
               </div>
-
-              <!-- Atajos de billetes -->
-              <div class="flex gap-2">
-                @for (monto of [100, 200, 500, 1000]; track monto) {
-                  <button (click)="cantidadRecibida.set(monto)" class="flex-1 py-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-700 rounded text-sm font-bold transition-colors">
-                    ${{ monto }}
-                  </button>
-                }
+            }
+          } @else {
+            <!-- Flujo Secundario (Pago Mixto) -->
+            <div class="mb-6 space-y-4">
+              <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-800 font-medium mb-1">Efectivo ingresado: <span class="font-bold">{{ cantidadRecibida() | currency }}</span></p>
+                <p class="text-sm text-blue-800 font-medium">Saldo restante: <span class="font-bold text-lg text-rose-600">{{ totalPagarFinal() - (cantidadRecibida() || 0) | currency }}</span></p>
               </div>
 
-              <button (click)="cantidadRecibida.set(totalPagarFinal())" class="w-full mt-2 py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300 rounded text-sm font-bold uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Cobro Exacto
-              </button>
-
-              <div class="flex justify-between items-center p-4 bg-emerald-50 border border-emerald-200 rounded-lg mt-4">
-                <span class="text-sm font-bold text-emerald-700">Cambio a devolver:</span>
-                <span class="text-2xl font-black text-emerald-600">{{ cambio() | currency }}</span>
+              <label class="form-label mb-2">Pagar saldo restante con:</label>
+              <div class="grid grid-cols-2 gap-3">
+                <button
+                  (click)="metodoPagoSecundario.set('Tarjeta')"
+                  [class.bg-emerald-600]="metodoPagoSecundario() === 'Tarjeta'"
+                  [class.text-white]="metodoPagoSecundario() === 'Tarjeta'"
+                  [class.border-emerald-500]="metodoPagoSecundario() === 'Tarjeta'"
+                  [class.bg-gray-50]="metodoPagoSecundario() !== 'Tarjeta'"
+                  [class.text-slate-500]="metodoPagoSecundario() !== 'Tarjeta'"
+                  [class.border-gray-200]="metodoPagoSecundario() !== 'Tarjeta'"
+                  class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                  Tarjeta
+                </button>
+                <button
+                  (click)="metodoPagoSecundario.set('Transferencia')"
+                  [class.bg-emerald-600]="metodoPagoSecundario() === 'Transferencia'"
+                  [class.text-white]="metodoPagoSecundario() === 'Transferencia'"
+                  [class.border-emerald-500]="metodoPagoSecundario() === 'Transferencia'"
+                  [class.bg-gray-50]="metodoPagoSecundario() !== 'Transferencia'"
+                  [class.text-slate-500]="metodoPagoSecundario() !== 'Transferencia'"
+                  [class.border-gray-200]="metodoPagoSecundario() !== 'Transferencia'"
+                  class="py-3 px-2 rounded border font-medium text-sm flex flex-col items-center gap-1 transition-all focus:outline-none"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
+                  Transf.
+                </button>
               </div>
+
+              <button (click)="requierePagoSecundario.set(false)" class="text-sm text-slate-500 hover:text-slate-800 underline">Volver atrás (Corregir efectivo)</button>
             </div>
           }
 
@@ -444,6 +489,53 @@
               />
             </div>
             <button (click)="aplicarDescuento()" class="w-full btn-submit">Aplicar Descuento</button>
+          </div>
+        </div>
+      </div>
+    }
+    <!-- Modal Descuento Item -->
+    @if (modalDescuentoItemAbierto()) {
+      <div class="modal-overlay print:hidden">
+        <div class="modal-container flex flex-col bg-white border border-gray-200">
+          <div class="modal-header bg-white border-gray-200">
+            <h3 class="modal-title text-gray-900">Descuento por Producto</h3>
+            <button (click)="cerrarModalDescuentoItem()" class="text-slate-400 hover:text-rose-400 transition-colors focus:outline-none">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="modal-body space-y-4">
+            <div class="flex gap-2 mb-2">
+              <button 
+                (click)="inputTipoDescuentoItem.set('cantidad')" 
+                [class.bg-emerald-600]="inputTipoDescuentoItem() === 'cantidad'" 
+                [class.text-white]="inputTipoDescuentoItem() === 'cantidad'"
+                [class.bg-gray-50]="inputTipoDescuentoItem() !== 'cantidad'"
+                [class.text-slate-500]="inputTipoDescuentoItem() !== 'cantidad'"
+                class="flex-1 py-2 rounded border border-gray-200 text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                Monto Fijo ($)
+              </button>
+              <button 
+                (click)="inputTipoDescuentoItem.set('porcentaje')" 
+                [class.bg-emerald-600]="inputTipoDescuentoItem() === 'porcentaje'" 
+                [class.text-white]="inputTipoDescuentoItem() === 'porcentaje'"
+                [class.bg-gray-50]="inputTipoDescuentoItem() !== 'porcentaje'"
+                [class.text-slate-500]="inputTipoDescuentoItem() !== 'porcentaje'"
+                class="flex-1 py-2 rounded border border-gray-200 text-sm font-medium transition-colors focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                Porcentaje (%)
+              </button>
+            </div>
+            <div>
+              <label class="form-label mb-1.5">
+                {{ inputTipoDescuentoItem() === 'porcentaje' ? 'Porcentaje de Descuento (%)' : 'Monto de Descuento ($)' }}
+              </label>
+              <input
+                type="number"
+                [ngModel]="inputDescuentoItemValor()"
+                (ngModelChange)="inputDescuentoItemValor.set($event)"
+                class="form-input w-full"
+              />
+            </div>
+            <button (click)="aplicarDescuentoItem()" class="w-full btn-submit">Aplicar Descuento</button>
           </div>
         </div>
       </div>

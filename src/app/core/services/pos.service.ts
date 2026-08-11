@@ -165,18 +165,8 @@ export class PosService {
 
   // ─── Carrito ──────────────────────────────────────────────────────────────────
   agregarAlCarrito(producto: Producto, forzar: boolean = false, silent: boolean = false): boolean {
-    const stock = this.stockActual()[producto.idProducto] || 0;
     const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === producto.idProducto);
     const cantidadAumentada = (itemEnCarrito ? itemEnCarrito.cantidad : 0) + 1;
-
-    if (!forzar && cantidadAumentada > stock) {
-      if (stock <= 0) {
-        if (!silent) this.solicitarConfirmacionStock(producto, 'vacio');
-        return false;
-      }
-      if (!silent) this.solicitarConfirmacionStock(producto, 'excedido');
-      return false;
-    }
 
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
@@ -200,20 +190,6 @@ export class PosService {
   }
 
   cambiarCantidad(idProducto: number, delta: number, forzar: boolean = false): boolean {
-    if (delta > 0 && !forzar) {
-      const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === idProducto);
-      if (itemEnCarrito) {
-        const stock = this.stockActual()[idProducto] || 0;
-        if ((itemEnCarrito.cantidad + delta) > stock) {
-          if (stock <= 0) {
-            this.solicitarConfirmacionStock(itemEnCarrito.producto, 'vacio');
-            return false;
-          }
-          this.solicitarConfirmacionStock(itemEnCarrito.producto, 'excedido');
-          return false;
-        }
-      }
-    }
 
     this._carrito.update((items) =>
       items
@@ -241,18 +217,8 @@ export class PosService {
       return;
     }
 
-    const stock = this.stockActual()[idProducto] || 0;
     const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === idProducto);
     if (!itemEnCarrito) return;
-
-    if (cantidad > stock) {
-      if (stock <= 0) {
-        this.solicitarConfirmacionStock(itemEnCarrito.producto, 'vacio');
-        return;
-      }
-      this.solicitarConfirmacionStock(itemEnCarrito.producto, 'excedido');
-      return;
-    }
 
     this._carrito.update((items) =>
       items.map((item) => {

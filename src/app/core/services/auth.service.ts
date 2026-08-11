@@ -1,4 +1,4 @@
-﻿import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -32,9 +32,11 @@ export class AuthService {
     if (typeof window !== 'undefined' && window.sessionStorage) {
       sessionStorage.removeItem('sesion');
       sessionStorage.removeItem('turnoAbierto');
+      window.location.href = '/login'; // Hard reload to clear SPA state (cart, etc)
+    } else {
+      this._sesion.set(null);
+      this.router.navigate(['/login']);
     }
-    this._sesion.set(null);
-    this.router.navigate(['/login']);
   }
 
   getToken(): string | null {

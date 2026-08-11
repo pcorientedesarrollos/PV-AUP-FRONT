@@ -1,26 +1,4 @@
-/* ── Asegurar que el sidebar tenga scroll suave y personalizado ── */
-aside {
-    scrollbar-width: thin;
-    scrollbar-color: var(--honey-primary, #eab308) #1e293b;
-}
-
-/* Webkit scrollbar para sidebar */
-aside::-webkit-scrollbar {
-    width: 6px;
-}
-
-aside::-webkit-scrollbar-track {
-    background: #111827; /* gray-900 */
-}
-
-aside::-webkit-scrollbar-thumb {
-    background: var(--honey-primary, #eab308);
-    border-radius: 3px;
-}
-
-aside::-webkit-scrollbar-thumb:hover {
-    background: var(--honey-primary-dark, #ca8a04);
-}
+/* Scrollbar nativo o heredado del layout global */
 
 /* ── Animación para el avatar ── */
 .avatar-pulse {

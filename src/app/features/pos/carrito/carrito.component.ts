@@ -56,12 +56,31 @@ export class CarritoComponent implements OnInit {
   modalPagoAbierto = signal(false);
   metodoPago = signal<'Efectivo' | 'Tarjeta' | 'Transferencia'>('Efectivo');
   cantidadRecibida = signal<number | null>(null);
+  
+  // Para pago secundario (saldo restante)
+  requierePagoSecundario = signal(false);
+  metodoPagoSecundario = signal<'Tarjeta' | 'Transferencia' | null>(null);
+
+  totalIngresado = computed(() => {
+    if (this.metodoPago() !== 'Efectivo') {
+       return this.cantidadRecibida() || this.totalPagarFinal();
+    }
+    // Si estamos en flujo secundario, asumimos que el restante lo cubrirá el 2do método
+    if (this.requierePagoSecundario() && this.metodoPagoSecundario()) {
+       return this.totalPagarFinal();
+    }
+    return this.cantidadRecibida() || 0;
+  });
 
   cambio = computed(() => {
-    if (this.metodoPago() !== 'Efectivo') return 0;
     const recibido = this.cantidadRecibida() || 0;
     const total = this.totalPagarFinal();
-    return Math.max(0, recibido - total);
+    
+    // Si el usuario ingresa más que el total en efectivo, hay cambio
+    if (this.metodoPago() === 'Efectivo' && recibido > total) {
+       return Math.max(0, recibido - total);
+    }
+    return 0;
   });
 
   // Ventas Pausadas Modal
@@ -177,6 +196,55 @@ export class CarritoComponent implements OnInit {
     this.cerrarModalDescuento();
   }
 
+  // --- Descuentos por Item ---
+  modalDescuentoItemAbierto = signal(false);
+  itemDescuentoSeleccionadoId = signal<number | null>(null);
+  inputDescuentoItemValor = signal<number | null>(null);
+  inputTipoDescuentoItem = signal<'cantidad' | 'porcentaje'>('cantidad');
+
+  abrirModalDescuentoItem(idProducto: number, descuentoActual: number) {
+    if (this.auth.sesion()?.idPerfil !== 1) {
+      alert('Solo los administradores pueden aplicar descuentos.');
+      return;
+    }
+    this.itemDescuentoSeleccionadoId.set(idProducto);
+    this.inputDescuentoItemValor.set(descuentoActual || null);
+    this.inputTipoDescuentoItem.set('cantidad'); // Default
+    this.modalDescuentoItemAbierto.set(true);
+  }
+
+  cerrarModalDescuentoItem() {
+    this.modalDescuentoItemAbierto.set(false);
+    this.itemDescuentoSeleccionadoId.set(null);
+  }
+
+  aplicarDescuentoItem() {
+    const id = this.itemDescuentoSeleccionadoId();
+    if (!id) return;
+    
+    let desc = this.inputDescuentoItemValor() || 0;
+    if (desc < 0) {
+      alert('El descuento no puede ser negativo.');
+      return;
+    }
+
+    const itemEnCarrito = this.pos.carrito().find(i => i.producto.idProducto === id);
+    if (!itemEnCarrito) return;
+
+    if (this.inputTipoDescuentoItem() === 'porcentaje') {
+      if (desc > 100) {
+        alert('El descuento no puede ser mayor al 100%.');
+        return;
+      }
+      const qty = Number(itemEnCarrito.cantidad) || 0;
+      const price = Number(itemEnCarrito.producto.precioUnitario) || 0;
+      desc = (desc / 100) * (price * qty); // Convierte porcentaje a cantidad monetaria
+    }
+
+    this.pos.aplicarDescuentoAItem(id, desc);
+    this.cerrarModalDescuentoItem();
+  }
+
   // --- Ventas Pausadas ---
   pausarVentaActual() {
     if (this.pos.carrito().length === 0) return;
@@ -211,31 +279,48 @@ export class CarritoComponent implements OnInit {
 
   cobrar() {
     if (this.pos.carrito().length === 0) return;
-    // Intercept with Payment Modal
     this.metodoPago.set('Efectivo');
-    this.cantidadRecibida.set(null); // User must enter it, or we could default to total
+    this.cantidadRecibida.set(null); 
+    this.requierePagoSecundario.set(false);
+    this.metodoPagoSecundario.set(null);
     this.modalPagoAbierto.set(true);
   }
   
   cerrarModalPago() {
     this.modalPagoAbierto.set(false);
+    this.requierePagoSecundario.set(false);
+    this.metodoPagoSecundario.set(null);
   }
 
   confirmarCobro() {
     if (this.pos.carrito().length === 0) return;
     
-    // Prevent checkout if cash is insufficient
+    const aPagar = this.totalPagarFinal();
+    let isMixto = false;
+    let efectivoIngresado = this.cantidadRecibida() || aPagar;
+    
     if (this.metodoPago() === 'Efectivo') {
-      const recibido = this.cantidadRecibida() || 0;
-      if (recibido < this.totalPagarFinal()) {
-        alert('La cantidad recibida es menor al total a pagar.');
-        return;
+      const ingresado = this.cantidadRecibida() || 0;
+      if (ingresado < (aPagar - 0.01)) {
+        if (!this.requierePagoSecundario()) {
+          // Cambiar al flujo de pago secundario
+          this.requierePagoSecundario.set(true);
+          return;
+        } else {
+          if (!this.metodoPagoSecundario()) {
+            alert('Selecciona con qué método vas a pagar el saldo restante.');
+            return;
+          }
+          isMixto = true;
+          efectivoIngresado = ingresado;
+        }
       }
     }
 
     this.cargando.set(true);
 
     const cliente = this.pos.clienteSeleccionado();
+    const saldoRestante = aPagar - efectivoIngresado;
 
     const payload = {
       idCliente: cliente?.idCliente,
@@ -243,12 +328,15 @@ export class CarritoComponent implements OnInit {
       subtotal: this.pos.subtotal(),
       totalIva: this.pos.totalIva(),
       descuento: this.descuentoGlobal(),
-      totalPagado: this.totalPagarFinal(),
+      totalPagado: aPagar,
       idUsuario: this.auth.sesion()?.idUsuario,
       idSucursal: this.auth.sesion()?.idSucursal || 1, // Defaulting to 1 if not set
-      metodoPago: this.metodoPago(),
-      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || this.totalPagarFinal()) : undefined,
-      cambioEntregado: this.metodoPago() === 'Efectivo' ? this.cambio() : undefined,
+      metodoPago: isMixto ? 'Mixto' : this.metodoPago(),
+      montoEfectivo: isMixto ? efectivoIngresado : (this.metodoPago() === 'Efectivo' ? aPagar : undefined),
+      montoTarjeta: isMixto && this.metodoPagoSecundario() === 'Tarjeta' ? saldoRestante : (this.metodoPago() === 'Tarjeta' ? aPagar : undefined),
+      montoTransferencia: isMixto && this.metodoPagoSecundario() === 'Transferencia' ? saldoRestante : (this.metodoPago() === 'Transferencia' ? aPagar : undefined),
+      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || aPagar) : undefined,
+      cambioEntregado: this.cambio(),
       carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,

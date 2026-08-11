@@ -49,71 +49,71 @@
           </div>
         } @else {
           <!-- VISTA DE LISTA COMPACTA -->
-          <div class="honey-table-container">
-            <div class="table-wrapper">
-            <table class="honey-table table-hoverable table-striped">
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mx-1 mb-4">
+            <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
               <thead>
-                <tr>
-                  <th class="py-2.5 px-3 w-16">ID</th>
-                  <th class="py-2.5 px-3">Producto</th>
-                  <th class="py-2.5 px-3">Código Barras</th>
-                  <th class="py-2.5 px-3 text-right">Precio</th>
-                  <th class="py-2.5 px-3 text-center">Stock</th>
-                  <th class="py-2.5 px-3 text-center w-20">Acción</th>
+                <tr class="bg-slate-50 border-b border-gray-200">
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest w-16">ID</th>
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Producto</th>
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Código Barras</th>
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Precio</th>
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center">Stock</th>
+                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-center w-24">Acción</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-gray-100">
                 @for (producto of productosFiltrados(); track producto.idProducto) {
-                  <tr (click)="agregar(producto)" class="cursor-pointer transition-colors">
-                    <td class="py-2 px-3 text-slate-400 font-mono text-xs">#{{ producto.idProducto }}</td>
-                    <td class="py-2 px-3">
-                      <div class="flex items-center gap-2">
+                  <tr (click)="agregar(producto)" class="cursor-pointer hover:bg-amber-50/50 transition-colors group">
+                    <td class="py-3 px-4 text-slate-400 font-mono text-xs">#{{ producto.idProducto }}</td>
+                    <td class="py-3 px-4">
+                      <div class="flex items-center gap-3">
                         @if (producto.imagenUrl) {
-                          <img [src]="apiUrl + producto.imagenUrl" class="w-8 h-8 object-cover rounded border border-gray-200">
+                          <img [src]="apiUrl + producto.imagenUrl" class="w-9 h-9 object-cover rounded-md border border-gray-200 shadow-sm">
                         } @else {
-                          <div class="w-8 h-8 rounded bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-gray-200">
+                          <div class="w-9 h-9 rounded-md bg-slate-100 flex items-center justify-center text-xs font-black text-slate-400 border border-gray-200 shadow-sm">
                             {{ producto.nombre.charAt(0) }}
                           </div>
                         }
-                        <span class="font-semibold text-gray-900">{{ producto.nombre }}</span>
+                        <span class="font-semibold text-gray-900 group-hover:text-honey-dark transition-colors">{{ producto.nombre }}</span>
                       </div>
                     </td>
-                    <td class="py-2 px-3">
+                    <td class="py-3 px-4">
                       @if (producto.codigoBarras) {
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600 border border-gray-200">
+                        <span class="inline-flex items-center px-2 py-1 rounded-md text-[11px] font-mono font-medium bg-slate-100 text-slate-600 border border-gray-200">
                           {{ producto.codigoBarras }}
                         </span>
                       } @else {
                         <span class="text-slate-300 italic text-xs">S/N</span>
                       }
                     </td>
-                    <td class="py-2 px-3 text-right">
+                    <td class="py-3 px-4 text-right">
                       @if ((producto.descuento || 0) > 0) {
                         <div class="flex flex-col items-end leading-none">
                           <span class="text-[10px] text-slate-400 line-through">{{ producto.precioUnitario | currency }}</span>
-                          <span class="font-bold text-rose-500 text-sm">{{ (producto.precioUnitario - (producto.descuento || 0)) | currency }}</span>
+                          <span class="font-black text-rose-500 text-sm">{{ (producto.precioUnitario - (producto.descuento || 0)) | currency }}</span>
                         </div>
                       } @else {
                         <span class="font-bold text-emerald-600 text-sm">{{ producto.precioUnitario | currency }}</span>
                       }
                     </td>
-                    <td class="py-2 px-3 text-center">
+                    <td class="py-3 px-4 text-center">
                       @if ((pos.stockActual()[producto.idProducto] || 0) > 5) {
-                        <span class="badge-success">
+                        <span class="inline-flex items-center justify-center px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-bold min-w-[3rem]">
                           {{ pos.stockActual()[producto.idProducto] }}
                         </span>
                       } @else if ((pos.stockActual()[producto.idProducto] || 0) > 0) {
-                        <span class="badge-warning animate-pulse">
+                        <span class="inline-flex items-center justify-center px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded text-xs font-bold min-w-[3rem] animate-pulse shadow-sm">
                           {{ pos.stockActual()[producto.idProducto] }}
                         </span>
                       } @else {
-                        <span class="badge-danger">
+                        <span class="inline-flex items-center justify-center px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded text-xs font-bold min-w-[3rem]">
                           Agotado
                         </span>
                       }
                     </td>
-                    <td class="py-2 px-3 text-center">
-                      <button (click)="agregar(producto); $event.stopPropagation()" class="btn-submit text-xs px-2.5 py-1">
+                    <td class="py-3 px-4 text-center">
+                      <button (click)="agregar(producto); $event.stopPropagation()" class="bg-honey-primary hover:bg-honey-dark text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-honey-primary focus:ring-offset-1 w-full">
                         Agregar
                       </button>
                     </td>
