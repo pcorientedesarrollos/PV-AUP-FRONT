@@ -36,13 +36,8 @@
             "styles": [
               "src/styles.css"
             ],
-            "server": "src/main.server.ts",
-            "outputMode": "server",
             "security": {
               "allowedHosts": []
-            },
-            "ssr": {
-              "entry": "src/server.ts"
             },
             "serviceWorker": "src/ngsw-config.json",
             "allowedCommonJsDependencies": [
