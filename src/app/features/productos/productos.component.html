@@ -521,7 +521,7 @@
 
 @if (mostrarModal()) {
   <div class="modal-overlay z-50">
-    <div class="modal-container flex flex-col slideInDown" style="max-width:720px">
+    <div class="modal-container flex flex-col slideInDown" style="max-width:850px">
       <div class="modal-header bg-gradient-to-r from-amber-50 to-orange-50 border-b border-gray-200">
         <div>
         <h2 class="modal-title">{{ esNuevoProducto() ? '+ Nuevo Producto' : 'Editar Producto' }}</h2>
@@ -534,7 +534,7 @@
       </div>
 
       <div class="modal-body flex-1 overflow-y-auto p-6 space-y-4 max-h-[70vh]">
-        <div class="form-grid">
+        <div class="flex flex-col gap-6">
 
           <div class="flex gap-4 items-start">
             <div class="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
@@ -554,6 +554,7 @@
 
           <hr class="border-slate-100">
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <div class="relative">
             <label class="block font-semibold text-slate-700 text-sm mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="nuevoProducto.nombre"
@@ -597,8 +598,9 @@
               </ul>
             }
           </div>
+          </div>
 
-          <div class="flex flex-col sm:flex-row gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
             
             <div class="flex-1">
               <label class="block font-semibold text-slate-700 text-sm mb-1">Categoría</label>
@@ -657,7 +659,7 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-5">
             <div>
               <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Venta</label>
               <div class="relative">
