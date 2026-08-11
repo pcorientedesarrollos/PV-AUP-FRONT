@@ -4,7 +4,10 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:local": "ng serve --configuration=development",
+    "start:dev": "ng serve --configuration=dev",
     "build": "ng build",
+    "build:dev": "ng build --configuration=dev",
     "postbuild": "node -e \"const fs=require('fs');fs.rmSync('browser',{recursive:true,force:true});fs.cpSync('dist/PV-AUP-FRONT/browser','browser',{recursive:true});\"",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"

@@ -58,7 +58,24 @@
                   "maximumError": "8kB"
                 }
               ],
-              "outputHashing": "all"
+              "outputHashing": "all",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
+            },
+            "dev": {
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ]
             },
             "development": {
               "optimization": false,
@@ -73,6 +90,9 @@
           "configurations": {
             "production": {
               "buildTarget": "PV-AUP-FRONT:build:production"
+            },
+            "dev": {
+              "buildTarget": "PV-AUP-FRONT:build:dev"
             },
             "development": {
               "buildTarget": "PV-AUP-FRONT:build:development"

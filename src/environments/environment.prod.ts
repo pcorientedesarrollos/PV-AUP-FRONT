@@ -1,7 +1,5 @@
-// Configuración del entorno de PRODUCCIÓN
-// Cambiar apiUrl al dominio real del servidor antes de hacer el build de producción
 export const environment = {
+  name: 'prod',
   production: true,
-  // apiUrl: 'http://TU-SERVIDOR-AQUI:3000', // ← CAMBIAR ESTE VALOR antes del deploy
   apiUrl: 'https://pv-aup-back-production.up.railway.app',
 };
