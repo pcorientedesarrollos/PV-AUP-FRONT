@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Component, signal, output, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -42,7 +43,7 @@ export class ClienteRapidoComponent {
     const fd = new FormData();
     fd.append('file', file);
 
-    this.http.post<any>('http://localhost:3000/pos/utils/parse-csf', fd).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
       next: (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {

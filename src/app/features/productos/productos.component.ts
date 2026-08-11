@@ -18,6 +18,8 @@ import { ImportarModalComponent } from '../../shared/components/importar-modal/i
   templateUrl: './productos.component.html',
 })
 export class ProductosComponent implements OnInit {
+  apiUrl = environment.apiUrl;
+
   productos = signal<any[]>([]);
   cargando = signal(false);
   mostrarImportar = signal(false);
@@ -323,7 +325,7 @@ export class ProductosComponent implements OnInit {
   // abrirModal(prod: any) {
   //   this.esNuevoProducto.set(false);
   //   this.nuevoProducto = { ...prod };
-  //   this.imagenPreview.set(prod.imagenUrl ? `http://localhost:3000${prod.imagenUrl}` : null);
+  //   this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
   //   this.archivoImagen = null;
   //   this.satProductQuery = prod.claveProdServ ? (prod.claveProdServ) : '';
   //   this.satUnitQuery = prod.claveUnidad ? (prod.claveUnidad) : '';

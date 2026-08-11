@@ -180,7 +180,7 @@
                   <td class="px-6 py-4 text-sm text-gray-900">
                     <div class="flex items-center gap-3">
                       @if (prod.imagenUrl) {
-                        <img [src]="'http://localhost:3000' + prod.imagenUrl"
+                        <img [src]="apiUrl + prod.imagenUrl"
                              class="w-9 h-9 object-cover rounded-lg shadow-sm border border-slate-200 shrink-0">
                       } @else {
                         <div class="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center text-slate-300 border border-slate-200 shrink-0">
@@ -290,7 +290,7 @@
                    }">
                 <div class="relative bg-slate-50 flex items-center justify-center h-28">
                   @if (prod.imagenUrl) {
-                    <img [src]="'http://localhost:3000' + prod.imagenUrl"
+                    <img [src]="apiUrl + prod.imagenUrl"
                          class="h-full w-full object-cover">
                   } @else {
                     <div class="flex flex-col items-center gap-1 text-slate-300">

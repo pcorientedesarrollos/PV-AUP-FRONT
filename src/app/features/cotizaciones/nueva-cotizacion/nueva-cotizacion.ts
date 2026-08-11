@@ -1,3 +1,4 @@
+import { environment } from '../../../../environments/environment';
 import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -50,12 +51,12 @@ export class NuevaCotizacionComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any[]>('http://localhost:3000/pos/clientes').subscribe(data => this.clientes.set(data));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe(data => this.clientes.set(data));
   }
 
   
   cargarTipoCambio() {
-    this.http.get<any>('http://localhost:3000/pos/tipo-cambio').subscribe({
+    this.http.get<any>(`${environment.apiUrl}/pos/tipo-cambio`).subscribe({
       next: (data) => {
         if (data && data.mxn) {
           this.tipoCambio.set(data.mxn);
@@ -71,7 +72,7 @@ export class NuevaCotizacionComponent implements OnInit {
   }
 
   cargarCatalogo() {
-    this.http.get<any[]>('http://localhost:3000/pos/productos').subscribe(data => this.catalogoProductos.set(data));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe(data => this.catalogoProductos.set(data));
   }
 
   productosFiltrados = computed(() => {

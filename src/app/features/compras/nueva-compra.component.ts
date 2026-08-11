@@ -58,11 +58,11 @@ export class NuevaCompraComponent implements OnInit {
   }
 
   cargarProveedores() {
-    this.http.get<any[]>('http://localhost:3000/pos/proveedores').subscribe(data => this.proveedores.set(data));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/proveedores`).subscribe(data => this.proveedores.set(data));
   }
 
   cargarCatalogo() {
-    this.http.get<any[]>('http://localhost:3000/pos/productos').subscribe(data => this.catalogoProductos.set(data));
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe(data => this.catalogoProductos.set(data));
   }
 
   productosFiltrados = computed(() => {
@@ -272,7 +272,7 @@ export class NuevaCompraComponent implements OnInit {
       }))
     };
 
-    this.http.post<any>('http://localhost:3000/pos/compras', payload).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/compras`, payload).subscribe({
       next: async (res) => {
         const idCompra = res?.compra?.idCompra || res?.idCompra;
         
@@ -282,7 +282,7 @@ export class NuevaCompraComponent implements OnInit {
           if (this.archivoXml) fd.append('xml', this.archivoXml);
           
           try {
-            await this.http.patch(`http://localhost:3000/pos/compras/${idCompra}/factura`, fd).toPromise();
+            await this.http.patch(`${environment.apiUrl}/pos/compras/${idCompra}/factura`, fd).toPromise();
           } catch (e) {
             console.error('Error al subir facturas', e);
             this.toast.show('Compra guardada, pero hubo un error al subir la factura PDF/XML.', 'warning');

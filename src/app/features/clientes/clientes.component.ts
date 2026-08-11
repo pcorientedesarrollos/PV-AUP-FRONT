@@ -107,7 +107,7 @@ export class ClientesComponent implements OnInit {
     const fd = new FormData();
     fd.append('file', file);
 
-    this.http.post<any>('http://localhost:3000/pos/utils/parse-csf', fd).subscribe({
+    this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
       next: (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {
@@ -196,14 +196,14 @@ export class ClientesComponent implements OnInit {
   ngOnInit() {
     this.cargarClientes();
     if (this.isSoporte()) {
-      this.http.get<any[]>('http://localhost:3000/pos/empresas').subscribe(res => this.empresas.set(res));
-      this.http.get<any[]>('http://localhost:3000/pos/sucursales').subscribe(res => this.sucursales.set(res));
+      this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe(res => this.empresas.set(res));
+      this.http.get<any[]>(`${environment.apiUrl}/pos/sucursales`).subscribe(res => this.sucursales.set(res));
     }
   }
 
   cargarClientes() {
     this.cargando.set(true);
-    this.http.get<any[]>('http://localhost:3000/pos/clientes').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
       next: (data) => {
         const mapeados = data.map(c => ({
           idCliente: c.idCliente,
@@ -391,7 +391,7 @@ export class ClientesComponent implements OnInit {
     };
 
     if (this.modoModal() === 'crear') {
-      this.http.post('http://localhost:3000/pos/clientes/alta-rapida', payload).subscribe({
+      this.http.post(`${environment.apiUrl}/pos/clientes/alta-rapida`, payload).subscribe({
         next: () => {
           this.toast.show('Cliente registrado con éxito', 'success');
           this.cerrarModal();
@@ -406,7 +406,7 @@ export class ClientesComponent implements OnInit {
         }
       });
     } else {
-      this.http.patch(`http://localhost:3000/pos/clientes/${this.clienteActual.idCliente}`, payload).subscribe({
+      this.http.patch(`${environment.apiUrl}/pos/clientes/${this.clienteActual.idCliente}`, payload).subscribe({
         next: () => {
           this.toast.show('Cliente actualizado con éxito', 'success');
           this.cerrarModal();
@@ -425,7 +425,7 @@ export class ClientesComponent implements OnInit {
 
   eliminarCliente(id: number) {
     if (confirm('¿Estás seguro de que deseas desactivar este cliente?')) {
-      this.http.delete(`http://localhost:3000/pos/clientes/${id}`).subscribe({
+      this.http.delete(`${environment.apiUrl}/pos/clientes/${id}`).subscribe({
         next: () => this.cargarClientes(),
         error: (err) => {
           (function(...args: any[]){})('Error desactivando', err);

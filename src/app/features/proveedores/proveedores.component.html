@@ -509,7 +509,7 @@
               </div>
               
               @if (compraDetalle().urlFacturaXml) {
-                <button (click)="descargarXml('http://localhost:3000' + compraDetalle().urlFacturaXml)" class="w-full text-center bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-bold py-1.5 rounded-md text-xs transition-colors">
+                <button (click)="descargarXml(apiUrl + compraDetalle().urlFacturaXml)" class="w-full text-center bg-white border border-indigo-200 text-indigo-600 hover:bg-indigo-50 font-bold py-1.5 rounded-md text-xs transition-colors">
                   Descargar XML
                 </button>
               } @else {

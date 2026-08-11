@@ -1,3 +1,4 @@
+import { environment } from '../../../environments/environment';
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
@@ -263,12 +264,12 @@ export class CategoriasComponent implements OnInit {
   ngOnInit() {
     this.cargar();
     if (this.isSoporte()) {
-      this.http.get<any[]>('http://localhost:3000/pos/empresas').subscribe(res => this.empresas.set(res));
+      this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe(res => this.empresas.set(res));
     }
   }
 
   cargar() {
-    this.http.get<any[]>('http://localhost:3000/pos/categorias').subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/categorias`).subscribe({
       next: (res) => this.categorias.set(res),
       error: (err) => console.error(err)
     });
