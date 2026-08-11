@@ -7,8 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:PV-AUP-FRONT": "node dist/PV-AUP-FRONT/server/server.mjs",
-    "install": "npm install --legacy-peer-deps"
+    "serve:ssr:PV-AUP-FRONT": "node dist/PV-AUP-FRONT/server/server.mjs"
   },
   "private": true,
   "packageManager": "npm@10.9.2",
