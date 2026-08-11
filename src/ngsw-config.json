@@ -29,24 +29,22 @@
   ],
   "dataGroups": [
     {
-      "name": "api-productos",
-      "urls": ["http://localhost:3000/subsubcuentas/productos"],
-      "cacheConfig": {
-        "strategy": "freshness",
-        "maxSize": 100,
-        "maxAge": "10m",
-        "timeout": "5s"
-      }
-    },
-    {
-      "name": "api-clientes",
-      "urls": ["http://localhost:3000/clientes"],
+      "name": "api-freshness",
+      "urls": [
+        "https://pv-aup-back-production.up.railway.app/**"
+      ],
       "cacheConfig": {
         "strategy": "freshness",
         "maxSize": 500,
         "maxAge": "5m",
-        "timeout": "5s"
+        "timeout": "10s"
       }
     }
+  ],
+  "navigationUrls": [
+    "/**",
+    "!/**/*.*",
+    "!/**/*__*",
+    "!/**/*__*/**"
   ]
 }

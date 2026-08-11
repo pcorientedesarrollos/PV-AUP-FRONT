@@ -2,6 +2,7 @@ import { Component, effect, inject } from '@angular/core';
 import { Router, RouterOutlet, NavigationEnd } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { DOCUMENT } from '@angular/common';
+import { SwUpdate, VersionReadyEvent } from '@angular/service-worker';
 import { AuthService } from './core/services/auth.service';
 import { ThemeService } from './core/services/theme.service';
 import { filter } from 'rxjs/operators';
@@ -20,12 +21,21 @@ export class App {
   private auth = inject(AuthService);
   private theme = inject(ThemeService);
   private router = inject(Router);
+  private swUpdate = inject(SwUpdate);
 
   private readonly LAST_ROUTE_KEY = 'lastRoute';
   // Rutas que NO deben persistirse
   private readonly SKIP_ROUTES = ['/login', '/pos', '/', ''];
 
   constructor() {
+    if (this.swUpdate.isEnabled) {
+      this.swUpdate.versionUpdates
+        .pipe(filter((e): e is VersionReadyEvent => e.type === 'VERSION_READY'))
+        .subscribe(() => {
+          this.swUpdate.activateUpdate().then(() => document.location.reload());
+        });
+    }
+
     // Guardar la ruta actual en cada navegación exitosa
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd)
