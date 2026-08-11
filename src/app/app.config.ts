@@ -15,7 +15,7 @@ export const appConfig: ApplicationConfig = {
     // SSR/hydration eliminado — app POS interna con sessionStorage no la necesita
     provideCharts(withDefaultRegisterables()),
     provideServiceWorker('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: false,
       registrationStrategy: 'registerImmediately',
     }),
   ],
