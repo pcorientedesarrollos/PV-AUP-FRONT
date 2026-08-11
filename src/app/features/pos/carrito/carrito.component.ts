@@ -8,6 +8,7 @@ import { TicketPrinterService } from '../../../core/services/ticket-printer.serv
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-carrito',
@@ -27,6 +28,8 @@ export class CarritoComponent implements OnInit {
   ultimoSubtotal = signal(0);
   ultimoIva = signal(0);
   ultimoTicketItems = signal<any[]>([]);
+  idUltimaVenta = signal<number | null>(null);
+  folioUltimaVenta = signal<string | null>(null);
   
   // Custom Dropdown State
   dropdownAbierto = signal(false);
@@ -59,7 +62,7 @@ export class CarritoComponent implements OnInit {
   
   // Para pago secundario (saldo restante)
   requierePagoSecundario = signal(false);
-  metodoPagoSecundario = signal<'Tarjeta' | 'Transferencia' | null>(null);
+  metodoPagoSecundario = signal<'Efectivo' | 'Tarjeta' | 'Transferencia' | null>(null);
 
   totalIngresado = computed(() => {
     if (this.metodoPago() !== 'Efectivo') {
@@ -104,7 +107,8 @@ export class CarritoComponent implements OnInit {
   constructor(
     public pos: PosService, 
     public auth: AuthService,
-    private printer: TicketPrinterService
+    private printer: TicketPrinterService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -299,22 +303,21 @@ export class CarritoComponent implements OnInit {
     let isMixto = false;
     let efectivoIngresado = this.cantidadRecibida() || aPagar;
     
-    if (this.metodoPago() === 'Efectivo') {
-      const ingresado = this.cantidadRecibida() || 0;
-      if (ingresado < (aPagar - 0.01)) {
-        if (!this.requierePagoSecundario()) {
-          // Cambiar al flujo de pago secundario
+    if (efectivoIngresado > 0 && efectivoIngresado < (aPagar - 0.01)) {
+      if (!this.requierePagoSecundario()) {
+        if (confirm(`El monto ingresado ($${efectivoIngresado}) es menor al total ($${aPagar}). ¿Deseas pagar el resto con un segundo método de pago?`)) {
           this.requierePagoSecundario.set(true);
-          return;
-        } else {
-          if (!this.metodoPagoSecundario()) {
-            alert('Selecciona con qué método vas a pagar el saldo restante.');
-            return;
-          }
-          isMixto = true;
-          efectivoIngresado = ingresado;
         }
+        return;
+      } else {
+        if (!this.metodoPagoSecundario()) {
+          alert('Selecciona con qué método vas a pagar el saldo restante.');
+          return;
+        }
+        isMixto = true;
       }
+    } else {
+      efectivoIngresado = aPagar;
     }
 
     this.cargando.set(true);
@@ -332,10 +335,10 @@ export class CarritoComponent implements OnInit {
       idUsuario: this.auth.sesion()?.idUsuario,
       idSucursal: this.auth.sesion()?.idSucursal || 1, // Defaulting to 1 if not set
       metodoPago: isMixto ? 'Mixto' : this.metodoPago(),
-      montoEfectivo: isMixto ? efectivoIngresado : (this.metodoPago() === 'Efectivo' ? aPagar : undefined),
-      montoTarjeta: isMixto && this.metodoPagoSecundario() === 'Tarjeta' ? saldoRestante : (this.metodoPago() === 'Tarjeta' ? aPagar : undefined),
-      montoTransferencia: isMixto && this.metodoPagoSecundario() === 'Transferencia' ? saldoRestante : (this.metodoPago() === 'Transferencia' ? aPagar : undefined),
-      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || aPagar) : undefined,
+      montoEfectivo: isMixto ? (this.metodoPago() === 'Efectivo' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Efectivo' ? saldoRestante : undefined)) : (this.metodoPago() === 'Efectivo' ? aPagar : undefined),
+      montoTarjeta: isMixto ? (this.metodoPago() === 'Tarjeta' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Tarjeta' ? saldoRestante : undefined)) : (this.metodoPago() === 'Tarjeta' ? aPagar : undefined),
+      montoTransferencia: isMixto ? (this.metodoPago() === 'Transferencia' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Transferencia' ? saldoRestante : undefined)) : (this.metodoPago() === 'Transferencia' ? aPagar : undefined),
+      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || aPagar) : (isMixto && this.metodoPagoSecundario() === 'Efectivo' ? saldoRestante : undefined),
       cambioEntregado: this.cambio(),
       carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
@@ -351,10 +354,24 @@ export class CarritoComponent implements OnInit {
     this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
 
       this.pos.checkout(payload).subscribe({
-        next: () => {
+        next: (res: any) => {
           this.cargando.set(false);
           this.modalPagoAbierto.set(false);
-          this.ventaExitosa.set(true);
+          
+          if (res && res.idVenta) {
+            this.idUltimaVenta.set(res.idVenta);
+            this.folioUltimaVenta.set(res.folio || null);
+            // Mostrar pregunta nativa por encima de cualquier modal
+            setTimeout(() => {
+              if (confirm('Venta registrada con éxito.\n\n¿Deseas facturar esta venta en este momento?')) {
+                this.irAFacturar();
+              } else {
+                this.ventaExitosa.set(true);
+              }
+            }, 150);
+          } else {
+            this.ventaExitosa.set(true);
+          }
         },
         error: (err: HttpErrorResponse) => {
           this.cargando.set(false);
@@ -369,9 +386,19 @@ export class CarritoComponent implements OnInit {
 
   nuevaVenta() {
     this.ventaExitosa.set(false);
+    this.idUltimaVenta.set(null);
+    this.folioUltimaVenta.set(null);
     this.pos.limpiarCarrito();
     this.clienteSeleccionadoId.set('');
     this.valorDescuento.set(0);
+  }
+
+  irAFacturar() {
+    const folio = this.folioUltimaVenta() || this.idUltimaVenta();
+    if (folio) {
+      this.nuevaVenta();
+      this.router.navigate(['/facturas'], { queryParams: { facturarVenta: folio } });
+    }
   }
 
   imprimirTicket() {

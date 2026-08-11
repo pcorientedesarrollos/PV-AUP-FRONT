@@ -15,33 +15,20 @@ export class ThemeService {
   }
 
   toggleTheme() {
-    this.isDarkMode.set(!this.isDarkMode());
-    this.applyTheme();
-    if (isPlatformBrowser(this.platformId)) {
-      localStorage.setItem(this.THEME_KEY, this.isDarkMode() ? 'dark' : 'light');
-    }
+    // Modo oscuro deshabilitado a petición del usuario.
   }
 
   private loadTheme() {
     if (!isPlatformBrowser(this.platformId)) return;
-    const saved = localStorage.getItem(this.THEME_KEY);
-    if (saved === 'dark') {
-      this.isDarkMode.set(true);
-    } else if (saved === 'light') {
-      this.isDarkMode.set(false);
-    } else {
-      // Default to light mode for now
-      this.isDarkMode.set(false);
-    }
+    
+    // Forzar modo claro siempre
+    this.isDarkMode.set(false);
+    localStorage.setItem(this.THEME_KEY, 'light');
     this.applyTheme();
   }
 
   private applyTheme() {
     if (!isPlatformBrowser(this.platformId)) return;
-    if (this.isDarkMode()) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    document.documentElement.classList.remove('dark');
   }
 }

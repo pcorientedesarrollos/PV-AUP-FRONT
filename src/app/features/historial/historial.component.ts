@@ -126,8 +126,39 @@ export class HistorialComponent implements OnInit {
   clientes = signal<any[]>([]);
   mostrarModalFactura = signal(false);
   ventaAFacturar = signal<any>(null);
-  datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null as number | null };
+  datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '601', usoCfdi: 'G03', formaPago: '01', metodoPago: 'PUE', clienteId: null as number | null };
+  clienteBuscado = '';
   facturando = signal(false);
+
+  regimenes = [
+    { id: '601', nombre: 'General de Ley Personas Morales' },
+    { id: '605', nombre: 'Sueldos y Salarios e Ingresos Asimilados' },
+    { id: '606', nombre: 'Arrendamiento' },
+    { id: '612', nombre: 'Personas Físicas con Actividades Empresariales y Profesionales' },
+    { id: '626', nombre: 'Régimen Simplificado de Confianza' },
+    { id: '616', nombre: 'Sin obligaciones fiscales' }
+  ];
+
+  usos = [
+    { id: 'G01', nombre: 'Adquisición de mercancias' },
+    { id: 'G03', nombre: 'Gastos en general' },
+    { id: 'P01', nombre: 'Por definir' },
+    { id: 'S01', nombre: 'Sin efectos fiscales' }
+  ];
+
+  formasPago = [
+    { id: '01', nombre: 'Efectivo' },
+    { id: '02', nombre: 'Cheque nominativo' },
+    { id: '03', nombre: 'Transferencia electrónica de fondos' },
+    { id: '04', nombre: 'Tarjeta de crédito' },
+    { id: '28', nombre: 'Tarjeta de débito' },
+    { id: '99', nombre: 'Por definir' }
+  ];
+
+  metodosPago = [
+    { id: 'PUE', nombre: 'Pago en una sola exhibición' },
+    { id: 'PPD', nombre: 'Pago en parcialidades o diferido' }
+  ];
 
   cargarClientes() {
     this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
@@ -138,15 +169,17 @@ export class HistorialComponent implements OnInit {
 
   abrirModalFactura(venta: any) {
     this.ventaAFacturar.set(venta);
-    this.datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '', usoCfdi: 'G03', clienteId: null };
-    
-    // Auto-seleccionar si la venta ya tiene un cliente asociado
-    if (venta.cliente && venta.cliente.idCliente) {
+    this.datosFactura = { rfc: '', razonSocial: '', cp: '', regimen: '601', usoCfdi: 'G03', formaPago: '01', metodoPago: 'PUE', clienteId: null };
+    this.clienteBuscado = '';
+    this.mostrarModalFactura.set(true);
+    if (venta.cliente?.idCliente) {
       this.datosFactura.clienteId = venta.cliente.idCliente;
+      const cli = this.clientes().find((c: any) => c.idCliente === venta.cliente.idCliente);
+      if (cli) {
+        this.clienteBuscado = `${cli.rfc || 'Sin RFC'} - ${cli.nombreCompleto}`;
+      }
       this.onClienteSeleccionado(venta.cliente.idCliente);
     }
-    
-    this.mostrarModalFactura.set(true);
   }
 
   cerrarModalFactura() {
@@ -156,9 +189,49 @@ export class HistorialComponent implements OnInit {
 
   subiendoCsf = signal(false);
 
+  mostrarDropdownClientes = false;
+
+  get clientesFiltrados() {
+    if (!this.clienteBuscado) return this.clientes();
+    const query = this.clienteBuscado.toLowerCase();
+    return this.clientes().filter((c: any) => 
+      (c.rfc && c.rfc.toLowerCase().includes(query)) || 
+      (c.nombreCompleto && c.nombreCompleto.toLowerCase().includes(query))
+    );
+  }
+
+  onClienteInput() {
+    this.mostrarDropdownClientes = true;
+    if (!this.clienteBuscado) {
+      this.datosFactura.clienteId = null;
+      this.datosFactura.rfc = '';
+      this.datosFactura.razonSocial = '';
+      this.datosFactura.cp = '';
+      this.datosFactura.regimen = '';
+    }
+  }
+
+  onClienteFocus() {
+    this.mostrarDropdownClientes = true;
+  }
+
+  onClienteBlur() {
+    setTimeout(() => this.mostrarDropdownClientes = false, 200);
+  }
+
+  ocultarDropdownClientes() {
+    setTimeout(() => this.mostrarDropdownClientes = false, 200);
+  }
+
+  seleccionarClienteDropdown(cliente: any) {
+    this.clienteBuscado = `${cliente.rfc || 'Sin RFC'} - ${cliente.nombreCompleto}`;
+    this.mostrarDropdownClientes = false;
+    this.datosFactura.clienteId = cliente.idCliente;
+    this.onClienteSeleccionado(cliente.idCliente);
+  }
+
   onClienteSeleccionado(id: any) {
-    const cid = Number(id);
-    const cliente = this.clientes().find(c => c.idCliente === cid);
+    const cliente = this.clientes().find((c: any) => c.idCliente === id);
     if (cliente) {
       this.datosFactura.rfc = cliente.rfc;
       this.datosFactura.razonSocial = cliente.nombreCompleto;
@@ -186,8 +259,9 @@ export class HistorialComponent implements OnInit {
         this.subiendoCsf.set(false);
         if (res.success) {
           this.datosFactura.rfc = res.rfc || this.datosFactura.rfc;
-          this.datosFactura.razonSocial = res.nombre || this.datosFactura.razonSocial;
-          
+          if (res.nombre) {
+            this.datosFactura.razonSocial = res.nombre.replace(/\s+/g, ' ').trim();
+          }
           if (res.cp) {
             this.datosFactura.cp = res.cp;
           }
@@ -220,7 +294,9 @@ export class HistorialComponent implements OnInit {
       razonSocial: this.datosFactura.razonSocial,
       cp: this.datosFactura.cp,
       regimen: this.datosFactura.regimen,
-      usoCfdi: this.datosFactura.usoCfdi
+      usoCfdi: this.datosFactura.usoCfdi,
+      formaPago: this.datosFactura.formaPago,
+      metodoPago: this.datosFactura.metodoPago
     };
 
     this.http.post(`${environment.apiUrl}/pos/facturar/${idVenta}`, payload).subscribe({

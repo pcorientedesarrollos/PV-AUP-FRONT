@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { ExportService } from '../../core/services/export.service';
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-facturas',
@@ -48,6 +49,7 @@ export class FacturasComponent implements OnInit {
   // Datos para emitir
   idVenta = signal<number | null>(null);
   folioVenta = signal('');
+  ventaSeleccionada = signal<any>(null);
   
   subiendoCsf = signal(false);
 
@@ -64,7 +66,7 @@ export class FacturasComponent implements OnInit {
         this.subiendoCsf.set(false);
         if (res.success) {
           if (res.rfc) this.formData.rfc = res.rfc;
-          if (res.nombre) this.formData.razonSocial = res.nombre;
+          if (res.nombre) this.formData.razonSocial = res.nombre.replace(/\s+/g, ' ').trim();
           if (res.cp) this.formData.cp = res.cp;
           if (res.regimenFiscal) this.formData.regimen = res.regimenFiscal;
         } else {
@@ -118,6 +120,7 @@ export class FacturasComponent implements OnInit {
   ];
 
   clientesGuardados = signal<any[]>([]);
+  private route = inject(ActivatedRoute);
 
   constructor(private http: HttpClient, public auth: AuthService, public exportService: ExportService) {}
 
@@ -127,6 +130,19 @@ export class FacturasComponent implements OnInit {
       this.idSucursalSesion = ses.idSucursal || 0;
       this.cargarFacturas();
       this.cargarClientes();
+      
+      this.route.queryParams.subscribe((params: any) => {
+        if (params['facturarVenta']) {
+          const val = params['facturarVenta'];
+          this.abrirModalFactura();
+          this.folioVenta.set(String(val));
+          
+          // Wait briefly for local ventasDisponibles to load if it's an ID
+          setTimeout(() => {
+            this.buscarVentaPorFolio();
+          }, 500);
+        }
+      });
     }
   }
 
@@ -142,6 +158,50 @@ export class FacturasComponent implements OnInit {
   seleccionarCliente(event: any) {
     const id = Number(event.target.value);
     if (!id) return;
+    this.aplicarCliente(id);
+  }
+
+  clienteBuscado = '';
+
+  mostrarDropdownClientes = false;
+
+  get clientesFiltrados() {
+    if (!this.clienteBuscado) return this.clientesGuardados();
+    const query = this.clienteBuscado.toLowerCase();
+    return this.clientesGuardados().filter(c => 
+      (c.rfc && c.rfc.toLowerCase().includes(query)) || 
+      (c.nombreCompleto && c.nombreCompleto.toLowerCase().includes(query))
+    );
+  }
+
+  onClienteInput() {
+    this.mostrarDropdownClientes = true;
+    if (!this.clienteBuscado) {
+      this.formData.rfc = '';
+      this.formData.razonSocial = '';
+      this.formData.cp = '';
+    }
+  }
+
+  onClienteFocus() {
+    this.mostrarDropdownClientes = true;
+  }
+
+  onClienteBlur() {
+    setTimeout(() => this.mostrarDropdownClientes = false, 200);
+  }
+
+  ocultarDropdownClientes() {
+    setTimeout(() => this.mostrarDropdownClientes = false, 200);
+  }
+
+  seleccionarClienteDropdown(cliente: any) {
+    this.clienteBuscado = `${cliente.rfc || 'Sin RFC'} - ${cliente.nombreCompleto}`;
+    this.mostrarDropdownClientes = false;
+    this.aplicarCliente(cliente.idCliente);
+  }
+
+  private aplicarCliente(id: number) {
     const cli = this.clientesGuardados().find(c => c.idCliente === id);
     if (cli) {
       this.formData.rfc = cli.rfc || '';
@@ -192,7 +252,21 @@ export class FacturasComponent implements OnInit {
     });
   }
 
-    ocultarDropdownVentas() {
+  onFolioInput() {
+    this.mostrarDropdownVentas = this.folioVenta().length > 0;
+  }
+
+  onFolioFocus() {
+    if (this.folioVenta().length > 0) {
+      this.mostrarDropdownVentas = true;
+    }
+  }
+
+  onFolioBlur() {
+    setTimeout(() => this.mostrarDropdownVentas = false, 200);
+  }
+
+  ocultarDropdownVentas() {
     setTimeout(() => this.mostrarDropdownVentas = false, 200);
   }
 
@@ -201,17 +275,27 @@ export class FacturasComponent implements OnInit {
     this.mostrarDropdownVentas = false;
     
     this.idVenta.set(venta.idVenta || venta.idCajaChica);
+    this.ventaSeleccionada.set(venta);
     this.errorFactura.set('');
+    
+    let maxAmount = 0;
+    let dominantMethod = '01'; // Default Efectivo
+    if (venta.montoEfectivo > maxAmount) { maxAmount = venta.montoEfectivo; dominantMethod = '01'; }
+    if (venta.montoTarjeta > maxAmount) { maxAmount = venta.montoTarjeta; dominantMethod = '28'; } // Tarjeta de débito
+    if (venta.montoTransferencia > maxAmount) { maxAmount = venta.montoTransferencia; dominantMethod = '03'; }
     
     if (venta.cliente) {
       this.formData = {
         ...this.formData,
         rfc: venta.cliente.rfc || '',
         razonSocial: venta.cliente.nombreCompleto || '',
-        cp: venta.cliente.direccion ? (venta.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : ''
+        cp: venta.cliente.direccion ? (venta.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : '',
+        formaPago: dominantMethod,
+        regimen: venta.cliente.regimenFiscal || '601',
+        usoCfdi: venta.cliente.usoCfdi || 'G03'
       };
     } else {
-      this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '' };
+      this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '', formaPago: dominantMethod };
     }
   }
 
@@ -269,20 +353,30 @@ export class FacturasComponent implements OnInit {
         const v = ventas.length > 0 ? ventas[0] : null;
         if (v) {
           this.idVenta.set(v.idVenta);
+          this.ventaSeleccionada.set(v);
           this.errorFactura.set('');
-          // AUTO RELLENAR SI HAY CLIENTE
+          let maxAmount = 0;
+          let dominantMethod = '01'; // Default Efectivo
+          if (v.montoEfectivo > maxAmount) { maxAmount = v.montoEfectivo; dominantMethod = '01'; }
+          if (v.montoTarjeta > maxAmount) { maxAmount = v.montoTarjeta; dominantMethod = '28'; } // Tarjeta de débito
+          if (v.montoTransferencia > maxAmount) { maxAmount = v.montoTransferencia; dominantMethod = '03'; }
+
           if (v.cliente) {
             this.formData = {
               ...this.formData,
               rfc: v.cliente.rfc || '',
               razonSocial: v.cliente.nombreCompleto || '',
-              cp: v.cliente.direccion ? (v.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : ''
+              cp: v.cliente.direccion ? (v.cliente.direccion.match(/\b\d{5}\b/) || [''])[0] : '',
+              formaPago: dominantMethod,
+              regimen: v.cliente.regimenFiscal || '601',
+              usoCfdi: v.cliente.usoCfdi || 'G03'
             };
           } else {
-             this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '' };
+             this.formData = { ...this.formData, rfc: '', razonSocial: '', cp: '', formaPago: dominantMethod };
           }
         } else {
           this.idVenta.set(null);
+          this.ventaSeleccionada.set(null);
           this.errorFactura.set('No se encontró una venta con ese folio.');
         }
       },

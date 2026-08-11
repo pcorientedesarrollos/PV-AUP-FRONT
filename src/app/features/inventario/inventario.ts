@@ -508,7 +508,7 @@ export class InventarioComponent implements OnInit {
       'Costo': p.precioUnitario || 0,
       'Sucursal': p.sucursal?.nombre || 'N/A'
     }));
-    this.exportService.exportToExcel(data, 'Cardex_Inventario');
+    this.exportService.exportToExcel(data, 'Kardex_Inventario');
   }
 
   exportarPDF() {
@@ -522,6 +522,6 @@ export class InventarioComponent implements OnInit {
       `$${p.precioUnitario || 0}`,
       p.sucursal?.nombre || 'N/A'
     ]);
-    this.exportService.exportToPdf(headers, data, 'Reporte de Inventario (Cardex)', 'Cardex_Inventario', 'l');
+    this.exportService.exportToPdf(headers, data, 'Reporte de Inventario (Kardex)', 'Kardex_Inventario', 'l');
   }
 }

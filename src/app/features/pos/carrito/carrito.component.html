@@ -418,6 +418,9 @@
             <div>
               <h3 class="text-xl font-bold text-gray-900">¡Venta Registrada!</h3>
               <p class="text-slate-500 text-sm mt-1">La transacción se procesó correctamente.</p>
+              @if (idUltimaVenta()) {
+                <p class="text-indigo-600 font-bold mt-2 text-lg">¿Deseas facturar esta venta?</p>
+              }
             </div>
             
             <div class="bg-gray-50 rounded p-4 border border-gray-200">
@@ -442,6 +445,17 @@
                 Nueva Venta
               </button>
             </div>
+            @if (idUltimaVenta()) {
+              <div class="mt-2">
+                <button
+                  (click)="irAFacturar()"
+                  class="w-full py-4 bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-200 rounded-lg font-black tracking-widest text-lg shadow-lg hover:shadow-xl transition-all flex justify-center items-center gap-2"
+                >
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  SÍ, FACTURAR VENTA
+                </button>
+              </div>
+            }
           </div>
         </div>
       </div>

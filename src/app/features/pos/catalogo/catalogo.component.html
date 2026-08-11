@@ -54,7 +54,6 @@
             <table class="w-full text-left border-collapse">
               <thead>
                 <tr class="bg-slate-50 border-b border-gray-200">
-                  <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest w-16">ID</th>
                   <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Producto</th>
                   <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest">Código Barras</th>
                   <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right">Precio</th>
@@ -65,7 +64,6 @@
               <tbody class="divide-y divide-gray-100">
                 @for (producto of productosFiltrados(); track producto.idProducto) {
                   <tr (click)="agregar(producto)" class="cursor-pointer hover:bg-amber-50/50 transition-colors group">
-                    <td class="py-3 px-4 text-slate-400 font-mono text-xs">#{{ producto.idProducto }}</td>
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-3">
                         @if (producto.imagenUrl) {
