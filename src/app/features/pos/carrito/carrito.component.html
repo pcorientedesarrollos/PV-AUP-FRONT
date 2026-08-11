@@ -418,9 +418,6 @@
             <div>
               <h3 class="text-xl font-bold text-gray-900">¡Venta Registrada!</h3>
               <p class="text-slate-500 text-sm mt-1">La transacción se procesó correctamente.</p>
-              @if (idUltimaVenta()) {
-                <p class="text-indigo-600 font-bold mt-2 text-lg">¿Deseas facturar esta venta?</p>
-              }
             </div>
             
             <div class="bg-gray-50 rounded p-4 border border-gray-200">
@@ -428,34 +425,34 @@
              <p class="text-2xl font-bold text-emerald-600">{{ ultimoTotal() | currency }}</p>
           </div>
           
-            <div class="grid grid-cols-2 gap-3 mt-4">
+            <div class="flex flex-col md:flex-row gap-3 mt-4">
               <button
                 (click)="imprimirTicket()"
-                class="w-full btn-cancel flex items-center justify-center gap-2"
+                class="flex-1 btn-cancel flex items-center justify-center gap-2"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 Imprimir Ticket
               </button>
+
+              @if (idUltimaVenta()) {
+                <button
+                  (click)="irAFacturar()"
+                  class="flex-1 py-2 px-4 bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-200 rounded font-bold shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2"
+                >
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  Facturar Venta
+                </button>
+              }
+
               <button
                 id="btn-nueva-venta"
                 (click)="nuevaVenta()"
-                class="w-full btn-submit flex items-center justify-center gap-2"
+                class="flex-1 btn-submit flex items-center justify-center gap-2"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 Nueva Venta
               </button>
             </div>
-            @if (idUltimaVenta()) {
-              <div class="mt-2">
-                <button
-                  (click)="irAFacturar()"
-                  class="w-full py-4 bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-200 rounded-lg font-black tracking-widest text-lg shadow-lg hover:shadow-xl transition-all flex justify-center items-center gap-2"
-                >
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                  SÍ, FACTURAR VENTA
-                </button>
-              </div>
-            }
           </div>
         </div>
       </div>

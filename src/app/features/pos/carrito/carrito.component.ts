@@ -361,17 +361,8 @@ export class CarritoComponent implements OnInit {
           if (res && res.idVenta) {
             this.idUltimaVenta.set(res.idVenta);
             this.folioUltimaVenta.set(res.folio || null);
-            // Mostrar pregunta nativa por encima de cualquier modal
-            setTimeout(() => {
-              if (confirm('Venta registrada con éxito.\n\n¿Deseas facturar esta venta en este momento?')) {
-                this.irAFacturar();
-              } else {
-                this.ventaExitosa.set(true);
-              }
-            }, 150);
-          } else {
-            this.ventaExitosa.set(true);
           }
+          this.ventaExitosa.set(true);
         },
         error: (err: HttpErrorResponse) => {
           this.cargando.set(false);
