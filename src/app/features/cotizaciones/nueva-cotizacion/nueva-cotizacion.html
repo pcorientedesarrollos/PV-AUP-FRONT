@@ -64,7 +64,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
       </div>
-      <input type="text" [(ngModel)]="busquedaProducto" (input)="buscarConceptosApi()" placeholder="Buscar por folio, RFC, emisor o nombre del concepto" class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
+      <input type="text" [(ngModel)]="busquedaProducto" placeholder="Buscar por código de barras, clave o nombre del producto" class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg leading-5 bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition duration-150 ease-in-out">
       
       @if (buscandoConceptos()) {
         <div class="absolute right-3 top-3">
@@ -73,10 +73,10 @@
       }
     
       <!-- Resultados Búsqueda -->
-      @if (busquedaProducto().length > 0 && conceptosFacturados().length > 0) {
+      @if (busquedaProducto().length > 0 && productosFiltrados().length > 0) {
         <div class="mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg max-h-80 overflow-y-auto absolute z-50 w-full left-0">
           <ul class="divide-y divide-slate-100 dark:divide-slate-700">
-            @for (p of conceptosFacturados(); track p.idDetalle) {
+            @for (p of productosFiltrados(); track p.idProducto) {
               <li class="p-4 hover:bg-indigo-50 dark:hover:bg-slate-700 cursor-pointer flex justify-between items-center transition-colors" (click)="agregarAlCarrito(p)">
                 <div class="flex items-center gap-3">
                   <div class="bg-indigo-50 border border-indigo-200 text-indigo-600 rounded-full w-8 h-8 flex items-center justify-center font-bold">
@@ -84,12 +84,11 @@
                   </div>
                   <div>
                     <p class="font-bold text-slate-800 dark:text-white text-sm uppercase">{{ p.nombre }}</p>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase">Folio {{ p.folio }} · {{ p.proveedor || 'SIN PROVEEDOR' }}</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase">Código: {{ p.codigoBarras || 'SIN CÓDIGO' }} · Stock: {{ p.stockActual || 0 }}</p>
                   </div>
                 </div>
                 <div class="text-right">
                   <p class="font-bold text-slate-900 dark:text-white">${{ p.precioUnitario }}</p>
-                  <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">{{ (p.fechaCompra || '').split('T')[0] }}</p>
                 </div>
               </li>
             }

@@ -225,43 +225,57 @@
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Columna Izquierda: Formulario -->
             <div class="space-y-6">
-
-          <div class="form-section bg-gray-50 p-4">
-            <label class="form-label uppercase tracking-wider mb-2">1. Folio de la Venta a Facturar</label>
-            <div class="flex gap-2 relative" (mouseenter)="mostrarDropdownVentas = true" (mouseleave)="ocultarDropdownVentas()">
-              <div class="flex-1 relative">
-                <input type="text" [(ngModel)]="folioVenta" (focus)="mostrarDropdownVentas = true" placeholder="Ej. VTA-2024-001 o ID" class="form-input w-full">
-                @if (mostrarDropdownVentas && ventasDisponibles().length > 0) {
-                  <div class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
-                    @for (v of ventasDisponibles(); track v.idVenta) {
-                      <div (mousedown)="seleccionarVentaDropdown(v)" class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors">
-                        <div class="font-bold text-gray-900">{{ v.folio || "VTA-" + (v.idCajaChica || v.idVenta) }}</div>
-                        <div class="text-xs mt-1 flex items-center gap-2">
-                          <span class="text-gray-500 font-medium">{{ (v.fechaVenta || '').split('T')[0] }}</span>
-                          @if (v.cliente?.nombreCompleto) {
-                            <span class="font-bold text-gray-700 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded">{{ v.cliente.nombreCompleto }}</span>
-                          } @else {
-                            <span class="badge-warning font-bold flex items-center gap-1">
-                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                              Público en General
-                            </span>
+              <div class="form-section bg-gray-50 p-4">
+                <div class="flex justify-between items-center mb-2">
+                  <label class="form-label uppercase tracking-wider mb-0">1. Folio de la Venta a Facturar</label>
+                  @if (ventaSeleccionada()) {
+                    <button type="button" (click)="limpiarVenta()" class="text-xs text-indigo-600 font-bold hover:underline">Cambiar Venta</button>
+                  }
+                </div>
+                
+                @if (ventaSeleccionada()) {
+                  <div class="bg-white border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                    <div class="font-bold text-gray-900 text-lg">{{ folioVenta() }}</div>
+                    <div class="text-sm font-bold text-emerald-600 flex items-center gap-1">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                      Venta encontrada y lista
+                    </div>
+                  </div>
+                } @else {
+                  <div class="flex gap-2 relative" (mouseenter)="mostrarDropdownVentas = true" (mouseleave)="ocultarDropdownVentas()">
+                    <div class="relative flex-1">
+                      <input type="text" 
+                             [ngModel]="folioVenta()" 
+                             (ngModelChange)="folioVenta.set($event)"
+                             (input)="onFolioInput()"
+                             (focus)="mostrarDropdownVentas = true"
+                             placeholder="Ej. VTA-2026-0001" 
+                             class="form-input text-lg font-mono">
+                      
+                      @if (mostrarDropdownVentas && ventasDisponibles().length > 0) {
+                        <div class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                          @for (venta of ventasDisponibles(); track venta.idVenta || venta.idCajaChica) {
+                            <div (click)="seleccionarVentaDropdown(venta)" class="px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0 transition-colors flex justify-between items-center">
+                              <div>
+                                <div class="font-bold text-gray-900">{{ venta.folio || 'VTA-' + (venta.idCajaChica || venta.idVenta) }}</div>
+                                <div class="text-xs text-gray-500 mt-0.5 flex gap-2">
+                                  <span>{{ (venta.fecha || venta.fechaVenta | date:'yyyy-MM-dd') || 'Sin fecha' }}</span>
+                                  <span class="bg-yellow-100 text-yellow-800 px-1 rounded flex items-center gap-1" *ngIf="venta.cliente?.rfc === 'XAXX010101000' || !venta.cliente">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                                    Público en General
+                                  </span>
+                                </div>
+                              </div>
+                              <div class="font-bold text-emerald-600">{{ (venta.totalPagado || venta.total) | currency }}</div>
+                            </div>
                           }
-                          <span class="text-emerald-600 font-bold ml-auto">{{ (v.totalPagado || v.total) | currency }}</span>
                         </div>
-                      </div>
-                    }
+                      }
+                    </div>
+                    <button type="button" (click)="buscarVentaPorFolio()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700 whitespace-nowrap">Buscar</button>
                   </div>
                 }
               </div>
-              <button (click)="buscarVentaPorFolio()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-indigo-700">Buscar</button>
-            </div>
-            @if (idVenta()) {
-              <div class="mt-2 text-emerald-600 text-sm font-bold flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                Venta ID: {{ idVenta() }} encontrada y lista.
-              </div>
-            }
-          </div>
 
 
           <div class="form-grid" [class.opacity-50]="!idVenta()" [class.pointer-events-none]="!idVenta()">

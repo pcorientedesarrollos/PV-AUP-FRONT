@@ -92,31 +92,16 @@ export class NuevaCotizacionComponent implements OnInit {
     this.idCliente.set(null);
   }
 
-  buscarConceptosApi() {
-    const term = this.busquedaProducto().trim();
-    if (term.length < 2) {
-      this.conceptosFacturados.set([]);
-      return;
-    }
+  productosFiltrados = computed(() => {
+    const term = this.busquedaProducto().toLowerCase().trim();
+    if (!term || term.length < 2) return [];
     
-    if (this.searchTimeout) clearTimeout(this.searchTimeout);
-    
-    this.searchTimeout = setTimeout(() => {
-      this.buscandoConceptos.set(true);
-      this.http.get<any[]>(`${environment.apiUrl}/pos/compras/conceptos?q=${encodeURIComponent(term)}`)
-        .subscribe({
-          next: (data) => {
-            this.conceptosFacturados.set(data);
-            this.buscandoConceptos.set(false);
-          },
-          error: (err) => {
-            console.error(err);
-            this.conceptosFacturados.set([]);
-            this.buscandoConceptos.set(false);
-          }
-        });
-    }, 500);
-  }
+    return this.posService.productos().filter(p => 
+      (p.nombre && p.nombre.toLowerCase().includes(term)) ||
+      (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term)) ||
+      (p.idProducto && p.idProducto.toString() === term)
+    );
+  });
 
   agregarAlCarrito(producto: any) {
     const current = this.carrito();
@@ -132,9 +117,6 @@ export class NuevaCotizacionComponent implements OnInit {
         tempId: Date.now() + Math.random(),
         idProducto: producto.idProducto,
         nombre: producto.nombre,
-        proveedor: producto.proveedor,
-        folioCompra: producto.folio,
-        fechaCompra: producto.fechaCompra,
         cantidad: 1,
         precioUnitario: pUnit,
         iva: Number(producto.iva) || 0,
@@ -148,7 +130,6 @@ export class NuevaCotizacionComponent implements OnInit {
       this.carrito.set([...current, fila]);
     }
     this.busquedaProducto.set('');
-    this.conceptosFacturados.set([]);
   }
 
   onClienteCreado(cliente: any) {

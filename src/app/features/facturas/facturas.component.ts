@@ -354,6 +354,17 @@ export class FacturasComponent implements OnInit {
     setTimeout(() => this.mostrarDropdownVentas = false, 200);
   }
 
+  limpiarVenta() {
+    this.ventaSeleccionada.set(null);
+    this.idVenta.set(0);
+    this.folioVenta.set('');
+    this.formData.rfc = '';
+    this.formData.razonSocial = '';
+    this.formData.cp = '';
+    this.formData.regimen = '';
+    this.clienteBuscado = '';
+  }
+
   seleccionarVentaDropdown(venta: any) {
     this.folioVenta.set(venta.folio || 'VTA-' + (venta.idCajaChica || venta.idVenta));
     this.mostrarDropdownVentas = false;
