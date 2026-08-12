@@ -305,8 +305,8 @@ export class HistorialComponent implements OnInit {
         this.alertaMensaje.set({ tipo: 'exito', texto: '¡Factura generada exitosamente!' });
         this.cerrarModalFactura();
         this.cargarHistorial(); // Refrescar para ver que ya está facturada (si el backend lo guarda)
-        if (res.factura && res.factura.urlPdf) {
-          window.open(res.factura.urlPdf, '_blank');
+        if (res && res.urlPdf) {
+          window.open(`${environment.apiUrl}${res.urlPdf}`, '_blank');
         }
       },
       error: (err) => {

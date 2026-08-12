@@ -263,23 +263,47 @@ export class FacturasComponent implements OnInit {
     }
   }
 
-  cancelarFactura(idFactura: number) {
-    const motivo = prompt('Ingresa el motivo de cancelación (01, 02, 03, 04):', '02');
-    if (!motivo) return;
+  // Modal Cancelar Factura
+  mostrarModalCancelarFactura = signal(false);
+  facturaACancelar = signal<any>(null);
+  datosCancelacion = { motivo: '02', uuidSustitucion: '' };
+  cancelandoFactura = signal(false);
+
+  abrirModalCancelarFactura(factura: any) {
+    this.facturaACancelar.set(factura);
+    this.datosCancelacion = { motivo: '02', uuidSustitucion: '' };
+    this.mostrarModalCancelarFactura.set(true);
+  }
+
+  cerrarModalCancelarFactura() {
+    this.mostrarModalCancelarFactura.set(false);
+    this.facturaACancelar.set(null);
+  }
+
+  ejecutarCancelacionFactura() {
+    const factura = this.facturaACancelar();
+    if (!factura) return;
     
-    let payload: any = { motivo };
-    if (motivo === '01') {
-      const uuidSustitucion = prompt('Ingresa el UUID de sustitución:');
-      if (!uuidSustitucion) return;
-      payload.uuidSustitucion = uuidSustitucion;
+    if (this.datosCancelacion.motivo === '01' && !this.datosCancelacion.uuidSustitucion) {
+      alert('Debe ingresar el UUID de sustitución para el motivo 01');
+      return;
     }
-    
-    this.http.post(`${environment.apiUrl}/pos/facturas/${idFactura}/cancelar`, payload).subscribe({
+
+    this.cancelandoFactura.set(true);
+    let payload: any = { motivo: this.datosCancelacion.motivo };
+    if (this.datosCancelacion.motivo === '01') {
+      payload.uuidSustitucion = this.datosCancelacion.uuidSustitucion;
+    }
+
+    this.http.post(`${environment.apiUrl}/pos/facturas/${factura.idFactura}/cancelar`, payload).subscribe({
       next: () => {
+        this.cancelandoFactura.set(false);
+        this.cerrarModalCancelarFactura();
         alert('Factura cancelada con éxito');
         this.cargarFacturas();
       },
       error: (err) => {
+        this.cancelandoFactura.set(false);
         alert('Error al cancelar factura: ' + (err.error?.message || err.message));
       }
     });
@@ -514,6 +538,9 @@ export class FacturasComponent implements OnInit {
         this.facturando.set(false);
         this.cerrarModal();
         this.cargarFacturas();
+        if (res && res.urlPdf) {
+          this.descargarPdf(res.urlPdf);
+        }
       },
       error: (err) => {
         this.facturando.set(false);

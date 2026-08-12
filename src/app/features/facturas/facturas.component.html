@@ -175,6 +175,9 @@
                         @if (!f.urlPdf && !f.urlXml) {
                           <span class="text-xs text-gray-500">Procesando</span>
                         }
+                        <button (click)="abrirModalCancelarFactura(f)" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition-colors border border-red-200" title="Cancelar CFDI">
+                           Cancelar
+                        </button>
                       }
                     } @else {
                       <button (click)="facturarVentaPendiente(f)" class="text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold px-3 py-1 rounded shadow-sm transition-colors">
@@ -197,6 +200,51 @@
       </div>
       <div class="pagination-container">
         <app-paginacion [paginaActual]="paginaActual()" [totalPaginas]="totalPaginas()" [totalRegistros]="datosActivos().length" [tamanoPagina]="tamanoPagina()" (paginaCambiada)="paginaActual.set($event)"></app-paginacion>
+      </div>
+    </div>
+  }
+
+  @if (mostrarModalCancelarFactura()) {
+    <div class="modal-overlay" style="z-index: 60;">
+      <div class="modal-container text-center max-w-md">
+        <div class="modal-header">
+          <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+          </div>
+          <h3 class="modal-title text-red-900">¿Cancelar Factura?</h3>
+        </div>
+
+        <div class="modal-body text-gray-600 text-sm text-left">
+          <p class="text-center mb-4">Estás a punto de cancelar la Factura de la Venta <span class="font-bold text-gray-900">#{{ facturaACancelar()?.venta?.idVenta || facturaACancelar()?.venta?.idCajaChica }}</span>.</p>
+          
+          <div class="mt-4">
+            <label class="form-label font-bold text-gray-700">Motivo de Cancelación</label>
+            <select [(ngModel)]="datosCancelacion.motivo" class="form-input mb-4 w-full">
+              <option value="01">01 - Comprobante emitido con errores con relación</option>
+              <option value="02">02 - Comprobante emitido con errores sin relación</option>
+              <option value="03">03 - No se llevó a cabo la operación</option>
+              <option value="04">04 - Operación nominativa relacionada en factura global</option>
+            </select>
+
+            @if (datosCancelacion.motivo === '01') {
+              <label class="form-label font-bold text-gray-700">UUID de Sustitución</label>
+              <input type="text" [(ngModel)]="datosCancelacion.uuidSustitucion" placeholder="Obligatorio para motivo 01" class="form-input w-full">
+            }
+          </div>
+        </div>
+
+        <div class="modal-footer flex gap-2">
+          <button (click)="cerrarModalCancelarFactura()" class="btn-cancel flex-1" [disabled]="cancelandoFactura()">Mantener Factura</button>
+          <button (click)="ejecutarCancelacionFactura()" class="btn-submit bg-red-600 hover:bg-red-700 flex-1 flex items-center justify-center" [disabled]="cancelandoFactura()">
+            @if (cancelandoFactura()) {
+              <div class="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+            } @else {
+              Sí, Cancelar CFDI
+            }
+          </button>
+        </div>
       </div>
     </div>
   }
