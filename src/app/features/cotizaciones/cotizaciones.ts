@@ -247,7 +247,11 @@ export class CotizacionesComponent implements OnInit {
                 <h2 class="quote-title">COTIZACIÓN</h2>
                 <p class="quote-meta"><strong>Folio:</strong> ${cot.folio}</p>
                 <p class="quote-meta"><strong>Fecha:</strong> ${new Date(cot.fechaEmision).toLocaleDateString()}</p>
-                <p class="quote-meta"><strong>Vigencia:</strong> ${cot.vigenciaDias} días</p>
+                <p class="quote-meta"><strong>Válido hasta:</strong> ${(() => {
+                  const d = new Date(cot.fechaEmision);
+                  d.setDate(d.getDate() + cot.vigenciaDias);
+                  return d.toLocaleDateString();
+                })()}</p>
               </div>
             </div>
             
@@ -270,11 +274,12 @@ export class CotizacionesComponent implements OnInit {
     
     if (cot.detalles && cot.detalles.length > 0) {
       cot.detalles.forEach((d: any) => {
+        const unitarioFinal = Number(d.importe) / Number(d.cantidad);
         html += `
           <tr>
             <td>${d.cantidad}</td>
             <td><strong>${d.producto?.nombre || 'Producto / Servicio'}</strong></td>
-            <td>$${Number(d.precioUnitario).toFixed(2)}</td>
+            <td>$${unitarioFinal.toFixed(2)}</td>
             <td>$${Number(d.importe).toFixed(2)}</td>
           </tr>
         `;

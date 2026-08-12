@@ -25,35 +25,37 @@ export class NuevaCotizacionComponent implements OnInit {
   private configService = inject(ConfigService);
 
   clientes = signal<any[]>([]);
-  catalogoProductos = signal<any[]>([]);
 
   // Form State
   idCliente = signal<number | null>(null);
+  clienteBuscado = signal<string>('');
+  mostrarDropdownClientes = signal<boolean>(false);
   mostrarNuevoCliente = signal<boolean>(false);
-  vigenciaDias = signal<number>(15);
+  fechaCotizacion = signal<string>(new Date().toISOString().split('T')[0]);
   titulo = signal<string>('');
   observaciones = signal<string>('');
   aplicarIva = signal<boolean>(true);
   
-  tipoCambio = signal<number>(18.50); // Example default
+  tipoCambio = signal<number>(18.50); // Default, updated on load
   utilidadGlobal = signal<number>(0);
 
   // Carrito
   carrito = signal<any[]>([]);
   busquedaProducto = signal<string>('');
+  conceptosFacturados = signal<any[]>([]);
+  buscandoConceptos = signal<boolean>(false);
+  searchTimeout: any;
   
   guardando = signal(false);
 
   ngOnInit() {
     this.cargarClientes();
-    this.cargarCatalogo();
     this.cargarTipoCambio();
   }
 
   cargarClientes() {
     this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe(data => this.clientes.set(data));
   }
-
   
   cargarTipoCambio() {
     this.http.get<any>(`${environment.apiUrl}/pos/tipo-cambio`).subscribe({
@@ -71,18 +73,50 @@ export class NuevaCotizacionComponent implements OnInit {
     });
   }
 
-  cargarCatalogo() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe(data => this.catalogoProductos.set(data));
-  }
-
-  productosFiltrados = computed(() => {
-    const term = this.busquedaProducto().toLowerCase().trim();
-    if (!term) return [];
-    return this.catalogoProductos().filter(p => 
-      (p.nombre || '').toLowerCase().includes(term) || 
-      (p.codigoBarras || '').toLowerCase().includes(term)
+  clientesFiltrados = computed(() => {
+    const term = this.clienteBuscado().toLowerCase().trim();
+    if (!term) return this.clientes();
+    return this.clientes().filter(c => 
+      (c.nombreCompleto || '').toLowerCase().includes(term) || 
+      (c.rfc || '').toLowerCase().includes(term)
     );
   });
+
+  seleccionarClienteDropdown(cliente: any) {
+    this.idCliente.set(cliente.idCliente);
+    this.clienteBuscado.set(cliente.nombreCompleto);
+    this.mostrarDropdownClientes.set(false);
+  }
+  
+  onClienteInput() {
+    this.idCliente.set(null);
+  }
+
+  buscarConceptosApi() {
+    const term = this.busquedaProducto().trim();
+    if (term.length < 2) {
+      this.conceptosFacturados.set([]);
+      return;
+    }
+    
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    
+    this.searchTimeout = setTimeout(() => {
+      this.buscandoConceptos.set(true);
+      this.http.get<any[]>(`${environment.apiUrl}/pos/compras/conceptos?q=${encodeURIComponent(term)}`)
+        .subscribe({
+          next: (data) => {
+            this.conceptosFacturados.set(data);
+            this.buscandoConceptos.set(false);
+          },
+          error: (err) => {
+            console.error(err);
+            this.conceptosFacturados.set([]);
+            this.buscandoConceptos.set(false);
+          }
+        });
+    }, 500);
+  }
 
   agregarAlCarrito(producto: any) {
     const current = this.carrito();
@@ -98,6 +132,9 @@ export class NuevaCotizacionComponent implements OnInit {
         tempId: Date.now() + Math.random(),
         idProducto: producto.idProducto,
         nombre: producto.nombre,
+        proveedor: producto.proveedor,
+        folioCompra: producto.folio,
+        fechaCompra: producto.fechaCompra,
         cantidad: 1,
         precioUnitario: pUnit,
         iva: Number(producto.iva) || 0,
@@ -111,6 +148,7 @@ export class NuevaCotizacionComponent implements OnInit {
       this.carrito.set([...current, fila]);
     }
     this.busquedaProducto.set('');
+    this.conceptosFacturados.set([]);
   }
 
   onClienteCreado(cliente: any) {
@@ -223,10 +261,17 @@ export class NuevaCotizacionComponent implements OnInit {
 
     this.guardando.set(true);
 
+    const dateSelected = new Date(this.fechaCotizacion());
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    dateSelected.setHours(0,0,0,0);
+    const diffTime = dateSelected.getTime() - today.getTime();
+    const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
     const payload = {
       idCliente: this.idCliente(),
       nombreClienteTemporal: null,
-      vigenciaDias: this.vigenciaDias(),
+      vigenciaDias: diffDays,
       titulo: this.titulo() || null,
       observaciones: this.observaciones() || null,
       costoBase: this.costoBase(),

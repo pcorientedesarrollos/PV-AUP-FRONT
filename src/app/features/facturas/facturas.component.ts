@@ -22,24 +22,73 @@ export class FacturasComponent implements OnInit {
   paginaActual = signal(1);
   tamanoPagina = signal(10);
   
-  totalPaginas = computed(() => Math.ceil(this.facturas().length / this.tamanoPagina()) || 1);
-
-  facturasPaginadas = computed(() => {
-    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
-    const fin = inicio + this.tamanoPagina();
-    return this.facturas().slice(inicio, fin);
-  });
-  
-  registrosPaginados = computed(() => {
-    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
-    return this.facturas().slice(inicio, inicio + this.tamanoPagina());
-  });
-
   facturas = signal<any[]>([]);
+  ventasPorFacturar = signal<any[]>([]);
   ventasDisponibles = signal<any[]>([]);
   mostrarDropdownVentas = false;
   cargando = signal(false);
   idSucursalSesion = 0;
+
+  modoVista = signal<'facturas' | 'porFacturar'>('facturas');
+
+  // Filtros
+  filtroAnio = signal<string>('');
+  filtroMes = signal<string>('');
+  filtroEstatus = signal<string>(''); // Emitida, Cancelada
+  busquedaTexto = signal<string>('');
+
+  facturasFiltradas = computed(() => {
+    let result = this.facturas();
+    const anio = this.filtroAnio();
+    const mes = this.filtroMes();
+    const estatus = this.filtroEstatus();
+    const q = this.busquedaTexto().toLowerCase();
+
+    if (anio) {
+      result = result.filter(f => f.fechaEmision && f.fechaEmision.startsWith(anio));
+    }
+    if (mes) {
+      result = result.filter(f => f.fechaEmision && f.fechaEmision.substring(5, 7) === mes);
+    }
+    if (estatus) {
+      result = result.filter(f => f.estatus === estatus);
+    }
+    if (q) {
+      result = result.filter(f => {
+        const folio = (f.Id || '').toLowerCase();
+        const num = (f.folioInterno || '').toLowerCase();
+        const cliName = f.venta?.cliente?.nombreCompleto?.toLowerCase() || '';
+        const cliRFC = f.venta?.cliente?.rfc?.toLowerCase() || '';
+        return folio.includes(q) || num.includes(q) || cliName.includes(q) || cliRFC.includes(q);
+      });
+    }
+    return result;
+  });
+
+  ventasPorFacturarFiltradas = computed(() => {
+    let result = this.ventasPorFacturar();
+    const q = this.busquedaTexto().toLowerCase();
+    if (q) {
+      result = result.filter(v => {
+        const folio = (v.folio || '').toLowerCase();
+        const cliName = v.cliente?.nombreCompleto?.toLowerCase() || '';
+        const cliRFC = v.cliente?.rfc?.toLowerCase() || '';
+        return folio.includes(q) || cliName.includes(q) || cliRFC.includes(q);
+      });
+    }
+    return result;
+  });
+
+  datosActivos = computed(() => {
+    return this.modoVista() === 'facturas' ? this.facturasFiltradas() : this.ventasPorFacturarFiltradas();
+  });
+
+  totalPaginas = computed(() => Math.ceil(this.datosActivos().length / this.tamanoPagina()) || 1);
+
+  registrosPaginados = computed(() => {
+    const inicio = (this.paginaActual() - 1) * this.tamanoPagina();
+    return this.datosActivos().slice(inicio, inicio + this.tamanoPagina());
+  });
 
   // Modal para Nueva Factura
   mostrarModal = signal(false);
@@ -252,6 +301,41 @@ export class FacturasComponent implements OnInit {
     });
   }
 
+  cargarVentasPorFacturar() {
+    this.cargando.set(true);
+    this.http.get<any[]>(`${environment.apiUrl}/pos/ventas-no-facturadas`, {
+      headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
+    }).subscribe({
+      next: (data) => {
+        this.ventasPorFacturar.set(data);
+        this.cargando.set(false);
+      },
+      error: (err) => {
+        console.error(err);
+        this.cargando.set(false);
+      }
+    });
+  }
+
+  setModoVista(modo: 'facturas' | 'porFacturar') {
+    this.modoVista.set(modo);
+    this.paginaActual.set(1);
+    this.busquedaTexto.set('');
+    
+    if (modo === 'facturas') {
+      this.cargarFacturas();
+    } else {
+      this.cargarVentasPorFacturar();
+    }
+  }
+
+  facturarVentaPendiente(venta: any) {
+    this.abrirModalFactura();
+    this.folioVenta.set(venta.folio);
+    // Simular el evento de selección del dropdown
+    this.seleccionarVentaDropdown(venta);
+  }
+
   onFolioInput() {
     this.mostrarDropdownVentas = this.folioVenta().length > 0;
   }
@@ -276,6 +360,20 @@ export class FacturasComponent implements OnInit {
     
     this.idVenta.set(venta.idVenta || venta.idCajaChica);
     this.ventaSeleccionada.set(venta);
+
+    if (venta.cliente && venta.cliente.rfc && venta.cliente.rfc !== 'XAXX010101000') {
+      this.formData.rfc = venta.cliente.rfc;
+      this.formData.razonSocial = venta.cliente.nombreCompleto || '';
+      this.formData.cp = venta.cliente.cp || '';
+      this.formData.regimen = venta.cliente.regimenFiscal || '';
+      this.formData.usoCfdi = venta.cliente.usoCfdi || 'G03';
+    } else {
+      this.formData.rfc = '';
+      this.formData.razonSocial = '';
+      this.formData.cp = '';
+      this.formData.regimen = '';
+      this.clienteBuscado = '';
+    }
     this.errorFactura.set('');
     
     let maxAmount = 0;
