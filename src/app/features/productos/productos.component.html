@@ -698,6 +698,15 @@
                      placeholder="Ej. 5"
                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
             </div>
+            
+            @if (!esNuevoProducto()) {
+              <div>
+                <label class="block font-semibold text-indigo-700 text-sm mb-1">Agregar al Stock</label>
+                <input type="number" [(ngModel)]="nuevoProducto.sumarStock"
+                       placeholder="Ej. 10 (o -5)"
+                       class="w-full border border-indigo-300 bg-indigo-50 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+              </div>
+            }
           </div>
 
           <div class="rounded-xl p-3 flex items-center gap-3" [ngClass]="{
@@ -716,7 +725,7 @@
                 'text-amber-700': getStockClass(nuevoProducto) === 'stock-bajo',
                 'text-emerald-700': getStockClass(nuevoProducto) === 'stock-ok'
               }">{{ getStockLabel(nuevoProducto) }} — Stock actual: {{ nuevoProducto.stockActual | number:'1.0-0' }} unidades</p>
-              <p class="text-xs text-slate-500">Para agregar existencias, usa el módulo de <strong>Inventario</strong>.</p>
+              <p class="text-xs text-slate-500">Usa el campo <strong>Agregar al Stock</strong> de arriba para ajustar esta cantidad.</p>
             </div>
           </div>
 

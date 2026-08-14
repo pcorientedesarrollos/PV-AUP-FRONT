@@ -339,7 +339,8 @@ export class ProductosComponent implements OnInit {
   this.nuevoProducto = { 
     ...prod,
     // Si viene dentro del objeto 'categoria', lo extraemos; si no, usamos el id directo o null
-    idCategoria: prod.categoria?.idCategoria ? Number(prod.categoria.idCategoria) : (prod.idCategoria ? Number(prod.idCategoria) : null)
+    idCategoria: prod.categoria?.idCategoria ? Number(prod.categoria.idCategoria) : (prod.idCategoria ? Number(prod.idCategoria) : null),
+    sumarStock: ''
   };
   
   this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
@@ -416,6 +417,7 @@ export class ProductosComponent implements OnInit {
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       claveProdServ: this.nuevoProducto.claveProdServ,
       claveUnidad: this.nuevoProducto.claveUnidad,
+      sumarStock: this.nuevoProducto.sumarStock ? Number(this.nuevoProducto.sumarStock) : 0,
     };
 
     this.http.patch(`${environment.apiUrl}/pos/productos/${id}`, payload).subscribe({
