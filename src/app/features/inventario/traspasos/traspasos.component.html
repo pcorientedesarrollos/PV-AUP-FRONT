@@ -1,0 +1,202 @@
+<div class="max-w-6xl mx-auto space-y-6">
+  <!-- Encabezado -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Traspasos de Inventario</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Mueve productos entre sucursales de forma segura</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="flex items-center gap-2 border-b border-gray-200 dark:border-gray-800">
+    <button (click)="vistaActiva.set('nuevo')"
+            class="px-5 py-2.5 text-sm font-semibold border-b-2 transition-all"
+            [ngClass]="vistaActiva() === 'nuevo' ? 'border-honey-primary text-honey-primary' : 'border-transparent text-gray-500 hover:text-gray-700'">
+      Nuevo Traspaso
+    </button>
+    <button (click)="vistaActiva.set('historial')"
+            class="px-5 py-2.5 text-sm font-semibold border-b-2 transition-all"
+            [ngClass]="vistaActiva() === 'historial' ? 'border-honey-primary text-honey-primary' : 'border-transparent text-gray-500 hover:text-gray-700'">
+      Historial
+    </button>
+  </div>
+
+  <!-- Vista: Nuevo Traspaso -->
+  @if (vistaActiva() === 'nuevo') {
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+      
+      <!-- Columna Izquierda: Configuración -->
+      <div class="lg:col-span-1 space-y-4">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5">
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Configuración</h2>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Sucursal Origen</label>
+              <select [(ngModel)]="idSucursalOrigen" (ngModelChange)="onOrigenChange($event)"
+                      class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-honey-primary outline-none">
+                <option [ngValue]="null">Selecciona origen...</option>
+                @for (suc of sucursales(); track suc.idSucursal) {
+                  <option [ngValue]="suc.idSucursal">{{ suc.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="flex justify-center text-gray-400">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Sucursal Destino</label>
+              <select [(ngModel)]="idSucursalDestino"
+                      class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-honey-primary outline-none">
+                <option [ngValue]="null">Selecciona destino...</option>
+                @for (suc of sucursales(); track suc.idSucursal) {
+                  <option [ngValue]="suc.idSucursal">{{ suc.nombre }}</option>
+                }
+              </select>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Observaciones</label>
+              <textarea [(ngModel)]="observaciones" rows="2"
+                        placeholder="Motivo del traspaso..."
+                        class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-honey-primary outline-none resize-none"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 relative"
+             [ngClass]="{'opacity-50 pointer-events-none': !idSucursalOrigen()}">
+          <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-4">Agregar Producto</h2>
+          <div class="relative">
+            <input type="text" [(ngModel)]="busquedaProducto"
+                   placeholder="Buscar por nombre o código..."
+                   class="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 rounded-lg pl-10 pr-4 py-2.5 text-sm focus:ring-2 focus:ring-honey-primary outline-none">
+            <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+
+          @if (busquedaProducto() && productosFiltrados().length > 0) {
+            <div class="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 max-h-60 overflow-y-auto">
+              @for (prod of productosFiltrados(); track prod.idProducto) {
+                <button (click)="agregarAlCarrito(prod)"
+                        class="w-full text-left px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0 flex justify-between items-center transition-colors">
+                  <div>
+                    <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">{{ prod.nombre }}</p>
+                    <p class="text-xs text-gray-400">{{ prod.codigoBarras || 'Sin código' }}</p>
+                  </div>
+                  <span class="text-xs font-bold bg-gray-100 dark:bg-gray-900 text-gray-600 dark:text-gray-300 px-2 py-1 rounded">Stock: {{ prod.stockActual }}</span>
+                </button>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Carrito -->
+      <div class="lg:col-span-2">
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 flex flex-col h-full min-h-[400px]">
+          <div class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex justify-between items-center bg-gray-50/50 dark:bg-gray-900/50 rounded-t-xl">
+             <h2 class="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
+               <svg class="w-5 h-5 text-honey-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+               Lista de Envío
+             </h2>
+             <span class="text-xs font-semibold bg-honey-primary/10 text-honey-primary px-2.5 py-1 rounded-full">
+               {{ carrito().length }} productos
+             </span>
+          </div>
+          
+          <div class="flex-1 p-5 overflow-y-auto">
+            @if (carrito().length === 0) {
+              <div class="flex flex-col items-center justify-center h-full text-gray-400">
+                <svg class="w-16 h-16 mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                <p class="text-sm">Agrega productos desde el buscador para iniciar el traspaso</p>
+              </div>
+            } @else {
+              <div class="space-y-3">
+                @for (item of carrito(); track item.producto.idProducto) {
+                  <div class="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-800 transition-all hover:shadow-md hover:border-gray-200">
+                     <div class="flex-1">
+                       <p class="text-sm font-bold text-gray-800 dark:text-white">{{ item.producto.nombre }}</p>
+                       <p class="text-[11px] text-gray-500 mt-0.5">Stock en Origen: {{ item.producto.stockActual }}</p>
+                     </div>
+                     <div class="flex items-center gap-2">
+                       <input type="number" [(ngModel)]="item.cantidad" min="1" [max]="item.producto.stockActual"
+                              class="w-20 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 text-center rounded-lg px-2 py-1.5 text-sm font-bold focus:ring-2 focus:ring-honey-primary outline-none">
+                     </div>
+                     <button (click)="removerDelCarrito(item.producto.idProducto)"
+                             class="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Remover">
+                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                     </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <div class="p-5 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 rounded-b-xl">
+             <button (click)="confirmarTraspaso()" [disabled]="guardando() || carrito().length === 0"
+                     class="w-full flex justify-center items-center gap-2 bg-honey-primary hover:bg-honey-primary-dark text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-honey-primary/30 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
+               @if (guardando()) {
+                 <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                 Procesando...
+               } @else {
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                 Confirmar Traspaso
+               }
+             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Vista: Historial -->
+  @if (vistaActiva() === 'historial') {
+    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-800 animate-fade-in overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">Folio</th>
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">Fecha</th>
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">Origen</th>
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800">Destino</th>
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 text-center">Estatus</th>
+              <th class="px-6 py-4 border-b border-gray-200 dark:border-gray-800 text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+            @for (t of traspasos(); track t.idTraspaso) {
+              <tr class="hover:bg-gray-50/50 dark:hover:bg-gray-800/20 transition-colors">
+                <td class="px-6 py-4 text-sm font-bold text-gray-900 dark:text-white">#{{ t.idTraspaso }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ t.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ t.sucursalOrigen?.nombre }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ t.sucursalDestino?.nombre }}</td>
+                <td class="px-6 py-4 text-center">
+                  <span class="px-2.5 py-1 text-[10px] font-bold uppercase rounded-full tracking-wider"
+                        [ngClass]="t.estatus === 'Completado' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'">
+                    {{ t.estatus || 'Completado' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                  <button (click)="descargarReporte(t.idTraspaso)"
+                          class="p-2 text-gray-400 hover:text-honey-primary hover:bg-honey-primary/10 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-honey-primary/50" title="Descargar PDF">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                  <svg class="w-12 h-12 mx-auto mb-3 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                  No hay traspasos registrados.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

@@ -265,7 +265,8 @@ export class CotizacionesComponent implements OnInit {
                 <tr>
                   <th>Cant.</th>
                   <th>Concepto / Descripción</th>
-                  <th>Precio Unit.</th>
+                  <th>Precio Público</th>
+                  <th>Aplica IVA</th>
                   <th>Importe</th>
                 </tr>
               </thead>
@@ -278,8 +279,9 @@ export class CotizacionesComponent implements OnInit {
         html += `
           <tr>
             <td>${d.cantidad}</td>
-            <td><strong>${d.producto?.nombre || 'Producto / Servicio'}</strong></td>
+            <td><strong>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</strong></td>
             <td>$${unitarioFinal.toFixed(2)}</td>
+            <td>${d.aplicaIva ? 'Sí' : 'No'}</td>
             <td>$${Number(d.importe).toFixed(2)}</td>
           </tr>
         `;

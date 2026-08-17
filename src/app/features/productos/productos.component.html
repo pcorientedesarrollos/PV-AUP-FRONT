@@ -148,7 +148,7 @@
             <div class="animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-amber-500"></div>
           </div>
         } @else {
-          <div class="table-wrapper">
+          <div class="table-wrapper overflow-x-auto w-full">
           <table class="honey-table table-hoverable table-bordered">
             <thead class="bg-gray-50">
               <tr>
@@ -282,7 +282,7 @@
         } @else {
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             @for (prod of productosPaginados(); track prod.idProducto) {
-              <div class="bg-white border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 group flex flex-col"
+              <div class="bg-white border rounded-xl shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5 group flex flex-col"
                    [ngClass]="{
                      'border-red-200': getStockClass(prod) === 'stock-cero',
                      'border-amber-200': getStockClass(prod) === 'stock-bajo',
@@ -659,39 +659,103 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
             <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Venta</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
-                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioUnitario"
-                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-              </div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Tipo de Artículo</label>
+              <select [(ngModel)]="nuevoProducto.tipoArticulo"
+                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                <option value="Terminado">Terminado (Para venta)</option>
+                <option value="Materia Prima">Materia Prima</option>
+                <option value="General">General</option>
+              </select>
             </div>
             <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1" title="Descuento automático en POS">Descuento ($)</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
-                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.descuento"
-                       placeholder="0.00"
-                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-              </div>
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Mayoreo</label>
-              <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
-                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioMayoreo"
-                       placeholder="Opcional"
-                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-              </div>
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1" title="Cantidad para auto-mayoreo">Mín. Mayoreo</label>
-              <input type="number" min="0" [(ngModel)]="nuevoProducto.minimoMayoreo"
-                     placeholder="Ej. 3"
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Unidad de Medida</label>
+              <input type="text" [(ngModel)]="nuevoProducto.unidadMedida"
+                     placeholder="Ej. Pza, Kg, Lts"
+                     list="unidadesList"
                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              <datalist id="unidadesList">
+                <option value="Pza"></option>
+                <option value="Kg"></option>
+                <option value="Lts"></option>
+                <option value="Gr"></option>
+                <option value="Caja"></option>
+                <option value="Paquete"></option>
+              </datalist>
             </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
+            <!-- 1. Precio Compra -->
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Compra</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
+                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.precioCompra" (ngModelChange)="calcularPrecios()"
+                       class="w-full border border-slate-300 rounded-lg pl-7 pr-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              </div>
+            </div>
+
+            <!-- 2. Utilidad (%) -->
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Utilidad (%)</label>
+              <div class="relative">
+                <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.utilidad" (ngModelChange)="calcularPrecios()"
+                       class="w-full border border-slate-300 rounded-lg pr-7 pl-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">%</span>
+              </div>
+            </div>
+
+            <!-- 3. Precio Público (readonly) -->
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Público</label>
+              <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
+                <input type="number" [value]="nuevoProducto.precioPublico" readonly
+                       class="w-full border border-slate-200 bg-slate-50 text-slate-500 rounded-lg pl-7 pr-3 py-2 text-sm font-semibold">
+              </div>
+            </div>
+
+            <!-- 4. Checkbox Aplica Descuento, Tipo y Monto -->
+            <div class="col-span-1 sm:col-span-2 md:col-span-3 bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <label class="flex items-center gap-2 cursor-pointer w-max">
+                <input type="checkbox" [(ngModel)]="nuevoProducto.aplicaDescuento" (ngModelChange)="calcularPrecios()"
+                       class="w-4 h-4 text-amber-500 border-slate-300 rounded focus:ring-amber-500 cursor-pointer">
+                <span class="font-bold text-slate-700 text-sm">Aplica Descuento</span>
+              </label>
+              
+              @if (nuevoProducto.aplicaDescuento) {
+                <div class="flex flex-col sm:flex-row gap-4 items-start sm:items-center mt-2">
+                  <select [(ngModel)]="nuevoProducto.tipoDescuento" (ngModelChange)="calcularPrecios()"
+                          class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 w-full sm:w-auto">
+                    <option value="porcentaje">Porcentaje (%)</option>
+                    <option value="monto">Monto ($)</option>
+                  </select>
+                  
+                  <div class="relative w-full sm:w-32">
+                    <input type="number" step="0.01" min="0" [(ngModel)]="nuevoProducto.descuento" (ngModelChange)="calcularPrecios()"
+                           class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- 5. Aplica IVA y Precio Venta Final -->
+            <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-amber-50 p-4 rounded-xl border border-amber-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" [(ngModel)]="nuevoProducto.aplicaIva" (ngModelChange)="calcularPrecios()"
+                       class="w-4 h-4 text-amber-500 border-slate-300 rounded focus:ring-amber-500 cursor-pointer">
+                <span class="font-bold text-slate-700 text-sm">Aplica IVA 16%</span>
+              </label>
+
+              <div class="text-right w-full sm:w-auto">
+                <span class="block text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1">Precio Venta Final</span>
+                <span class="text-2xl font-black text-slate-800">{{ nuevoProducto.precioVenta | currency }}</span>
+              </div>
+            </div>
+
+            <!-- Stock Mínimo -->
             <div>
               <label class="block font-semibold text-slate-700 text-sm mb-1">Stock Mínimo</label>
               <input type="number" min="0" [(ngModel)]="nuevoProducto.stockMinimo"
@@ -700,12 +764,14 @@
             </div>
             
             @if (!esNuevoProducto()) {
-              <div>
-                <label class="block font-semibold text-indigo-700 text-sm mb-1">Agregar al Stock</label>
-                <input type="number" [(ngModel)]="nuevoProducto.sumarStock"
-                       placeholder="Ej. 10 (o -5)"
-                       class="w-full border border-indigo-300 bg-indigo-50 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
-              </div>
+              @if (isSoporte()) {
+                <div>
+                  <label class="block font-semibold text-indigo-700 text-sm mb-1">Agregar al Stock</label>
+                  <input type="number" [(ngModel)]="nuevoProducto.sumarStock"
+                         placeholder="Ej. 10 (o -5)"
+                         class="w-full border border-indigo-300 bg-indigo-50 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                </div>
+              }
             }
           </div>
 
@@ -732,16 +798,25 @@
         </div>
       </div>
 
-      <div class="modal-footer flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t">
-        <button (click)="cerrarModal()" class="btn-cancel" [disabled]="guardando() || formularioInvalido()">Cancelar</button>
-        <button (click)="guardarProducto()" class="btn-submit flex items-center gap-2" [disabled]="guardando() || formularioInvalido()">
-          @if (guardando()) {
-            <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
-            Guardando...
-          } @else {
-            💾 Guardar Cambios
+      <div class="modal-footer flex justify-between items-center px-6 py-4 bg-gray-50 border-t">
+        <div>
+          @if (!esNuevoProducto()) {
+            <button (click)="abrirModalReceta(nuevoProducto)" class="btn-cancel border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 flex items-center gap-2">
+              <span>📋</span> Gestionar Receta / Config.
+            </button>
           }
-        </button>
+        </div>
+        <div class="flex gap-3">
+          <button (click)="cerrarModal()" class="btn-cancel" [disabled]="guardando() || formularioInvalido()">Cancelar</button>
+          <button (click)="guardarProducto()" class="btn-submit flex items-center gap-2" [disabled]="guardando() || formularioInvalido()">
+            @if (guardando()) {
+              <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+              Guardando...
+            } @else {
+              💾 Guardar Cambios
+            }
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -767,3 +842,83 @@
   [visible]="mostrarImportar()"
   (cerrado)="mostrarImportar.set(false); $event && cargarProductos()">
 </app-importar-modal>
+
+<!-- Modal Receta -->
+@if (mostrarModalReceta()) {
+  <div class="modal-overlay z-[60]" (click)="cerrarModalReceta()">
+    <div class="modal-container flex flex-col slideInDown" style="max-width:800px" (click)="$event.stopPropagation()">
+      <div class="modal-header bg-gradient-to-r from-amber-50 to-orange-50 border-b border-gray-200">
+        <div>
+          <h2 class="modal-title">Receta / Plantilla de Fraccionamiento</h2>
+          <p class="text-xs text-slate-500 mt-0.5">
+            {{ productoReceta()?.nombre }}
+          </p>
+        </div>
+        <button (click)="cerrarModalReceta()" class="text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">✕</button>
+      </div>
+
+      <div class="modal-body flex-1 overflow-y-auto p-6 bg-slate-50">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+          <h3 class="font-bold text-slate-700 text-sm mb-3">Agregar Producto</h3>
+          <div class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1">
+              <app-searchable-select 
+                [(ngModel)]="nuevoIngrediente().idProductoHijo" 
+                [options]="productosParaReceta()" 
+                bindLabel="nombre" 
+                bindValue="idProducto">
+              </app-searchable-select>
+            </div>
+            <div class="w-full sm:w-32">
+              <input type="number" min="0.01" step="0.01" [(ngModel)]="nuevoIngrediente().cantidad" placeholder="Cantidad" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+            </div>
+            <button (click)="agregarIngrediente()" [disabled]="!nuevoIngrediente().idProductoHijo || !nuevoIngrediente().cantidad" class="bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors">
+              Agregar
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-bold text-slate-700 text-sm mb-3">Elementos Actuales</h3>
+          @if (cargandoReceta()) {
+            <div class="flex justify-center py-10">
+              <div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div>
+            </div>
+          } @else if (ingredientes().length === 0) {
+            <div class="text-center py-10 text-slate-400">
+              <span class="text-4xl block mb-2">🤷‍♂️</span>
+              <p>No hay elementos registrados para este producto.</p>
+            </div>
+          } @else {
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200">
+              <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-slate-50 border-b border-slate-200 text-slate-500">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">Producto</th>
+                    <th class="px-4 py-3 font-semibold text-center">Cantidad a descontar</th>
+                    <th class="px-4 py-3 font-semibold text-center">Unidad</th>
+                    <th class="px-4 py-3 font-semibold text-center w-20">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                  @for (ing of ingredientes(); track ing.idReceta) {
+                    <tr class="hover:bg-slate-50">
+                      <td class="px-4 py-3 font-medium text-slate-800">{{ ing.productoHijo?.nombre }}</td>
+                      <td class="px-4 py-3 text-center font-bold text-slate-700">{{ ing.cantidad }}</td>
+                      <td class="px-4 py-3 text-center text-slate-500">{{ ing.productoHijo?.unidadMedida || 'Pza' }}</td>
+                      <td class="px-4 py-3 text-center">
+                        <button (click)="eliminarIngrediente(ing.idReceta)" class="text-rose-500 hover:text-rose-700 p-1 bg-rose-50 rounded transition-colors" title="Eliminar ingrediente">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

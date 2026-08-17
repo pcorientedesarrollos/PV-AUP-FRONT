@@ -7,11 +7,12 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { TicketPrinterService } from '../../core/services/ticket-printer.service';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-inventario',
   standalone: true,
-  imports: [CommonModule, FormsModule, PaginacionComponent],
+  imports: [CommonModule, FormsModule, PaginacionComponent, SearchableSelectComponent],
   templateUrl: './inventario.html',
 })
 export class InventarioComponent implements OnInit {

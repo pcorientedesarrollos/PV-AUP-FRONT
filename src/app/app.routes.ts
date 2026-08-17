@@ -100,6 +100,12 @@ export const routes: Routes = [
           import('./features/inventario/inventario').then((m) => m.InventarioComponent),
       },
       {
+        path: 'inventario/traspasos',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/inventario/traspasos/traspasos.component').then((m) => m.TraspasosComponent),
+      },
+      {
         path: 'clientes',
         loadComponent: () =>
           import('./features/clientes/clientes.component').then((m) => m.ClientesComponent),
@@ -133,6 +139,12 @@ export const routes: Routes = [
         canActivate: [adminGuard],
         loadComponent: () =>
           import('./features/proveedores/proveedores.component').then((m) => m.ProveedoresComponent),
+      },
+      {
+        path: 'produccion',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/produccion/produccion.component').then((m) => m.ProduccionComponent),
       },
       {
         path: 'devoluciones',

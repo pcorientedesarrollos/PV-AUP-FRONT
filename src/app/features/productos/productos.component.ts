@@ -10,16 +10,17 @@ import JsBarcode from 'jsbarcode';
 import { AuthService } from '../../core/services/auth.service';
 import { environment } from '../../../environments/environment';
 import { ImportarModalComponent } from '../../shared/components/importar-modal/importar-modal.component';
+import { SearchableSelectComponent } from '../../shared/components/searchable-select/searchable-select.component';
 
 @Component({
   selector: 'app-productos',
   standalone: true,
-  imports: [CommonModule, FormsModule, BarcodeDirective, ImportarModalComponent, PaginacionComponent],
+  imports: [CommonModule, FormsModule, BarcodeDirective, ImportarModalComponent, PaginacionComponent, SearchableSelectComponent],
   templateUrl: './productos.component.html',
 })
 export class ProductosComponent implements OnInit {
   apiUrl = environment.apiUrl;
-
+  
   productos = signal<any[]>([]);
   cargando = signal(false);
   mostrarImportar = signal(false);
@@ -168,6 +169,18 @@ export class ProductosComponent implements OnInit {
   archivoImagen: File | null = null;
   imagenPreview = signal<string | null>(null);
   categorias = signal<any[]>([]);
+
+  // Recetas / Ingredientes
+  mostrarModalReceta = signal(false);
+  cargandoReceta = signal(false);
+  productoReceta = signal<any | null>(null);
+  ingredientes = signal<any[]>([]);
+  nuevoIngrediente = signal({ idProductoHijo: null, cantidad: 1 });
+  productosParaReceta = computed(() => {
+    const curr = this.productoReceta();
+    if (!curr) return [];
+    return this.productos().filter(p => p.idProducto !== curr.idProducto);
+  });
 
   // Validaciones en tiempo real
   
@@ -322,25 +335,22 @@ export class ProductosComponent implements OnInit {
     return prod.categoria?.nombre || 'Sin categoría';
   }
 
-  // abrirModal(prod: any) {
-  //   this.esNuevoProducto.set(false);
-  //   this.nuevoProducto = { ...prod };
-  //   this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
-  //   this.archivoImagen = null;
-  //   this.satProductQuery = prod.claveProdServ ? (prod.claveProdServ) : '';
-  //   this.satUnitQuery = prod.claveUnidad ? (prod.claveUnidad) : '';
-  //   this.satProductsResults = [];
-  //   this.satUnitsResults = [];
-  //   this.mostrarModal.set(true);
-  // }
   abrirModal(prod: any) {
   this.esNuevoProducto.set(false);
   
   this.nuevoProducto = { 
     ...prod,
-    // Si viene dentro del objeto 'categoria', lo extraemos; si no, usamos el id directo o null
     idCategoria: prod.categoria?.idCategoria ? Number(prod.categoria.idCategoria) : (prod.idCategoria ? Number(prod.idCategoria) : null),
-    sumarStock: ''
+    sumarStock: '',
+    tipoArticulo: prod.tipoArticulo || 'Terminado',
+    unidadMedida: prod.unidadMedida || 'Pza',
+    precioCompra: prod.precioCompra || prod.precioUnitario || 0,
+    utilidad: prod.utilidad || 18,
+    aplicaDescuento: prod.aplicaDescuento || false,
+    tipoDescuento: prod.tipoDescuento || 'porcentaje',
+    descuento: prod.descuento || 0,
+    aplicaIva: prod.aplicaIva || false,
+    precioVenta: prod.precioVenta || prod.precioPublico || 0,
   };
   
   this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
@@ -354,7 +364,7 @@ export class ProductosComponent implements OnInit {
 
   abrirModalNuevo() {
     this.esNuevoProducto.set(true);
-    this.nuevoProducto = { nombre: '', precioUnitario: 0, precioMayoreo: null, descuento: 0, minimoMayoreo: 0, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87' };
+    this.nuevoProducto = { nombre: '', precioCompra: 0, utilidad: 18, aplicaDescuento: false, tipoDescuento: 'porcentaje', descuento: 0, aplicaIva: false, precioVenta: 0, precioPublico: 0, precioUnitario: 0, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87', tipoArticulo: 'Terminado', unidadMedida: 'Pza' };
     this.imagenPreview.set(null);
     this.archivoImagen = null;
     this.satProductQuery = '01010101 - No existe en el catálogo';
@@ -405,19 +415,51 @@ export class ProductosComponent implements OnInit {
     }
   }
 
+  calcularPrecios() {
+    const pc = Number(this.nuevoProducto.precioCompra || 0);
+    const util = Number(this.nuevoProducto.utilidad || 0);
+    const precioPublico = pc + (pc * util / 100);
+    this.nuevoProducto.precioPublico = precioPublico;
+
+    const aplicaDesc = this.nuevoProducto.aplicaDescuento;
+    const tipoDesc = this.nuevoProducto.tipoDescuento || 'porcentaje';
+    const descVal = Number(this.nuevoProducto.descuento || 0);
+
+    let descuentoEfectivo = 0;
+    if (aplicaDesc) {
+      if (tipoDesc === 'monto') {
+        descuentoEfectivo = descVal;
+      } else {
+        descuentoEfectivo = (precioPublico * descVal) / 100;
+      }
+    }
+
+    const baseIva = precioPublico - descuentoEfectivo;
+    const ivaCalc = this.nuevoProducto.aplicaIva ? (baseIva * 0.16) : 0;
+    
+    this.nuevoProducto.precioVenta = baseIva + ivaCalc;
+    this.nuevoProducto.precioUnitario = pc;
+  }
+
   private guardarDatosGenerales(id: number) {
     const payload = {
       nombre: this.nuevoProducto.nombre,
       codigoBarras: this.nuevoProducto.codigoBarras,
-      precioUnitario: Number(this.nuevoProducto.precioUnitario),
-      precioPublico: Number(this.nuevoProducto.precioPublico || this.nuevoProducto.precioUnitario),
-      precioMayoreo: this.nuevoProducto.precioMayoreo ? Number(this.nuevoProducto.precioMayoreo) : undefined,
+      precioCompra: Number(this.nuevoProducto.precioCompra || 0),
+      precioUnitario: Number(this.nuevoProducto.precioCompra || 0),
+      utilidad: Number(this.nuevoProducto.utilidad || 0),
+      precioPublico: Number(this.nuevoProducto.precioPublico || 0),
+      aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,
+      tipoDescuento: this.nuevoProducto.tipoDescuento || 'porcentaje',
       descuento: Number(this.nuevoProducto.descuento || 0),
-      minimoMayoreo: Number(this.nuevoProducto.minimoMayoreo || 0),
+      aplicaIva: !!this.nuevoProducto.aplicaIva,
+      precioVenta: Number(this.nuevoProducto.precioVenta || 0),
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       claveProdServ: this.nuevoProducto.claveProdServ,
       claveUnidad: this.nuevoProducto.claveUnidad,
       sumarStock: this.nuevoProducto.sumarStock ? Number(this.nuevoProducto.sumarStock) : 0,
+      tipoArticulo: this.nuevoProducto.tipoArticulo,
+      unidadMedida: this.nuevoProducto.unidadMedida
     };
 
     this.http.patch(`${environment.apiUrl}/pos/productos/${id}`, payload).subscribe({
@@ -442,14 +484,21 @@ export class ProductosComponent implements OnInit {
     const payload: any = {
       nombre: this.nuevoProducto.nombre,
       codigoBarras: this.nuevoProducto.codigoBarras || undefined,
-      precioUnitario: Number(this.nuevoProducto.precioUnitario || 0),
-      precioMayoreo: this.nuevoProducto.precioMayoreo ? Number(this.nuevoProducto.precioMayoreo) : undefined,
+      precioCompra: Number(this.nuevoProducto.precioCompra || 0),
+      precioUnitario: Number(this.nuevoProducto.precioCompra || 0),
+      utilidad: Number(this.nuevoProducto.utilidad || 0),
+      precioPublico: Number(this.nuevoProducto.precioPublico || 0),
+      aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,
+      tipoDescuento: this.nuevoProducto.tipoDescuento || 'porcentaje',
       descuento: Number(this.nuevoProducto.descuento || 0),
-      minimoMayoreo: Number(this.nuevoProducto.minimoMayoreo || 0),
+      aplicaIva: !!this.nuevoProducto.aplicaIva,
+      precioVenta: Number(this.nuevoProducto.precioVenta || 0),
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       idCategoria: this.nuevoProducto.idCategoria ? Number(this.nuevoProducto.idCategoria) : undefined,
       claveProdServ: this.nuevoProducto.claveProdServ,
       claveUnidad: this.nuevoProducto.claveUnidad,
+      tipoArticulo: this.nuevoProducto.tipoArticulo || 'Terminado',
+      unidadMedida: this.nuevoProducto.unidadMedida || 'Pza'
     };
 
     const guardar = (imagenUrl?: string) => {
@@ -564,7 +613,6 @@ export class ProductosComponent implements OnInit {
       'Nombre': p.nombre,
       'Categoría': p.categoria?.nombre || 'N/A',
       'Stock Actual': p.stockActual,
-      'Stock Mínimo': p.stockMinimo,
       'Precio Venta': p.precioPublico || 0,
       'Costo': p.precioUnitario || 0
     }));
@@ -572,16 +620,81 @@ export class ProductosComponent implements OnInit {
   }
 
   exportarPDF() {
-    const headers = ['Código', 'Nombre', 'Categoría', 'Stock', 'Mínimo', 'Precio', 'Costo'];
+    const headers = ['Código', 'Nombre', 'Categoría', 'Stock', 'Precio', 'Costo'];
     const data = this.productosFiltrados().map((p: any) => [
       p.codigoBarras || 'N/A',
       p.nombre,
       p.categoria?.nombre || 'N/A',
       p.stockActual?.toString() || '0',
-      p.stockMinimo?.toString() || '0',
       `$${p.precioPublico || 0}`,
       `$${p.precioUnitario || 0}`
     ]);
     this.exportService.exportToPdf(headers, data, 'Catálogo de Productos', 'Productos', 'l');
+  }
+
+  // --- Recetas ---
+  abrirModalReceta(prod: any) {
+    this.productoReceta.set(prod);
+    this.mostrarModalReceta.set(true);
+    this.cargarReceta(prod.idProducto);
+  }
+
+  cerrarModalReceta() {
+    this.mostrarModalReceta.set(false);
+    this.productoReceta.set(null);
+    this.ingredientes.set([]);
+    this.nuevoIngrediente.set({ idProductoHijo: null, cantidad: 1 });
+  }
+
+  cargarReceta(idProducto: number) {
+    this.cargandoReceta.set(true);
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos/${idProducto}/recetas`).subscribe({
+      next: (data) => {
+        this.ingredientes.set(data || []);
+        this.cargandoReceta.set(false);
+      },
+      error: (err) => {
+        console.error('Error cargando receta', err);
+        this.cargandoReceta.set(false);
+      }
+    });
+  }
+
+  agregarIngrediente() {
+    const ingrediente = this.nuevoIngrediente();
+    if (!ingrediente.idProductoHijo || !ingrediente.cantidad || ingrediente.cantidad <= 0) return;
+    
+    const idPadre = this.productoReceta()?.idProducto;
+    if (!idPadre) return;
+
+    this.cargandoReceta.set(true);
+    this.http.post(`${environment.apiUrl}/pos/productos/${idPadre}/recetas`, ingrediente).subscribe({
+      next: () => {
+        this.nuevoIngrediente.set({ idProductoHijo: null, cantidad: 1 });
+        this.cargarReceta(idPadre);
+      },
+      error: (err) => {
+        console.error('Error agregando ingrediente', err);
+        this.cargandoReceta.set(false);
+      }
+    });
+  }
+
+  eliminarIngrediente(idReceta: number) {
+    const idPadre = this.productoReceta()?.idProducto;
+    if (!idPadre) return;
+
+    if (!confirm('¿Eliminar este ingrediente de la receta?')) return;
+
+    this.cargandoReceta.set(true);
+    this.http.delete(`${environment.apiUrl}/pos/recetas/${idReceta}`).subscribe({
+      next: () => {
+        this.cargarReceta(idPadre);
+      },
+      error: (err) => {
+        console.error('Error eliminando ingrediente', err);
+        this.cargandoReceta.set(false);
+      }
+    });
   }
 }

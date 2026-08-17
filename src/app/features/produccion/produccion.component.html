@@ -1,0 +1,188 @@
+<div class="h-full flex flex-col bg-transparent max-w-5xl mx-auto w-full gap-4">
+
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Producción y Fraccionamiento</h1>
+      <p class="text-sm text-slate-500 mt-0.5">Gestión de recetas, manufactura y conversión de productos</p>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col">
+    <!-- Tabs -->
+    <div class="flex border-b border-slate-200">
+      <button (click)="activeTab.set('fraccionar')" class="flex-1 py-4 px-6 text-center font-bold text-sm transition-colors focus:outline-none rounded-tl-xl"
+              [ngClass]="activeTab() === 'fraccionar' ? 'text-amber-600 border-b-2 border-amber-500 bg-amber-50/30' : 'text-slate-500 hover:bg-slate-50'">
+        🔪 Fraccionar
+      </button>
+      <button (click)="activeTab.set('producir')" class="flex-1 py-4 px-6 text-center font-bold text-sm transition-colors focus:outline-none rounded-tr-xl"
+              [ngClass]="activeTab() === 'producir' ? 'text-amber-600 border-b-2 border-amber-500 bg-amber-50/30' : 'text-slate-500 hover:bg-slate-50'">
+        🏭 Producir
+      </button>
+    </div>
+
+    <!-- Contenido -->
+    <div class="p-6">
+      
+      @if (cargando()) {
+        <div class="flex justify-center py-10">
+          <div class="animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-amber-500"></div>
+        </div>
+      } @else {
+
+        <!-- Tab Fraccionar -->
+        @if (activeTab() === 'fraccionar') {
+          <div class="space-y-6">
+            
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+              <h3 class="font-bold text-slate-700 text-sm mb-3 text-indigo-700">Origen (Producto a descontar)</h3>
+              <div class="flex flex-col sm:flex-row gap-4">
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Selecciona el Comodín o Materia Prima</label>
+                  <app-searchable-select 
+                    [ngModel]="idProductoOrigenF()" 
+                    (ngModelChange)="idProductoOrigenF.set($event); onProductoOrigenChange()"
+                    [options]="productosOrigenFraccionar()" 
+                    bindLabel="nombre" 
+                    bindValue="idProducto">
+                  </app-searchable-select>
+                </div>
+                <div class="w-full sm:w-1/3">
+                  <label class="block text-xs font-semibold text-slate-500 mb-1">Cantidad a descontar</label>
+                  <input type="number" [ngModel]="cantidadOrigenF()" (ngModelChange)="cantidadOrigenF.set($event); onCantidadOrigenChange()" min="1" step="1" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 class="font-bold text-slate-700 text-sm text-emerald-700 mb-4">Destinos por Unidad</h3>
+
+              <div class="space-y-4">
+                @for (unidad of unidadesFraccionamiento(); track unidad.indice) {
+                  <div class="bg-white border border-emerald-100 rounded-xl shadow-sm">
+                    <div class="bg-emerald-50/50 px-4 py-2 border-b border-emerald-100 flex justify-between items-center">
+                      <span class="font-bold text-emerald-800 text-xs uppercase tracking-wider">Unidad {{ unidad.indice }}</span>
+                      <button (click)="agregarSalidaF($index)" class="text-[10px] bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-700 font-bold px-2 py-1 rounded transition-colors shadow-sm">
+                        + Agregar salida
+                      </button>
+                    </div>
+                    
+                    <div class="p-4 space-y-3">
+                      @for (salida of unidad.salidas; track $index) {
+                        <div class="flex flex-col sm:flex-row gap-3 items-end">
+                          <div class="flex-1">
+                            <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Producto a sumar</label>
+                            <app-searchable-select 
+                              [(ngModel)]="salida.idProducto" 
+                              [options]="productos()" 
+                              bindLabel="nombre" 
+                              bindValue="idProducto">
+                            </app-searchable-select>
+                          </div>
+                          <div class="w-full sm:w-32">
+                            <label class="block text-[10px] font-semibold text-slate-400 uppercase mb-1">Cantidad Resultante</label>
+                            <input type="number" min="0.01" step="0.01" [(ngModel)]="salida.cantidad" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-emerald-500 focus:border-emerald-500 text-center">
+                          </div>
+                          <div class="pb-1">
+                            <button (click)="eliminarSalidaF(unidad.indice - 1, $index)" [disabled]="unidad.salidas.length === 1" class="text-rose-500 hover:bg-rose-50 p-2 rounded transition-colors disabled:opacity-30" title="Eliminar fila">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-200 flex justify-end">
+              <button (click)="ejecutarFraccionamiento()" [disabled]="procesando() || !idProductoOrigenF()" class="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2 shadow">
+                @if (procesando()) {
+                  <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                  Procesando...
+                } @else {
+                  <span>🔪</span> Ejecutar Fraccionamiento
+                }
+              </button>
+            </div>
+
+          </div>
+        }
+
+        <!-- Tab Producir -->
+        @if (activeTab() === 'producir') {
+          <div class="space-y-6">
+            
+            <div class="bg-amber-50/50 p-5 rounded-xl border border-amber-200">
+              <h3 class="font-bold text-amber-800 text-sm mb-3">Producto a Producir</h3>
+              <div class="flex flex-col sm:flex-row gap-4 items-end">
+                <div class="flex-1">
+                  <label class="block text-xs font-semibold text-amber-700 mb-1">Selecciona el Producto Terminado</label>
+                  <app-searchable-select 
+                    [(ngModel)]="idProductoTerminadoP" 
+                    (change)="onProductoProducirChange()"
+                    [options]="productosTerminados()" 
+                    bindLabel="nombre" 
+                    bindValue="idProducto">
+                  </app-searchable-select>
+                </div>
+                <div class="w-full sm:w-40">
+                  <label class="block text-xs font-semibold text-amber-700 mb-1">Cantidad a Producir</label>
+                  <input type="number" min="1" step="1" [(ngModel)]="cantidadProducirP" class="w-full border border-amber-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 text-center font-bold">
+                </div>
+              </div>
+            </div>
+
+            @if (idProductoTerminadoP()) {
+              <div>
+                <h3 class="font-bold text-slate-700 text-sm mb-3">Requerimientos (Receta) por unidad:</h3>
+                
+                @if (ingredientesP().length === 0) {
+                  <div class="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-200 flex items-center gap-2">
+                    <span>⚠️</span> Este producto no tiene receta registrada. Se sumará stock sin descontar ingredientes.
+                  </div>
+                } @else {
+                  <div class="bg-white rounded-lg border border-slate-200 overflow-hidden shadow-sm">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                      <thead class="bg-slate-50 text-slate-500">
+                        <tr>
+                          <th class="px-4 py-2.5 font-semibold">Ingrediente</th>
+                          <th class="px-4 py-2.5 font-semibold text-center">Cant. Unitaria</th>
+                          <th class="px-4 py-2.5 font-semibold text-center text-amber-700 bg-amber-50/50">Total a Descontar</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-slate-100">
+                        @for (ing of ingredientesP(); track ing.idReceta) {
+                          <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">{{ ing.productoHijo?.nombre }}</td>
+                            <td class="px-4 py-3 text-center text-slate-600">{{ ing.cantidad }} {{ ing.productoHijo?.unidadMedida }}</td>
+                            <td class="px-4 py-3 text-center font-bold text-rose-600 bg-rose-50/30">
+                              -{{ (ing.cantidad * cantidadProducirP()) | number:'1.2-2' }} {{ ing.productoHijo?.unidadMedida }}
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                }
+              </div>
+
+              <div class="pt-4 border-t border-slate-200 flex justify-end">
+                <button (click)="ejecutarProduccion()" [disabled]="procesando()" class="bg-amber-500 hover:bg-amber-600 disabled:opacity-50 text-white font-bold px-6 py-2.5 rounded-lg text-sm transition-colors flex items-center gap-2 shadow">
+                  @if (procesando()) {
+                    <div class="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                    Procesando...
+                  } @else {
+                    <span>🏭</span> Ejecutar Producción
+                  }
+                </button>
+              </div>
+            }
+
+          </div>
+        }
+
+      }
+    </div>
+  </div>
+</div>

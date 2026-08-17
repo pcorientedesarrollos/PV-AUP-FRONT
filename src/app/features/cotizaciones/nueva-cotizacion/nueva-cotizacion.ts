@@ -34,9 +34,9 @@ export class NuevaCotizacionComponent implements OnInit {
   fechaCotizacion = signal<string>(new Date().toISOString().split('T')[0]);
   titulo = signal<string>('');
   observaciones = signal<string>('');
-  aplicarIva = signal<boolean>(true);
+  aplicarIva = signal<boolean>(false); // Starts false as requested
   
-  tipoCambio = signal<number>(18.50); // Default, updated on load
+  tipoCambio = signal<number>(18.50);
   utilidadGlobal = signal<number>(0);
 
   // Carrito
@@ -44,13 +44,13 @@ export class NuevaCotizacionComponent implements OnInit {
   busquedaProducto = signal<string>('');
   conceptosFacturados = signal<any[]>([]);
   buscandoConceptos = signal<boolean>(false);
-  searchTimeout: any;
   
   guardando = signal(false);
 
   ngOnInit() {
     this.cargarClientes();
     this.cargarTipoCambio();
+    this.posService.getProductos().subscribe();
   }
 
   cargarClientes() {
@@ -63,12 +63,8 @@ export class NuevaCotizacionComponent implements OnInit {
         if (data && data.mxn) {
           this.tipoCambio.set(data.mxn);
           this.actualizarFila();
-          this.toast.show('Tipo de cambio actualizado (' + data.mxn.toFixed(2) + ')', 'success');
+          this.toast.show('Tipo de cambio actualizado', 'success');
         }
-      },
-      error: (err) => {
-        console.error('Error fetching exchange rate', err);
-        this.toast.show('Error al obtener el tipo de cambio', 'error');
       }
     });
   }
@@ -113,21 +109,24 @@ export class NuevaCotizacionComponent implements OnInit {
       this.carrito.set([...current]);
     } else {
       const pUnit = Number(producto.precioUnitario) || 0;
+      const tieneIva = producto.aplicaIva !== undefined ? producto.aplicaIva : this.aplicarIva();
       const fila = {
         tempId: Date.now() + Math.random(),
         idProducto: producto.idProducto,
         nombre: producto.nombre,
         cantidad: 1,
-        precioUnitario: pUnit,
-        iva: Number(producto.iva) || 0,
-        moneda: 'MXN', // Or based on product if they have currency
+        precioCompra: pUnit,
+        aplicaIva: tieneIva,
+        iva: Number(producto.iva) || 16,
+        moneda: 'MXN', 
         tipoCambio: this.tipoCambio(),
         utilidadPorcentaje: this.utilidadGlobal(),
-        utilidadValor: 0,
-        precioConUtilidad: pUnit
+        ganancia: 0,
+        precioVenta: pUnit
       };
       this.recalcularFila(fila);
       this.carrito.set([...current, fila]);
+      this.revisarEstadoGlobalIva();
     }
     this.busquedaProducto.set('');
   }
@@ -136,32 +135,66 @@ export class NuevaCotizacionComponent implements OnInit {
     this.mostrarNuevoCliente.set(false);
     this.clientes.set([...this.clientes(), cliente]);
     this.idCliente.set(cliente.idCliente);
-    this.toast.show('Cliente creado y seleccionado', 'success');
+    this.toast.show('Cliente seleccionado', 'success');
   }
 
   agregarConceptoManual() {
     const current = this.carrito();
     const fila = {
       tempId: Date.now() + Math.random(),
-      nombreConcepto: 'Concepto manual',
+      nombreConcepto: '',
       cantidad: 1,
-      precioUnitario: 0,
+      precioCompra: 0,
+      aplicaIva: this.aplicarIva(),
       iva: this.configService.config().ivaPorDefecto || 16,
       moneda: 'MXN',
       tipoCambio: this.tipoCambio(),
       utilidadPorcentaje: this.utilidadGlobal(),
-      utilidadValor: 0,
-      precioConUtilidad: 0
+      ganancia: 0,
+      precioVenta: 0,
+      showSearch: false,
+      searchResults: []
     };
     this.recalcularFila(fila);
     this.carrito.set([...current, fila]);
+    this.revisarEstadoGlobalIva();
+  }
+
+  onManualSearch(item: any) {
+    const term = (item.nombreConcepto || '').toLowerCase().trim();
+    if (!term || term.length < 2) {
+      item.searchResults = [];
+      return;
+    }
+    item.searchResults = this.posService.productos().filter(p => 
+      (p.nombre && p.nombre.toLowerCase().includes(term)) ||
+      (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term))
+    ).slice(0, 10);
+  }
+
+  onManualBlur(item: any) {
+    setTimeout(() => {
+      item.showSearch = false;
+    }, 200);
+  }
+
+  seleccionarProductoFilaManual(item: any, producto: any) {
+    item.idProducto = producto.idProducto;
+    item.nombre = producto.nombre;
+    item.nombreConcepto = producto.nombre;
+    item.precioCompra = Number(producto.precioUnitario) || 0;
+    item.iva = Number(producto.iva) || 16;
+    item.aplicaIva = producto.aplicaIva !== undefined ? producto.aplicaIva : this.aplicarIva();
+    item.showSearch = false;
+    this.recalcularFila(item);
+    this.actualizarFila();
   }
 
   removerDelCarrito(tempId: number) {
     this.carrito.set(this.carrito().filter(i => i.tempId !== tempId));
+    this.revisarEstadoGlobalIva();
   }
 
-  
   aplicarTipoCambioGlobal() {
     const tc = this.tipoCambio();
     const nuevoCarrito = this.carrito().map(item => {
@@ -170,7 +203,6 @@ export class NuevaCotizacionComponent implements OnInit {
       return item;
     });
     this.carrito.set(nuevoCarrito);
-    this.toast.show('Tipo de cambio aplicado a todos los conceptos', 'success');
   }
 
   aplicarUtilidadGlobal() {
@@ -183,19 +215,39 @@ export class NuevaCotizacionComponent implements OnInit {
     this.carrito.set(nuevoCarrito);
   }
 
+  onGlobalIvaChange(val: boolean) {
+    this.aplicarIva.set(val);
+    const current = this.carrito();
+    current.forEach(item => {
+      item.aplicaIva = val;
+    });
+    this.carrito.set([...current]);
+  }
+
+  onRowIvaChange(item: any, val: boolean) {
+    item.aplicaIva = val;
+    this.revisarEstadoGlobalIva();
+    this.actualizarFila();
+  }
+
+  revisarEstadoGlobalIva() {
+    const current = this.carrito();
+    if (current.length === 0) return;
+    const todosTienenIva = current.every(c => c.aplicaIva);
+    this.aplicarIva.set(todosTienenIva);
+  }
+
   recalcularFila(item: any) {
-    // precioUnitario is treated as cost.
-    let basePriceMXN = Number(item.precioUnitario);
+    let basePriceMXN = Number(item.precioCompra);
     if (item.moneda === 'USD') {
-      basePriceMXN = basePriceMXN * this.tipoCambio();
+      basePriceMXN = basePriceMXN * Number(item.tipoCambio || this.tipoCambio());
     }
     const factorUtilidad = 1 + (Number(item.utilidadPorcentaje) / 100);
-    item.precioConUtilidad = basePriceMXN * factorUtilidad;
-    item.utilidadValor = item.precioConUtilidad - basePriceMXN;
+    item.precioVenta = basePriceMXN * factorUtilidad;
+    item.ganancia = item.precioVenta - basePriceMXN;
   }
 
   actualizarFila() {
-    // When a row field changes via ngModel
     const current = this.carrito();
     current.forEach(item => this.recalcularFila(item));
     this.carrito.set([...current]);
@@ -203,25 +255,25 @@ export class NuevaCotizacionComponent implements OnInit {
 
   costoBase = computed(() => {
     return this.carrito().reduce((acc, item) => {
-      let base = Number(item.precioUnitario);
-      if (item.moneda === 'USD') base *= this.tipoCambio();
+      let base = Number(item.precioCompra);
+      if (item.moneda === 'USD') base *= Number(item.tipoCambio || this.tipoCambio());
       return acc + (base * item.cantidad);
     }, 0);
   });
 
   utilidadGanancia = computed(() => {
-    return this.carrito().reduce((acc, item) => acc + (Number(item.utilidadValor) * item.cantidad), 0);
+    return this.carrito().reduce((acc, item) => acc + (Number(item.ganancia) * item.cantidad), 0);
   });
 
   subtotal = computed(() => {
-    return this.carrito().reduce((acc, item) => acc + (item.cantidad * item.precioConUtilidad), 0);
+    return this.carrito().reduce((acc, item) => acc + (item.cantidad * item.precioVenta), 0);
   });
 
   totalIva = computed(() => {
-    if (!this.aplicarIva()) return 0;
     const ivaDefecto = this.configService.config().ivaPorDefecto || 16;
     return this.carrito().reduce((acc, item) => {
-      const sub = Number(item.cantidad) * Number(item.precioConUtilidad);
+      if (!item.aplicaIva) return acc;
+      const sub = Number(item.cantidad) * Number(item.precioVenta);
       let iva = Number(item.iva);
       if (isNaN(iva) || iva === 0) iva = ivaDefecto;
       return acc + (sub * (iva > 0 ? (iva / 100) : 0));
@@ -266,11 +318,12 @@ export class NuevaCotizacionComponent implements OnInit {
         idProducto: c.idProducto || null,
         nombreConcepto: c.nombreConcepto || null,
         cantidad: c.cantidad,
-        precioUnitario: c.precioUnitario,
+        precioUnitario: c.precioCompra,
         moneda: c.moneda,
         utilidadPorcentaje: c.utilidadPorcentaje,
-        utilidadValor: c.utilidadValor,
-        precioConUtilidad: c.precioConUtilidad
+        utilidadValor: c.ganancia,
+        precioConUtilidad: c.precioVenta,
+        aplicaIva: c.aplicaIva
       }))
     };
 

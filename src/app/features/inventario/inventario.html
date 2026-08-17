@@ -91,7 +91,7 @@
 
     <!-- Tablas -->
     <div class="honey-table-container flex-1">
-      <div class="table-wrapper">
+      <div class="table-wrapper overflow-x-auto w-full">
         <!-- VISTA DE MOVIMIENTOS (HISTORIAL) -->
         @if (cargando()) {
           <div class="flex justify-center items-center h-full py-12">
@@ -202,12 +202,12 @@
             </div>
             
             <label class="form-label">Seleccionar Producto *</label>
-            <select [(ngModel)]="nuevaEntrada.idProducto" class="form-input w-full">
-              <option [ngValue]="null" disabled>Elige el producto...</option>
-              @for (prod of getProductosModalFiltrados(); track prod.idProducto) {
-                <option [ngValue]="prod.idProducto">{{ prod.nombre }}</option>
-              }
-            </select>
+            <app-searchable-select 
+              [(ngModel)]="nuevaEntrada.idProducto" 
+              [options]="getProductosModalFiltrados()" 
+              bindLabel="nombre" 
+              bindValue="idProducto">
+            </app-searchable-select>
           </div>
 
           <!-- Detalles del Movimiento (Grid 2 Columnas) -->
@@ -393,13 +393,13 @@
             <input type="text" [(ngModel)]="busquedaAjuste" placeholder="Escribe para filtrar..."
                    class="form-input pl-9 w-full">
           </div>
-          <select [(ngModel)]="ajuste.idProducto" (ngModelChange)="onProductoAjusteChange($event)"
-                  class="form-input w-full">
-            <option [ngValue]="null" disabled>Selecciona un producto...</option>
-            @for (prod of getProductosAjusteFiltrados(); track prod.idProducto) {
-              <option [ngValue]="prod.idProducto">{{ prod.nombre }} (Stock actual: {{ prod.stockActual }})</option>
-            }
-          </select>
+          <app-searchable-select 
+              [ngModel]="ajuste.idProducto" 
+              (ngModelChange)="ajuste.idProducto = $event; onProductoAjusteChange($event)"
+              [options]="getProductosAjusteFiltrados()" 
+              bindLabel="nombre" 
+              bindValue="idProducto">
+          </app-searchable-select>
         </div>
 
         <!-- Stock actual vs nuevo -->
