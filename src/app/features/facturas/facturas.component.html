@@ -430,6 +430,51 @@
                 }
               </select>
             </div>
+            <div class="form-group md:col-span-2 mt-2">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" class="form-checkbox text-indigo-600 rounded" [checked]="formData.esExportacion" (change)="onExportacionToggle($event)">
+                <span class="text-sm font-semibold text-gray-700">Factura de Exportación (Complemento Comercio Exterior)</span>
+              </label>
+            </div>
+
+            @if (formData.esExportacion) {
+              <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 bg-blue-50 p-3 rounded-lg border border-blue-100 mt-2">
+                <div class="form-group">
+                  <label class="form-label text-blue-900">ID Fiscal Extranjero</label>
+                  <input type="text" [(ngModel)]="formData.taxRegistrationNumber" placeholder="123456789" class="form-input text-sm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-blue-900">País Residencia Fiscal</label>
+                  <input type="text" [(ngModel)]="formData.taxResidence" placeholder="USA" class="form-input text-sm uppercase" maxlength="3">
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-blue-900">Incoterm</label>
+                  <select [(ngModel)]="formData.incoterm" class="form-input text-sm">
+                    <option value="FOB">FOB - Free On Board</option>
+                    <option value="CIF">CIF - Cost, Insurance and Freight</option>
+                    <option value="EXW">EXW - Ex Works</option>
+                    <option value="DDP">DDP - Delivered Duty Paid</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-blue-900">Tipo de Cambio (USD)</label>
+                  <input type="number" step="0.01" [(ngModel)]="formData.tipoCambio" class="form-input text-sm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-blue-900">Fracción Arancelaria (Global)</label>
+                  <input type="text" [(ngModel)]="formData.fraccionArancelaria" placeholder="85171201" class="form-input text-sm">
+                </div>
+                <div class="form-group">
+                  <label class="form-label text-blue-900">Unidad Aduana (Global)</label>
+                  <select [(ngModel)]="formData.unidadAduana" class="form-input text-sm">
+                    <option value="01">01 - Kilos</option>
+                    <option value="02">02 - Gramos</option>
+                    <option value="06">06 - Piezas</option>
+                    <option value="99">99 - Servicio</option>
+                  </select>
+                </div>
+              </div>
+            }
           </div>
 
             </div>

@@ -136,7 +136,14 @@ export class FacturasComponent implements OnInit {
     regimen: '601',
     usoCfdi: 'G03',
     formaPago: '01',
-    metodoPago: 'PUE'
+    metodoPago: 'PUE',
+    esExportacion: false,
+    taxResidence: 'USA',
+    taxRegistrationNumber: '',
+    incoterm: 'FOB',
+    fraccionArancelaria: '',
+    unidadAduana: '01',
+    tipoCambio: 1
   };
 
   regimenes = [
@@ -439,8 +446,23 @@ export class FacturasComponent implements OnInit {
     this.formData.rfc = '';
     this.formData.razonSocial = '';
     this.formData.cp = '';
+    this.formData.esExportacion = false;
     this.mostrarModal.set(true);
     this.cargarVentasDisponibles();
+  }
+
+  onExportacionToggle(event: any) {
+    this.formData.esExportacion = event.target.checked;
+    if (this.formData.esExportacion) {
+      this.http.get<any>(`${environment.apiUrl}/pos/tipo-cambio`).subscribe({
+        next: (res) => {
+          if (res && res.mxn) {
+            this.formData.tipoCambio = res.mxn;
+          }
+        },
+        error: () => console.error('Error al obtener tipo de cambio')
+      });
+    }
   }
 
   cargarVentasDisponibles() {
