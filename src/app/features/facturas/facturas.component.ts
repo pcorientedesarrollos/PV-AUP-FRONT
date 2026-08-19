@@ -51,15 +51,22 @@ export class FacturasComponent implements OnInit {
       result = result.filter(f => f.fechaEmision && f.fechaEmision.substring(5, 7) === mes);
     }
     if (estatus) {
-      result = result.filter(f => f.estatus === estatus);
+      result = result.filter(f => {
+        // Sincronizado con la lógica visual del HTML
+        const esCancelada = f.estatus === 'Cancelada' || f.venta?.estatus === 'Cancelada' || f.venta?.estatus === 'Devuelta';
+        if (estatus === 'Cancelada') return esCancelada;
+        if (estatus === 'Emitida') return !esCancelada;
+        return true;
+      });
     }
     if (q) {
       result = result.filter(f => {
-        const folio = (f.Id || '').toLowerCase();
+        // Corregido: Se busca por 'uuid' y las propiedades reales del cliente
+        const uuid = (f.uuid || '').toLowerCase();
         const num = (f.folioInterno || '').toLowerCase();
-        const cliName = f.venta?.cliente?.nombreCompleto?.toLowerCase() || '';
-        const cliRFC = f.venta?.cliente?.rfc?.toLowerCase() || '';
-        return folio.includes(q) || num.includes(q) || cliName.includes(q) || cliRFC.includes(q);
+        const cliName = (f.nombreCliente || f.venta?.cliente?.nombreCompleto || '').toLowerCase();
+        const cliRFC = (f.rfcCliente || f.venta?.cliente?.rfc || '').toLowerCase();
+        return uuid.includes(q) || num.includes(q) || cliName.includes(q) || cliRFC.includes(q);
       });
     }
     return result;
