@@ -145,45 +145,38 @@
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                   @if (modoVista() === 'facturas') {
                     @if (f.estatus === 'Cancelada' || f.venta?.estatus === 'Cancelada' || f.venta?.estatus === 'Devuelta') {
-                      <span class="badge-danger font-bold">Cancelada</span>
+                      <span class="bg-red-100 text-red-800 font-bold px-2 py-1 rounded-md text-xs">Cancelada</span>
                     } @else {
-                      <span class="badge-success font-bold">{{ f.estatus }}</span>
+                      <span class="bg-green-100 text-green-800 font-bold px-2 py-1 rounded-md text-xs">{{ f.estatus || 'Emitida' }}</span>
                     }
                   } @else {
-                    @if (f.estatus === 'Cancelada' || f.estatus === 'Devuelta') {
-                      <span class="badge-danger font-bold">{{ f.estatus }}</span>
-                    } @else {
-                      <span class="badge-success font-bold">{{ f.estatus }}</span>
-                    }
+                    <span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-1 rounded-md text-xs">Pendiente</span>
                   }
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                  <div class="flex items-center justify-center gap-2">
-                    @if (modoVista() === 'facturas') {
-                      @if (f.estatus === 'Cancelada' || f.venta?.estatus === 'Cancelada' || f.venta?.estatus === 'Devuelta') {
-                        <button (click)="descargarPaqueteCancelacion(f.idFactura)" class="text-xs text-purple-600 hover:text-purple-800 font-bold px-3 py-1 rounded bg-purple-50 hover:bg-purple-100 transition-colors border border-purple-200 flex items-center gap-1" title="Descargar Paquete ZIP">
-                          <svg xmlns="http://www.w3.org/2001/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-                          ZIP
-                        </button>
-                      } @else {
-                        @if (f.urlPdf) {
-                          <button (click)="descargarPdf(f.urlPdf)" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition-colors border border-red-200">PDF</button>
-                        }
-                        @if (f.urlXml) {
-                          <button (click)="descargarXml(f.urlXml)" class="text-xs text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200">XML</button>
-                        }
-                        @if (!f.urlPdf && !f.urlXml) {
-                          <span class="text-xs text-gray-500">Procesando</span>
-                        }
-                        <button (click)="abrirModalCancelarFactura(f)" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition-colors border border-red-200" title="Cancelar CFDI">
-                           Cancelar
-                        </button>
+                  <div class="flex justify-center gap-2">
+                  @if (modoVista() === 'facturas') {
+                    @if (!(f.estatus === 'Cancelada' || f.venta?.estatus === 'Cancelada' || f.venta?.estatus === 'Devuelta')) {
+                      @if (f.urlPdf) {
+                        <button (click)="descargarPdf(f.urlPdf)" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition-colors border border-red-200">PDF</button>
                       }
-                    } @else {
+                      @if (f.urlXml) {
+                        <button (click)="descargarXml(f.urlXml)" class="text-xs text-blue-600 hover:text-blue-800 font-bold px-2 py-1 rounded bg-blue-50 hover:bg-blue-100 transition-colors border border-blue-200">XML</button>
+                      }
+                      @if (!f.urlPdf && !f.urlXml) {
+                        <span class="text-xs text-gray-500">Procesando</span>
+                      }
+                      <button (click)="abrirModalCancelarFactura(f)" class="text-xs text-red-600 hover:text-red-800 font-bold px-2 py-1 rounded bg-red-50 hover:bg-red-100 transition-colors border border-red-200" title="Cancelar CFDI">
+                         Cancelar
+                      </button>
+                    }
+                  } @else {
+                    @if (auth.tienePermiso('facturar')) {
                       <button (click)="facturarVentaPendiente(f)" class="text-xs text-white bg-indigo-600 hover:bg-indigo-700 font-bold px-3 py-1 rounded shadow-sm transition-colors">
                         Facturar
                       </button>
                     }
+                  }
                   </div>
                 </td>
               </tr>

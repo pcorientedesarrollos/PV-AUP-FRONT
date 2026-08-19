@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../core/services/pos.service';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
   selector: 'app-empresas',
@@ -50,7 +51,10 @@ import { PosService } from '../../core/services/pos.service';
                       {{emp.activa ? 'ACTIVA' : 'INACTIVA'}}
                     </span>
                   </td>
-                  <td class="py-3 px-4 text-center">
+                  <td class="py-3 px-4 text-center space-x-2">
+                    <button (click)="impersonarEmpresa(emp)" class="inline-flex items-center justify-center px-2 py-1 h-8 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 hover:text-orange-700 transition-colors font-bold text-xs focus:outline-none" title="Operar Empresa">
+                      Operar
+                    </button>
                     <button (click)="abrirModal(emp)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors focus:outline-none" title="Editar">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                     </button>
@@ -154,7 +158,16 @@ export class EmpresasComponent implements OnInit {
     activa: true
   };
 
-  constructor(private posService: PosService, private http: HttpClient) {}
+  constructor(private posService: PosService, private http: HttpClient, private auth: AuthService) {}
+
+  impersonarEmpresa(empresa: any) {
+    this.auth.impersonar({
+      empresa: empresa,
+      idPerfil: 1, // Actua como admin de esta empresa
+      idSucursal: undefined,
+      sucursalNombre: undefined
+    });
+  }
 
   ngOnInit() {
     this.cargar();

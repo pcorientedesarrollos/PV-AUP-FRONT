@@ -1,4 +1,4 @@
-﻿import { environment } from '../../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { Component, signal, computed, OnInit } from '@angular/core';
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
@@ -12,6 +12,7 @@ interface Usuario {
   idPerfil: number;
   oculto: number;
   sucursal?: any;
+  permisos?: string[];
 }
 
 @Component({
@@ -21,6 +22,17 @@ interface Usuario {
   templateUrl: './usuarios.component.html',
 })
 export class UsuariosComponent implements OnInit {
+
+  permisosDisponibles = [
+    { id: 'crear_producto', nombre: 'Crear Productos' },
+    { id: 'editar_producto', nombre: 'Editar Productos' },
+    { id: 'eliminar_producto', nombre: 'Eliminar Productos' },
+    { id: 'ver_reportes', nombre: 'Ver Reportes' },
+    { id: 'cancelar_venta', nombre: 'Cancelar Ventas' },
+    { id: 'facturar', nombre: 'Facturar Ventas' },
+    { id: 'aplicar_descuentos', nombre: 'Aplicar Descuentos' }
+  ];
+
 
   tamanoPagina = signal(10);
   paginaActual = signal(1);
@@ -67,10 +79,11 @@ export class UsuariosComponent implements OnInit {
   nuevoUsuario = {
     usuario: '',
     password: '',
-    idPerfil: 2, // Por defecto Cajero
+    idPerfil: 2,
     idPersonalOM: 0,
     app: 1,
-    oculto: 0
+    oculto: 0,
+    permisos: [] as string[]
   };
 
   constructor(private http: HttpClient, public auth: AuthService) {}
@@ -96,7 +109,8 @@ export class UsuariosComponent implements OnInit {
           usuario: u.nombreUsuario,
           idPerfil: u.rol === 'Administrador' ? 1 : (u.rol === 'Soporte' ? 3 : 2),
           oculto: u.activo ? 0 : 1,
-          sucursal: u.sucursal
+          sucursal: u.sucursal,
+          permisos: u.permisos || []
         }));
         if (this.isSoporte()) {
           this.usuarios.set(mapeados);
@@ -121,18 +135,20 @@ export class UsuariosComponent implements OnInit {
         idPerfil: usuarioEditar.idPerfil,
         idPersonalOM: 0,
         app: 1,
-        oculto: 0
+        oculto: 0,
+        permisos: usuarioEditar.permisos || []
       };
     } else {
       this.editandoId.set(null);
       this.nuevoUsuario = {
-        usuario: '',
-        password: '',
-        idPerfil: 2,
-        idPersonalOM: 0,
-        app: 1,
-        oculto: 0
-      };
+    usuario: '',
+    password: '',
+    idPerfil: 2,
+    idPersonalOM: 0,
+    app: 1,
+    oculto: 0,
+    permisos: [] as string[]
+  };
     }
     this.modalAbierto.set(true);
   }
@@ -162,6 +178,7 @@ export class UsuariosComponent implements OnInit {
 
     // Preparar el payload: eliminar password si está vacío en edición
     const payload: any = { ...this.nuevoUsuario };
+    payload.oculto = payload.oculto === 1;
     if (isEdit && !payload.password) {
       delete payload.password;
     }
@@ -182,6 +199,16 @@ export class UsuariosComponent implements OnInit {
         this.guardando.set(false);
       }
     });
+  }
+
+
+  togglePermiso(permisoId: string) {
+    const idx = this.nuevoUsuario.permisos.indexOf(permisoId);
+    if (idx >= 0) {
+      this.nuevoUsuario.permisos.splice(idx, 1);
+    } else {
+      this.nuevoUsuario.permisos.push(permisoId);
+    }
   }
 
   getNombrePerfil(idPerfil: number): string {

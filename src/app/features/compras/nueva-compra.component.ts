@@ -3,7 +3,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 
@@ -48,6 +48,7 @@ export class NuevaCompraComponent implements OnInit {
   constructor(
     private http: HttpClient, 
     private router: Router, 
+    private route: ActivatedRoute,
     private auth: AuthService,
     private toast: ToastService
   ) {}
@@ -55,6 +56,11 @@ export class NuevaCompraComponent implements OnInit {
   ngOnInit() {
     this.cargarProveedores();
     this.cargarCatalogo();
+    this.route.queryParams.subscribe(params => {
+      if (params['proveedorId']) {
+        this.idProveedor.set(Number(params['proveedorId']));
+      }
+    });
   }
 
   cargarProveedores() {

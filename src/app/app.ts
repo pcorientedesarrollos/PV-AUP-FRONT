@@ -13,12 +13,26 @@ import { ToastComponent } from './shared/components/toast/toast.component';
   selector: 'app-root',
   standalone: true,
   imports: [RouterOutlet, ToastComponent],
-  template: `<app-toast></app-toast><router-outlet />`,
+  template: `
+    @if (auth.isImpersonating()) {
+      <div class="bg-orange-500 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-md z-50 relative">
+        <div class="flex items-center gap-2">
+          <span>⚠️</span>
+          <span>Modo Suplantación: Operando en la sucursal "{{ auth.sesion()?.sucursalNombre || 'N/A' }}" de "{{ auth.sesion()?.empresa?.nombre || 'N/A' }}"</span>
+        </div>
+        <button (click)="auth.restaurarSesion()" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors text-xs uppercase tracking-wider border border-white/40">
+          ❌ Volver a mi sesión original
+        </button>
+      </div>
+    }
+    <app-toast></app-toast>
+    <router-outlet />
+  `,
 })
 export class App {
   private titleService = inject(Title);
   private document = inject(DOCUMENT);
-  private auth = inject(AuthService);
+  public auth = inject(AuthService);
   private theme = inject(ThemeService);
   private router = inject(Router);
   private swUpdate = inject(SwUpdate);

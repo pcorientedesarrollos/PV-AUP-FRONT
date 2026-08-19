@@ -122,11 +122,11 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ item.fecha | date:'dd/MM/yy HH:mm' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-800 leading-tight max-w-[200px] sm:max-w-[250px] break-words group-hover:text-indigo-700 transition-colors">
+                  <td class="px-6 py-4 whitespace-normal text-sm font-bold text-gray-800 leading-tight max-w-[200px] sm:max-w-[250px] break-words group-hover:text-indigo-700 transition-colors">
                     {{ item.concepto || 'Sin concepto' }}
                     <div class="sm:hidden text-xs text-gray-400 font-normal mt-1">{{ item.descripcion || item.subcuenta }}</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 min-w-[200px] max-w-[400px] break-words hidden sm:table-cell">{{ item.descripcion || item.subcuenta || 'Sin descripción' }}</td>
+                  <td class="px-6 py-4 whitespace-normal text-sm text-gray-500 min-w-[200px] max-w-[400px] break-words hidden sm:table-cell">{{ item.descripcion || item.subcuenta || 'Sin descripción' }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-gray-700 text-right">{{ item.cantidad || item.entradas || 0 }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"

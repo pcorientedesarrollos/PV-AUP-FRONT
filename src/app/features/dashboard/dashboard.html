@@ -83,22 +83,15 @@
     </button>
   </div>
 </div>
-<!-- User Card -->
-<div class="p-3 mx-3 mt-4 bg-amber-50 rounded-xl flex items-center gap-3 relative border border-amber-100/50">
-  <div class="w-9 h-9 rounded-full bg-gray-400 flex items-center justify-center shrink-0 border-2 border-white shadow-sm overflow-hidden">
-    <img *ngIf="auth.sesion()?.empresa?.logoUrl; else noLogo" [src]="auth.sesion()?.empresa?.logoUrl" class="w-full h-full object-cover" />
-    <ng-template #noLogo>
-      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-    </ng-template>
-  </div>
-  <div class="flex flex-col overflow-hidden">
-    <span class="text-[11px] font-bold text-gray-800 truncate">{{ auth.sesion()?.idPerfil === 1 ? 'Administrador del Sistema' : (auth.sesion()?.idPerfil === 3 ? 'Soporte' : 'Cajero') }}</span>
-    <span class="text-[10px] text-gray-500 truncate">Administrador</span>
-  </div>
-  <button class="absolute top-1/2 -translate-y-1/2 left-0 -ml-3 bg-white w-6 h-6 rounded-full shadow border border-gray-200 flex items-center justify-center text-gray-400 hover:text-honey-primary transition-colors">
-    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-  </button>
-</div>
+<!-- Buscador de Men -->
+      <div class="px-4 mt-4">
+        <div class="relative">
+          <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </span>
+          <input type="text" placeholder="Buscar..." (input)="menuSearch.set($any($event.target).value)" class="w-full pl-10 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-honey-primary/50 focus:border-honey-primary transition-all">
+        </div>
+      </div>
 
       <!-- Navegación -->
       <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
@@ -108,17 +101,17 @@
           Punto de Venta
         </p>
 
-        <button (click)="navegar('/home')"
+        <button [hidden]="!matchSearch('home Dashboard')" (click)="navegar('/home')"
                 class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/home')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
           <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
           </svg>
           Dashboard
         </button>
 
-        <button (click)="navegar('/pos')"
+        <button [hidden]="!matchSearch('pos')" (click)="navegar('/pos')"
                 class="w-full text-left flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/pos')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -131,7 +124,7 @@
           <span class="text-[9px] bg-honey-primary/20 text-honey-primary px-1.5 py-0.5 rounded font-bold">F1</span>
         </button>
 
-        <button (click)="navegar('/historial')"
+        <button [hidden]="!matchSearch('historial Historial Ventas')" (click)="navegar('/historial')"
                 class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/historial')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -141,7 +134,7 @@
           Historial Ventas
         </button>
 
-        <button (click)="navegar('/cotizaciones')"
+        <button [hidden]="!matchSearch('cotizaciones')" (click)="navegar('/cotizaciones')"
                 class="w-full text-left flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/cotizaciones')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -153,7 +146,7 @@
           </span>
         </button>
 
-        <button (click)="navegar('/corte-caja')"
+        <button [hidden]="!matchSearch('corte-caja Corte de Caja')" (click)="navegar('/corte-caja')"
                 class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/corte-caja')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -168,7 +161,7 @@
           Inventario
         </p>
 
-        <button (click)="navegar('/productos')"
+        <button [hidden]="!matchSearch('productos')" (click)="navegar('/productos')"
                 class="w-full text-left flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/productos')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -182,7 +175,7 @@
         </button>
 
         @if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3) {
-          <button (click)="navegar('/categorias')"
+          <button [hidden]="!matchSearch('categorias Categorías')" (click)="navegar('/categorias')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/categorias')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -193,7 +186,7 @@
           </button>
         }
 
-        <button (click)="navegar('/inventario')"
+        <button [hidden]="!matchSearch('inventario')" (click)="navegar('/inventario')"
                 class="w-full text-left flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/inventario')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -207,7 +200,7 @@
         </button>
 
         @if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3) {
-          <button (click)="navegar('/inventario/traspasos')"
+          <button [hidden]="!matchSearch('inventario/traspasos Traspasos')" (click)="navegar('/inventario/traspasos')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/inventario/traspasos')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -217,7 +210,7 @@
             Traspasos
           </button>
 
-          <button (click)="navegar('/produccion')"
+          <button [hidden]="!matchSearch('produccion Producción')" (click)="navegar('/produccion')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/produccion')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -230,7 +223,7 @@
         }
 
         @if (auth.sesion()?.idPerfil !== 2) {
-          <button (click)="navegar('/compras')"
+          <button [hidden]="!matchSearch('compras Compras')" (click)="navegar('/compras')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/compras')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -242,7 +235,7 @@
         }
 
         @if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3) {
-          <button (click)="navegar('/proveedores')"
+          <button [hidden]="!matchSearch('proveedores Proveedores')" (click)="navegar('/proveedores')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/proveedores')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -258,7 +251,7 @@
           Administración
         </p>
 
-        <button (click)="navegar('/clientes')"
+        <button [hidden]="!matchSearch('clientes Clientes')" (click)="navegar('/clientes')"
                 class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                 [ngClass]="isActive('/clientes')
                   ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -268,18 +261,25 @@
           Clientes
         </button>
 
-        @if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3) {
-          <button (click)="navegar('/facturas')"
-                  class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
-                  [ngClass]="isActive('/facturas')
-                    ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
-            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-            Facturas CFDI
-          </button>
+          @if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3) {
+            <button [hidden]="!matchSearch('sucursales Sucursales')" (click)="navegar('/sucursales')"
+                    class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
+                    [ngClass]="isActive('/sucursales')
+                      ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
+              <span class="text-sm">🏢</span> Sucursales
+            </button>
 
-          <button (click)="navegar('/devoluciones')"
+            <button [hidden]="!matchSearch('facturas Facturas CFDI')" (click)="navegar('/facturas')"
+                    class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
+                    [ngClass]="isActive('/facturas')
+                      ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
+              <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            Facturas CFDI
+            </button>
+
+          <button [hidden]="!matchSearch('devoluciones Devoluciones')" (click)="navegar('/devoluciones')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/devoluciones')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -289,7 +289,7 @@
             Devoluciones
           </button>
 
-          <button (click)="navegar('/usuarios')"
+          <button [hidden]="!matchSearch('usuarios Usuarios')" (click)="navegar('/usuarios')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/usuarios')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -300,7 +300,7 @@
           </button>
 
           <!-- Configurar Ticket -->
-          <button (click)="mostrarModalConfig = true"
+          <button [hidden]="!matchSearch('configurar ticket comprobante')" (click)="mostrarModalConfig = true"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="mostrarModalConfig
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -311,7 +311,7 @@
           </button>
 
           <!-- Config. Empresa -->
-          <button (click)="navegar('/configuracion')"
+          <button [hidden]="!matchSearch('configuracion Config. de Empresa')" (click)="navegar('/configuracion')"
                   class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                   [ngClass]="isActive('/configuracion')
                     ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
@@ -332,21 +332,14 @@
               </p>
             </div>
 
-            <button (click)="navegar('/empresas')"
+            <button [hidden]="!matchSearch('empresas Empresas')" (click)="navegar('/empresas')"
                     class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                     [ngClass]="isActive('/empresas')
                       ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
               <span class="text-sm">🏢</span> Empresas
             </button>
 
-            <button (click)="navegar('/sucursales')"
-                    class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
-                    [ngClass]="isActive('/sucursales')
-                      ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">
-              <span class="text-sm">🏪</span> Sucursales
-            </button>
-
-            <button (click)="navegar('/diagnostico')"
+            <button [hidden]="!matchSearch('diagnostico Diagnóstico de Red')" (click)="navegar('/diagnostico')"
                     class="w-full text-left flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all focus:outline-none select-none"
                     [ngClass]="isActive('/diagnostico')
                       ? 'bg-honey-primary text-white shadow-md' : 'text-gray-600 hover:bg-amber-50 hover:text-honey-primary'">

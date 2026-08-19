@@ -202,16 +202,16 @@ export class CarritoComponent implements OnInit {
 
   // --- Descuentos por Item ---
   modalDescuentoItemAbierto = signal(false);
-  itemDescuentoSeleccionadoId = signal<number | null>(null);
+  itemDescuentoSeleccionadoId = signal<string | null>(null);
   inputDescuentoItemValor = signal<number | null>(null);
   inputTipoDescuentoItem = signal<'cantidad' | 'porcentaje'>('cantidad');
 
-  abrirModalDescuentoItem(idProducto: number, descuentoActual: number) {
+  abrirModalDescuentoItem(uid: string, descuentoActual: number) {
     if (this.auth.sesion()?.idPerfil !== 1) {
       alert('Solo los administradores pueden aplicar descuentos.');
       return;
     }
-    this.itemDescuentoSeleccionadoId.set(idProducto);
+    this.itemDescuentoSeleccionadoId.set(uid);
     this.inputDescuentoItemValor.set(descuentoActual || null);
     this.inputTipoDescuentoItem.set('cantidad'); // Default
     this.modalDescuentoItemAbierto.set(true);
@@ -232,7 +232,7 @@ export class CarritoComponent implements OnInit {
       return;
     }
 
-    const itemEnCarrito = this.pos.carrito().find(i => i.producto.idProducto === id);
+    const itemEnCarrito = this.pos.carrito().find(i => i.uid === id);
     if (!itemEnCarrito) return;
 
     if (this.inputTipoDescuentoItem() === 'porcentaje') {

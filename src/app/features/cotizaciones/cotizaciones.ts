@@ -1,3 +1,4 @@
+import { AuthService } from '../../core/services/auth.service';
 import { Component, OnInit, signal, inject, computed } from '@angular/core';
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
@@ -26,6 +27,7 @@ export class CotizacionesComponent implements OnInit {
   private router = inject(Router);
   private posService = inject(PosService);
   private toast = inject(ToastService);
+  public auth = inject(AuthService);
 
   cotizaciones = signal<any[]>([]);
   cargando = signal(true);
@@ -198,131 +200,155 @@ export class CotizacionesComponent implements OnInit {
     let html = `
       <!DOCTYPE html>
       <html lang="es">
-        <head>
+      <head>
           <meta charset="UTF-8">
           <title>Cotización ${cot.folio}</title>
           <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-            body { 
-              font-family: 'Inter', sans-serif; 
-              margin: 0; 
-              padding: 40px; 
-              color: #1e293b; 
-              background: #fff; 
-            }
-            .document-container { max-width: 800px; margin: auto; }
-            .header-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; }
-            .company-info h1 { margin: 0; font-size: 28px; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
-            .company-info p { margin: 4px 0; color: #64748b; font-size: 14px; }
-            .quote-info { text-align: right; }
-            .quote-title { font-size: 24px; color: #4338ca; margin: 0 0 10px 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
-            .quote-meta { font-size: 14px; color: #475569; margin: 4px 0; }
-            .customer-section { background: #f8fafc; border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid #e2e8f0; }
-            .customer-section h3 { margin: 0 0 10px 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-            .customer-name { margin: 0; font-size: 18px; font-weight: 600; color: #0f172a; }
-            table { width: 100%; border-collapse: separate; border-spacing: 0; margin-bottom: 30px; }
-            th { background: #4338ca; color: white; padding: 12px 15px; text-align: left; font-size: 13px; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
-            th:first-child { border-top-left-radius: 6px; border-bottom-left-radius: 6px; }
-            th:last-child { border-top-right-radius: 6px; border-bottom-right-radius: 6px; text-align: right; }
-            td { padding: 15px; border-bottom: 1px solid #e2e8f0; font-size: 14px; color: #334155; }
-            td:last-child { text-align: right; font-weight: 600; }
-            .totals-container { display: flex; justify-content: flex-end; margin-bottom: 40px; }
-            .totals-box { width: 300px; background: #f8fafc; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; }
-            .total-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; color: #475569; }
-            .total-row.grand-total { border-top: 2px solid #cbd5e1; margin-top: 10px; padding-top: 15px; font-size: 18px; font-weight: 800; color: #0f172a; }
-            .conditions { font-size: 12px; color: #64748b; line-height: 1.6; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-            .conditions h4 { color: #334155; margin: 0 0 10px 0; font-size: 13px; text-transform: uppercase; }
-            .conditions ul { margin: 0; padding-left: 20px; }
+              body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
+              .container { padding: 40px; }
+              
+              /* Encabezado */
+              .header { width: 100%; margin-bottom: 30px; }
+              .logo { max-width: 150px; max-height: 80px; }
+              .company-info { text-align: right; font-size: 12px; }
+              
+              /* Título y Datos de la Cotización */
+              .quote-title { font-size: 28px; color: ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; font-weight: bold; margin-bottom: 10px; }
+              .meta-table { width: 100%; margin-bottom: 20px; }
+              .meta-table td { vertical-align: top; }
+              
+              /* Datos del Cliente */
+              .client-box { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+              .client-label { font-weight: bold; color: #7f8c8d; font-size: 10px; text-transform: uppercase; }
+              
+              /* Tabla de Productos */
+              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+              .items-table th { background: ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; color: white; padding: 10px; text-align: left; font-size: 13px; }
+              .items-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+              .items-table tr:nth-child(even) { background: #fafafa; }
+              
+              /* Totales */
+              .totals-wrapper { width: 100%; }
+              .totals-table { float: right; width: 30%; min-width: 200px; }
+              .totals-table td { padding: 5px; text-align: right; font-size: 13px; }
+              .total-row { font-weight: bold; font-size: 16px; color: ${cot.sucursal?.empresa?.colorPrincipal || '#e74c3c'}; }
+
+              /* Términos y Condiciones */
+              .terms { margin-top: 50px; font-size: 10px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; }
+              
+              .text-right { text-align: right; }
           </style>
-        </head>
-        <body>
-          <div class="document-container">
-            <div class="header-top">
-              <div class="company-info">
-                <h1>AUP SISTEMAS</h1>
-                <p>Soluciones Tecnológicas Integrales</p>
-                <p>RFC: AUP000000XXX</p>
-              </div>
-              <div class="quote-info">
-                <h2 class="quote-title">COTIZACIÓN</h2>
-                <p class="quote-meta"><strong>Folio:</strong> ${cot.folio}</p>
-                <p class="quote-meta"><strong>Fecha:</strong> ${new Date(cot.fechaEmision).toLocaleDateString()}</p>
-                <p class="quote-meta"><strong>Válido hasta:</strong> ${(() => {
-                  const d = new Date(cot.fechaEmision);
-                  d.setDate(d.getDate() + cot.vigenciaDias);
-                  return d.toLocaleDateString();
-                })()}</p>
-              </div>
-            </div>
-            
-            <div class="customer-section">
-              <h3>Datos del Cliente</h3>
-              <p class="customer-name">${clienteNombre}</p>
-            </div>
-            
-            <table>
+      </head>
+      <body>
+      <div class="container">
+          <!-- Encabezado -->
+          <table class="header">
+              <tr>
+                  <td>
+                      ${cot.sucursal?.empresa?.logoUrl 
+                        ? '<img src="' + cot.sucursal.empresa.logoUrl + '" alt="Logo" class="logo">' 
+                        : '<h2>' + (cot.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.') + '</h2>'}
+                  </td>
+                  <td class="company-info">
+                      <strong>${cot.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.'}</strong><br>
+                      ${cot.sucursal?.direccion || 'Dirección no especificada'}<br>
+                      Tel: ${cot.sucursal?.telefono || 'N/A'}<br>
+                  </td>
+              </tr>
+          </table>
+
+          <hr style="border: 0; border-top: 2px solid ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; margin-bottom: 20px;">
+
+          <!-- Título y Datos -->
+          <table class="meta-table">
+              <tr>
+                  <td>
+                      <div class="quote-title">COTIZACIÓN</div>
+                      <p>Folio: <strong>${cot.folio}</strong><br>
+                      Fecha: ${new Date(cot.fechaEmision).toLocaleDateString()}<br>
+                      Vence: ${(() => {
+                        const d = new Date(cot.fechaEmision);
+                        d.setDate(d.getDate() + cot.vigenciaDias);
+                        return d.toLocaleDateString();
+                      })()}</p>
+                  </td>
+                  <td width="50%">
+                      <div class="client-box">
+                          <div class="client-label">CLIENTE:</div>
+                          <strong>${clienteNombre}</strong><br>
+                          ${cot.cliente?.direccion || 'Dirección no registrada'}<br>
+                          RFC: ${cot.cliente?.rfc || 'XAXX010101000'}<br>
+                          Tel: ${cot.cliente?.telefono || 'N/A'}
+                      </div>
+                  </td>
+              </tr>
+          </table>
+
+          <!-- Tabla de Ítems -->
+          <table class="items-table">
               <thead>
-                <tr>
-                  <th>Cant.</th>
-                  <th>Concepto / Descripción</th>
-                  <th>Precio Público</th>
-                  <th>Aplica IVA</th>
-                  <th>Importe</th>
-                </tr>
+                  <tr>
+                      <th>Descripción</th>
+                      <th width="10%" class="text-right">Cant.</th>
+                      <th width="15%" class="text-right">Precio Unit.</th>
+                      <th width="15%" class="text-right">Total</th>
+                  </tr>
               </thead>
               <tbody>
     `;
-    
+
     if (cot.detalles && cot.detalles.length > 0) {
       cot.detalles.forEach((d: any) => {
         const unitarioFinal = Number(d.importe) / Number(d.cantidad);
         html += `
           <tr>
-            <td>${d.cantidad}</td>
-            <td><strong>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</strong></td>
-            <td>$${unitarioFinal.toFixed(2)}</td>
-            <td>${d.aplicaIva ? 'Sí' : 'No'}</td>
-            <td>$${Number(d.importe).toFixed(2)}</td>
+            <td>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</td>
+            <td class="text-right">${d.cantidad}</td>
+            <td class="text-right">$${unitarioFinal.toFixed(2)}</td>
+            <td class="text-right">$${Number(d.importe).toFixed(2)}</td>
           </tr>
         `;
       });
     } else {
       html += `<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-style: italic;">Sin conceptos en esta cotización</td></tr>`;
     }
-    
+
     html += `
               </tbody>
-            </table>
-            
-            <div class="totals-container">
-              <div class="totals-box">
-                <div class="total-row">
-                  <span>Subtotal:</span>
-                  <span>$${Number(cot.subtotal).toFixed(2)}</span>
-                </div>
-                <div class="total-row">
-                  <span>IVA (16%):</span>
-                  <span>$${Number(cot.totalIva).toFixed(2)}</span>
-                </div>
-                <div class="total-row grand-total">
-                  <span>Total:</span>
-                  <span>$${Number(cot.total).toFixed(2)} MXN</span>
-                </div>
-              </div>
-            </div>
+          </table>
 
-            <div class="conditions">
-              <h4>Condiciones Comerciales</h4>
-              <ul>
-                <li><strong>Tiempo de entrega:</strong> A convenir (sujeto a disponibilidad de inventario).</li>
-                <li><strong>Condiciones de pago:</strong> 50% de anticipo al confirmar el pedido, 50% restante contra entrega.</li>
-                <li><strong>Tipo de cambio:</strong> Los precios en dólares (si aplican) se pagarán al tipo de cambio del Diario Oficial de la Federación (DOF) del día de la facturación.</li>
-                <li>Precios sujetos a cambio sin previo aviso.</li>
-                <li>Esta cotización no representa una factura ni un comprobante fiscal.</li>
-              </ul>
-            </div>
+          <!-- Sección de Totales -->
+          <div class="totals-wrapper">
+              <table class="totals-table">
+                  <tr>
+                      <td>Subtotal:</td>
+                      <td>$${Number(cot.subtotal).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                      <td>IVA (16%):</td>
+                      <td>$${Number(cot.totalIva).toFixed(2)}</td>
+                  </tr>
+                  <tr class="total-row">
+                      <td>TOTAL:</td>
+                      <td>$${Number(cot.total).toFixed(2)}</td>
+                  </tr>
+              </table>
           </div>
-        </body>
+
+          <div style="clear: both;"></div>
+
+          <!-- Notas y Términos -->
+          <div class="terms">
+              <strong>TÉRMINOS Y CONDICIONES:</strong>
+              <ol>
+                  <li>Esta cotización tiene una vigencia de ${cot.vigenciaDias} días naturales.</li>
+                  <li>Los precios y tiempos de entrega están sujetos a cambios sin previo aviso.</li>
+                  <li>Esta cotización no representa una factura ni un comprobante fiscal.</li>
+              </ol>
+          </div>
+      </div>
+
+      </body>
       </html>
     `;
     

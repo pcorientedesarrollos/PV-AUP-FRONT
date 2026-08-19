@@ -65,6 +65,9 @@ import { AuthService } from '../../core/services/auth.service';
                   </span>
                 </td>
                 <td class="py-3 px-4 text-center space-x-2">
+                  <button (click)="impersonarSucursal(s)" class="inline-flex items-center justify-center px-2 py-1 h-8 rounded-lg bg-orange-100 hover:bg-orange-200 text-orange-600 hover:text-orange-700 transition-colors font-bold text-xs focus:outline-none" title="Operar en esta Sucursal">
+                    Operar
+                  </button>
                   <button (click)="abrirModalEditar(s)" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors focus:outline-none" title="Editar">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                   </button>
@@ -97,16 +100,18 @@ import { AuthService } from '../../core/services/auth.service';
                        class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500" />
               </div>
               
-              <div>
-                <label class="block text-sm font-medium text-slate-400 mb-1">Empresa</label>
-                <select [(ngModel)]="nuevaSucursal.idEmpresa"
-                        class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500">
-                  <option [ngValue]="null">Selecciona una Empresa</option>
-                  @for (emp of empresas(); track emp.idEmpresa) {
-                    <option [ngValue]="emp.idEmpresa">{{emp.nombre}}</option>
-                  }
-                </select>
-              </div>
+              @if (isSoporte()) {
+                <div>
+                  <label class="block text-sm font-medium text-slate-400 mb-1">Empresa</label>
+                  <select [(ngModel)]="nuevaSucursal.idEmpresa"
+                          class="w-full bg-slate-900 border border-slate-600 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-amber-500">
+                    <option [ngValue]="null">Selecciona una Empresa</option>
+                    @for (emp of empresas(); track emp.idEmpresa) {
+                      <option [ngValue]="emp.idEmpresa">{{emp.nombre}}</option>
+                    }
+                  </select>
+                </div>
+              }
               <div>
                 <label class="block text-sm font-medium text-slate-400 mb-1">Direccion</label>
                 <input [(ngModel)]="nuevaSucursal.direccion" placeholder="Calle, Numero, Colonia"
@@ -282,6 +287,15 @@ export class SucursalesComponent implements OnInit {
   nuevoUsuario = { nombreUsuario: '', contrasena: '', nombreCompleto: '', rol: 'Cajero' };
   usuarioAVincularId: number | null = null;
 
+  impersonarSucursal(sucursal: any) {
+    this.auth.impersonar({
+      idSucursal: sucursal.idSucursal,
+      sucursalNombre: sucursal.nombre,
+      empresa: sucursal.empresa,
+      idPerfil: 1 
+    });
+  }
+
   ngOnInit() {
     this.cargar();
     this.cargarEmpresas();
@@ -305,7 +319,10 @@ export class SucursalesComponent implements OnInit {
     this.modoEdicion = false;
     this.mostrarModal = true;
     this.error = '';
-    this.nuevaSucursal = { nombre: '', direccion: '', telefono: '', activo: true, idEmpresa: null };
+    
+    const empresaIdDefault = this.isSoporte() ? null : this.auth.sesion()?.empresa?.idEmpresa || null;
+
+    this.nuevaSucursal = { nombre: '', direccion: '', telefono: '', activo: true, idEmpresa: empresaIdDefault };
     this.nuevoAdmin = { nombreUsuario: '', contrasena: '', nombreCompleto: '' };
   }
 

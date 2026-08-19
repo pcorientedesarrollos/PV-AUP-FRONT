@@ -29,6 +29,24 @@
             }
           </select>
         </div>
+
+        @if (nuevoUsuario.idPerfil == 2) {
+          <div class="form-group mt-4">
+            <label class="form-label mb-2">Permisos Especificos para Cajero</label>
+            <div class="grid grid-cols-1 gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              @for (p of permisosDisponibles; track p.id) {
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                  <input type="checkbox" 
+                         [checked]="nuevoUsuario.permisos.includes(p.id)"
+                         (change)="togglePermiso(p.id)"
+                         class="w-4 h-4 text-amber-500 rounded border-gray-300 focus:ring-amber-500">
+                  {{ p.nombre }}
+                </label>
+              }
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Selecciona que acciones puede realizar este usuario.</p>
+          </div>
+        }
         <div class="filter-control">
           <label class="filter-label">🏪 Sucursal:</label>
           <select [ngModel]="filtroSucursal()" (ngModelChange)="filtroSucursal.set($event)" class="filter-select">
@@ -38,6 +56,24 @@
             }
           </select>
         </div>
+
+        @if (nuevoUsuario.idPerfil == 2) {
+          <div class="form-group mt-4">
+            <label class="form-label mb-2">Permisos Especificos para Cajero</label>
+            <div class="grid grid-cols-1 gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              @for (p of permisosDisponibles; track p.id) {
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                  <input type="checkbox" 
+                         [checked]="nuevoUsuario.permisos.includes(p.id)"
+                         (change)="togglePermiso(p.id)"
+                         class="w-4 h-4 text-amber-500 rounded border-gray-300 focus:ring-amber-500">
+                  {{ p.nombre }}
+                </label>
+              }
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Selecciona que acciones puede realizar este usuario.</p>
+          </div>
+        }
       </div>
     </div>
   }
@@ -187,6 +223,24 @@
             }
           </select>
         </div>
+
+        @if (nuevoUsuario.idPerfil == 2) {
+          <div class="form-group mt-4">
+            <label class="form-label mb-2">Permisos Especificos para Cajero</label>
+            <div class="grid grid-cols-1 gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
+              @for (p of permisosDisponibles; track p.id) {
+                <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                  <input type="checkbox" 
+                         [checked]="nuevoUsuario.permisos.includes(p.id)"
+                         (change)="togglePermiso(p.id)"
+                         class="w-4 h-4 text-amber-500 rounded border-gray-300 focus:ring-amber-500">
+                  {{ p.nombre }}
+                </label>
+              }
+            </div>
+            <p class="text-xs text-gray-500 mt-2">Selecciona que acciones puede realizar este usuario.</p>
+          </div>
+        }
 
       </div>
 

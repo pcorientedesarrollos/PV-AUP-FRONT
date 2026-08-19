@@ -49,7 +49,7 @@ export const routes: Routes = [
       },
       {
         path: 'sucursales',
-        canActivate: [soporteGuard],
+        canActivate: [adminGuard],
         loadComponent: () =>
           import('./features/sucursales/sucursales.component').then((m) => m.SucursalesComponent),
       },

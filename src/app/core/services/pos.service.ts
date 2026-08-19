@@ -170,7 +170,7 @@ export class PosService {
 
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
-      const idx = items.findIndex((i) => i.producto.idProducto === producto.idProducto);
+      const idx = items.findIndex((i) => i.producto.idProducto === producto.idProducto && !i.descuento && !producto.descuento);
       if (idx >= 0) {
         const updated = [...items];
         updated[idx] = {
@@ -182,19 +182,19 @@ export class PosService {
         return updated;
       }
       return [
-        { producto, cantidad: 1, subtotal: price, descuento: Number(producto.descuento) || 0 },
+        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: Number(producto.descuento) || 0 },
         ...items,
       ];
     });
     return true;
   }
 
-  cambiarCantidad(idProducto: number, delta: number, forzar: boolean = false): boolean {
+  cambiarCantidad(uid: string, delta: number, forzar: boolean = false): boolean {
 
     this._carrito.update((items) =>
       items
         .map((item) => {
-          if (item.producto.idProducto !== idProducto) return item;
+          if (item.uid !== uid) return item;
           const nuevaCantidad = item.cantidad + delta;
           if (nuevaCantidad <= 0) return null;
           const price = this.getPrecioActivo(item.producto, nuevaCantidad);
@@ -211,18 +211,18 @@ export class PosService {
     return true;
   }
 
-  setCantidadExacta(idProducto: number, cantidad: number) {
+  setCantidadExacta(uid: string, cantidad: number) {
     if (cantidad === null || isNaN(cantidad) || cantidad <= 0) {
-      this.eliminarDelCarrito(idProducto);
+      this.eliminarDelCarrito(uid);
       return;
     }
 
-    const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === idProducto);
+    const itemEnCarrito = this._carrito().find(i => i.uid === uid);
     if (!itemEnCarrito) return;
 
     this._carrito.update((items) =>
       items.map((item) => {
-        if (item.producto.idProducto !== idProducto) return item;
+        if (item.uid !== uid) return item;
         const price = this.getPrecioActivo(item.producto, Number(cantidad));
         const nuevoDescuento = (Number(item.producto.descuento) || 0) * Number(cantidad);
         return {
@@ -235,16 +235,16 @@ export class PosService {
     );
   }
 
-  actualizarCantidad(idProducto: number, cantidad: number) {
+  actualizarCantidad(uid: string, cantidad: number) {
     this._carrito.update(items =>
-      items.map(i => i.producto.idProducto === idProducto ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (Number(i.producto.descuento) || 0) * cantidad } : i)
+      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (Number(i.producto.descuento) || 0) * cantidad } : i)
     );
   }
 
-  aplicarDescuentoAItem(idProducto: number, descuento: number) {
+  aplicarDescuentoAItem(uid: string, descuento: number) {
     this._carrito.update(items =>
       items.map(i => {
-        if (i.producto.idProducto === idProducto) {
+        if (i.uid === uid) {
           const qty = Number(i.cantidad) || 0;
           const price = Number(i.producto.precioUnitario) || 0;
           const maxDescuento = qty * price;
@@ -256,9 +256,9 @@ export class PosService {
     );
   }
 
-  eliminarDelCarrito(idProducto: number) {
+  eliminarDelCarrito(uid: string) {
     this._carrito.update((items) =>
-      items.filter((i) => i.producto.idProducto !== idProducto)
+      items.filter((i) => i.uid !== uid)
     );
   }
 

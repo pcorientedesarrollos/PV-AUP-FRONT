@@ -1,5 +1,6 @@
 // Sesión del usuario autenticado
 export interface Sesion {
+  permisos?: string[];
   access_token?: string;
   idUsuario: number;
   usuario: string;
@@ -36,6 +37,7 @@ export interface ItemCarrito {
   cantidad: number;
   subtotal: number;
   descuento?: number;
+  uid?: string;
 }
 
 // Cliente (PosCliente)

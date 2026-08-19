@@ -3,7 +3,8 @@ import { Component, signal, computed, effect, OnInit, inject } from '@angular/co
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { ImportarModalComponent } from '../../shared/components/importar-modal/importar-modal.component';
@@ -153,23 +154,7 @@ export class ProveedoresComponent implements OnInit {
   // Panel Compras
   mostrarPanelCompras = signal(false);
   proveedorSeleccionado = signal<any>(null);
-
-  // Modal Nueva Compra
-  mostrarModalCompra = signal(false);
-  compraActual: any = {};
-  detallesCompra: any[] = [];
   productosDisponibles = signal<any[]>([]);
-  busquedaProducto = '';
-  productosFiltrados = computed(() => {
-    const q = this.busquedaProducto.toLowerCase();
-    if (!q) return this.productosDisponibles();
-    return this.productosDisponibles().filter(p => p.nombre?.toLowerCase().includes(q) || p.codigoBarras?.includes(q));
-  });
-
-  // Archivos de factura
-  archivoPdf: File | null = null;
-  archivoXml: File | null = null;
-  guardandoCompra = signal(false);
 
   // Modal Detalle Compra
   mostrarDetalle = signal(false);
@@ -183,7 +168,7 @@ export class ProveedoresComponent implements OnInit {
     return h;
   }
 
-  constructor(private http: HttpClient, private auth: AuthService) {
+  constructor(private http: HttpClient, private auth: AuthService, private router: Router) {
     effect(() => {
       this.busqueda();
       this.paginaActual.set(1);
@@ -328,205 +313,13 @@ export class ProveedoresComponent implements OnInit {
     });
   }
 
-  // ─── COMPRAS ─────────────────────────────────────────────────
-  abrirModalCompra() {
-    this.compraActual = {
-      idProveedor: this.proveedorSeleccionado()?.idProveedor || null,
-      folioFacturaProveedor: '',
-      notas: ''
-    };
-    this.detallesCompra = [];
-    this.archivoPdf = null;
-    this.archivoXml = null;
-    this.mostrarModalCompra.set(true);
-  }
-
-  agregarProducto(prod: any) {
-    const existe = this.detallesCompra.find(d => d.idProducto === prod.idProducto);
-    if (existe) { existe.cantidad++; } else {
-      this.detallesCompra.push({ idProducto: prod.idProducto, nombre: prod.nombre, cantidad: 1, precioCosto: 0, subtotal: 0 });
+  irANuevaCompra() {
+    const provId = this.proveedorSeleccionado()?.idProveedor;
+    if (provId) {
+      this.router.navigate(['/compras/nueva'], { queryParams: { proveedorId: provId } });
+    } else {
+      this.router.navigate(['/compras/nueva']);
     }
-    this.recalcularTotal();
-    this.busquedaProducto = '';
-  }
-
-  quitarProducto(idx: number) { this.detallesCompra.splice(idx, 1); this.recalcularTotal(); }
-
-  recalcularTotal() {
-    this.detallesCompra.forEach(d => d.subtotal = d.cantidad * d.precioCosto);
-    this.compraActual.total = this.detallesCompra.reduce((s, d) => s + d.subtotal, 0);
-  }
-
-  onArchivoPdf(event: any) { this.archivoPdf = event.target.files[0] || null; }
-  
-  async onArchivoXml(event: any) {
-    const file = event.target.files[0];
-    if (!file) return;
-    this.archivoXml = file;
-    this.cargandoXml.set(true);
-    const fd = new FormData();
-    fd.append('xml', file);
-    
-    try {
-      const data = await this.http.post<any>(`${this.API}/inventario/importar-xml`, fd, { headers: this.headers }).toPromise();
-      
-      if (data.folio) this.compraActual.folioFacturaProveedor = data.folio;
-
-      // 1. Validar y agregar Proveedor
-      if (data.emisor && data.emisor.rfc) {
-        const rfc = data.emisor.rfc.toUpperCase();
-        let prov = this.proveedores().find(p => p.rfc?.toUpperCase() === rfc);
-        
-        if (!prov) {
-          this.proveedorXmlPendiente = data.emisor;
-          this.mostrarModalNuevoProveedorXml.set(true);
-          const userApproved = await new Promise<boolean>(resolve => this.resolveProveedorXml = resolve);
-          this.mostrarModalNuevoProveedorXml.set(false);
-          this.proveedorXmlPendiente = null;
-          
-          if (userApproved) {
-            const nuevoProv = { nombre: data.emisor.nombre, rfc: data.emisor.rfc, contacto: '', telefono: '', correo: '', direccion: '' };
-            await this.http.post(`${this.API}/proveedores`, nuevoProv, { headers: this.headers }).toPromise();
-            await this.cargarProveedoresPromise();
-            prov = this.proveedores().find(p => p.rfc?.toUpperCase() === rfc);
-            this.toast.show('Proveedor agregado exitosamente.', 'success');
-          }
-        }
-        
-        if (prov) {
-          this.proveedorSeleccionado.set(prov);
-          this.compraActual.idProveedor = prov.idProveedor;
-        }
-      }
-
-      // 2. Validar y agregar Productos Nuevos
-      if (data.conceptos && data.conceptos.length) {
-        const nuevosConceptos: any[] = [];
-        const conceptosProcesados: any[] = [];
-
-        data.conceptos.forEach((c: any) => {
-          let idProducto = null;
-          // Buscar producto en memoria por si no se encontró en backend
-          const prod = this.productosDisponibles().find(p => 
-            (c.noIdentificacion && p.codigoBarras === c.noIdentificacion) ||
-            (p.nombre?.toLowerCase() === c.conceptoXml?.toLowerCase())
-          );
-          
-          if (c.productoEncontrado) {
-             idProducto = c.productoEncontrado.idProducto;
-          } else if (prod) {
-             idProducto = prod.idProducto;
-          }
-          
-          if (idProducto) {
-            conceptosProcesados.push({
-              idProducto: idProducto,
-              nombre: c.conceptoXml,
-              cantidad: c.cantidad,
-              precioCosto: c.costoUnitario,
-              subtotal: c.cantidad * c.costoUnitario
-            });
-          } else {
-            nuevosConceptos.push(c);
-          }
-        });
-
-        if (nuevosConceptos.length > 0) {
-          this.productosXmlPendientes = nuevosConceptos;
-          this.mostrarModalNuevosProductosXml.set(true);
-          const userApproved = await new Promise<boolean>(resolve => this.resolveProductosXml = resolve);
-          this.mostrarModalNuevosProductosXml.set(false);
-          this.productosXmlPendientes = [];
-          
-          if (userApproved) {
-            for (const nc of nuevosConceptos) {
-              try {
-                const payloadProd = {
-                  nombre: nc.conceptoXml,
-                  codigoBarras: nc.noIdentificacion || '',
-                  precioUnitario: 0,
-                };
-                const resProd: any = await this.http.post(`${this.API}/productos`, payloadProd, { headers: this.headers }).toPromise();
-                
-                conceptosProcesados.push({
-                  idProducto: resProd.idProducto || resProd.producto?.idProducto,
-                  nombre: nc.conceptoXml,
-                  cantidad: nc.cantidad,
-                  precioCosto: nc.costoUnitario,
-                  subtotal: nc.cantidad * nc.costoUnitario
-                });
-              } catch(e) {
-                this.toast.show(`Error al crear el producto ${nc.conceptoXml}`, 'error');
-              }
-            }
-            await this.cargarProductosPromise();
-            this.toast.show('Productos nuevos agregados al catálogo.', 'success');
-          } else {
-            // Agregar sin ID (requerirá mapeo manual)
-            nuevosConceptos.forEach(nc => {
-               conceptosProcesados.push({
-                  idProducto: null,
-                  nombre: nc.conceptoXml,
-                  cantidad: nc.cantidad,
-                  precioCosto: nc.costoUnitario,
-                  subtotal: nc.cantidad * nc.costoUnitario
-                });
-            });
-          }
-        }
-
-        this.detallesCompra.push(...conceptosProcesados);
-        this.recalcularTotal();
-      }
-
-      this.cargandoXml.set(false);
-    } catch (error) {
-      this.cargandoXml.set(false);
-      this.toast.show('Error al procesar el XML de la factura.', 'error');
-    }
-  }
-
-  cargarProveedoresPromise() {
-    return new Promise<void>((resolve) => {
-      this.http.get<any[]>(`${this.API}/proveedores`, { headers: this.headers }).subscribe({
-        next: (data) => { this.proveedores.set(data); resolve(); },
-        error: () => resolve()
-      });
-    });
-  }
-
-  cargarProductosPromise() {
-    return new Promise<void>((resolve) => {
-      this.http.get<any[]>(`${this.API}/productos`, { headers: this.headers }).subscribe({
-        next: (data) => { this.productosDisponibles.set(data); resolve(); },
-        error: () => resolve()
-      });
-    });
-  }
-
-  async guardarCompra() {
-    if (!this.detallesCompra.length) { alert('Agrega al menos un producto'); return; }
-    // Validar cantidad y costo validos
-    if (this.detallesCompra.some(d => !d.cantidad || d.cantidad <= 0 || (d as any).precioCosto < 0)) {
-      alert('Verifica que todas las cantidades y costos sean válidos');
-      return;
-    }
-    this.guardandoCompra.set(true);
-    const payload = { ...this.compraActual, detalles: this.detallesCompra };
-    this.http.post<any>(`${this.API}/compras`, payload, { headers: this.headers }).subscribe({
-      next: async (res) => {
-        if (this.archivoPdf || this.archivoXml) {
-          const fd = new FormData();
-          if (this.archivoPdf) fd.append('pdf', this.archivoPdf);
-          if (this.archivoXml) fd.append('xml', this.archivoXml);
-          await this.http.patch(`${this.API}/compras/${res.compra.idCompra}/factura`, fd, { headers: this.headers }).toPromise();
-        }
-        this.guardandoCompra.set(false);
-        this.mostrarModalCompra.set(false);
-        this.cargarComprasDeProveedor(this.proveedorSeleccionado());
-      },
-      error: () => { this.guardandoCompra.set(false); alert('Error al registrar la compra'); }
-    });
   }
 
   verDetalleCompra(compra: any) {
@@ -584,3 +377,5 @@ export class ProveedoresComponent implements OnInit {
     });
   }
 }
+
+

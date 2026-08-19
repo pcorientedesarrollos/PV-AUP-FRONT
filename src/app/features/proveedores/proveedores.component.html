@@ -287,7 +287,7 @@
           <p class="text-sm text-gray-600">Total acumulado: <span class="font-bold text-emerald-600">{{ totalCompras() | currency:'MXN':'$':'1.2-2' }}</span></p>
         </div>
         <div class="flex gap-2">
-          <button (click)="abrirModalCompra()" class="btn-submit text-sm">
+          <button (click)="irANuevaCompra()" class="btn-submit text-sm">
             + Nueva Compra
           </button>
           <button (click)="mostrarPanelCompras.set(false)" class="close-button flex items-center justify-center text-gray-500">
@@ -329,119 +329,6 @@
             </div>
           }
         }
-      </div>
-    </div>
-  </div>
-}
-
-<!-- ════════════════════════════════════════════════════════ -->
-<!-- MODAL NUEVA COMPRA                                      -->
-<!-- ════════════════════════════════════════════════════════ -->
-@if (mostrarModalCompra()) {
-  <div class="modal-overlay" (click)="mostrarModalCompra.set(false)">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header">
-        <h2 class="modal-title">+ Nueva Compra</h2>
-        <p class="text-sm text-gray-600 mt-1">Proveedor: <strong>{{ proveedorSeleccionado()?.nombre }}</strong></p>
-      </div>
-      <div class="modal-body space-y-5">
-
-        <!-- Info factura proveedor -->
-        <div class="form-grid">
-          <div class="form-group">
-            <label class="form-label">Folio / No. Factura del Proveedor</label>
-            <input type="text" [(ngModel)]="compraActual.folioFacturaProveedor" placeholder="Ej: A-00123"
-                   class="form-input">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Notas</label>
-            <input type="text" [(ngModel)]="compraActual.notas" placeholder="Observaciones opcionales"
-                   class="form-input">
-          </div>
-        </div>
-
-        <!-- Adjuntar Factura -->
-        <div class="bg-indigo-50 rounded-xl p-4 border border-indigo-100">
-          <p class="text-sm font-bold text-indigo-800 mb-3">📎 Adjuntar Factura del Proveedor <span class="font-normal text-indigo-500">(opcional)</span></p>
-          <div class="form-grid">
-            <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-lg p-3 cursor-pointer hover:bg-indigo-100 transition-colors">
-              <span class="text-2xl">📄</span>
-              <span class="text-xs font-semibold text-indigo-700">{{ archivoPdf ? archivoPdf.name : 'Subir PDF' }}</span>
-              <input type="file" accept=".pdf" (change)="onArchivoPdf($event)" class="hidden">
-            </label>
-            <label class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-indigo-300 rounded-lg p-3 cursor-pointer hover:bg-indigo-100 transition-colors">
-              <span class="text-2xl">📋</span>
-              <span class="text-xs font-semibold text-indigo-700">{{ archivoXml ? archivoXml.name : 'Subir XML' }}</span>
-              <input type="file" accept=".xml" (change)="onArchivoXml($event)" class="hidden">
-            </label>
-          </div>
-        </div>
-
-        <!-- Buscar producto -->
-        <div class="form-group relative">
-          <label class="form-label">Agregar Productos</label>
-          <input type="text" [(ngModel)]="busquedaProducto" placeholder="🔍 Buscar producto por nombre o código..."
-                 class="form-input">
-          @if (busquedaProducto.length > 0 && productosFiltrados().length > 0) {
-            <ul class="absolute z-10 w-full bg-white border border-gray-200 shadow-lg rounded-xl mt-1 max-h-44 overflow-y-auto">
-              @for (prod of productosFiltrados().slice(0, 10); track prod.idProducto) {
-                <li (click)="agregarProducto(prod)" class="px-4 py-2.5 hover:bg-amber-50 cursor-pointer text-sm border-b border-gray-100 last:border-0 flex justify-between items-center">
-                  <span class="font-medium text-gray-900">{{ prod.nombre }}</span>
-                  <span class="text-xs text-gray-500">Stock: {{ prod.stockActual }}</span>
-                </li>
-              }
-            </ul>
-          }
-        </div>
-
-        <!-- Tabla de detalles -->
-        @if (detallesCompra.length > 0) {
-          <div class="honey-table-container">
-            <div class="table-wrapper overflow-x-auto w-full">
-              <table class="honey-table table-bordered">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Costo Unit.</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
-                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider actions-column"></th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  @for (d of detallesCompra; track d.idProducto; let i = $index) {
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ d.nombre }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        <input type="number" [(ngModel)]="d.cantidad" (ngModelChange)="recalcularTotal()" min="1"
-                               class="w-16 text-center form-input px-1 py-1">
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
-                        <input type="number" [(ngModel)]="d.precioCosto" (ngModelChange)="recalcularTotal()" min="0" step="0.01"
-                               placeholder="$0.00" class="w-24 text-center form-input px-1 py-1">
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                        <button (click)="quitarProducto(i)" class="text-red-500 hover:text-red-700 font-bold">✕</button>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 flex justify-end border-t border-gray-200">
-              <span class="font-black text-lg text-gray-900">Total: {{ (compraActual.total || 0) | currency:'MXN':'$':'1.2-2' }}</span>
-            </div>
-          </div>
-        }
-      </div>
-      <div class="modal-footer">
-        <button (click)="mostrarModalCompra.set(false)" class="btn-cancel">Cancelar</button>
-        <button (click)="guardarCompra()" [disabled]="guardandoCompra()"
-                class="btn-submit flex items-center gap-2 disabled:opacity-60">
-          @if (guardandoCompra()) { <div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> }
-          Guardar Compra
-        </button>
       </div>
     </div>
   </div>
@@ -569,3 +456,4 @@
   [visible]="mostrarImportar()"
   (cerrado)="mostrarImportar.set(false); $event && cargarProveedores()">
 </app-importar-modal>
+

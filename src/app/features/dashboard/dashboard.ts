@@ -23,7 +23,13 @@ import { ConfiguracionTicketComponent } from '../configuracion-ticket/configurac
 export class DashboardComponent implements OnInit {
   menuAbierto = signal(typeof window !== 'undefined' && window.innerWidth >= 1024);
   mostrarModalConfig = false;
+  menuSearch = signal('');
 
+  matchSearch(keywords: string): boolean {
+    const q = this.menuSearch().toLowerCase().trim();
+    if (!q) return true;
+    return keywords.toLowerCase().includes(q);
+  }
 
   // Chart
   public barChartLegend = false;
