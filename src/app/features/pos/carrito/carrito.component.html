@@ -107,7 +107,7 @@
                   </p>
                   @if (item.producto.aplicaIva !== false) {
                     <p class="text-[10px] text-slate-500 font-medium whitespace-nowrap">
-                      +{{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva || 16) / 100)) | currency }} IVA
+                      +{{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) | currency }} IVA
                     </p>
                   }
                 </div>

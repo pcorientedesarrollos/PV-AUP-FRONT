@@ -350,7 +350,8 @@ export class ProductosComponent implements OnInit {
     tipoDescuento: prod.tipoDescuento || 'porcentaje',
     descuento: prod.descuento || 0,
     aplicaIva: prod.aplicaIva || false,
-    precioVenta: prod.precioVenta || prod.precioPublico || 0,
+      iva: prod.iva !== undefined ? Number(prod.iva) : 16,
+      precioVenta: prod.precioVenta || prod.precioPublico || 0,
   };
   
   this.imagenPreview.set(prod.imagenUrl ? `${environment.apiUrl}${prod.imagenUrl}` : null);
@@ -364,7 +365,7 @@ export class ProductosComponent implements OnInit {
 
   abrirModalNuevo() {
     this.esNuevoProducto.set(true);
-    this.nuevoProducto = { nombre: '', precioCompra: 0, utilidad: 18, aplicaDescuento: false, tipoDescuento: 'porcentaje', descuento: 0, aplicaIva: false, precioVenta: 0, precioPublico: 0, precioUnitario: 0, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87', tipoArticulo: 'Terminado', unidadMedida: 'Pza' };
+    this.nuevoProducto = { nombre: '', precioCompra: 0, utilidad: 18, aplicaDescuento: false, tipoDescuento: 'porcentaje', descuento: 0, aplicaIva: false, iva: 16, precioVenta: 0, precioPublico: 0, precioUnitario: 0, stockMinimo: 0, codigoBarras: '', idCategoria: null, claveProdServ: '01010101', claveUnidad: 'H87', tipoArticulo: 'Terminado', unidadMedida: 'Pza' };
     this.imagenPreview.set(null);
     this.archivoImagen = null;
     this.satProductQuery = '01010101 - No existe en el catálogo';
@@ -435,7 +436,7 @@ export class ProductosComponent implements OnInit {
     }
 
     const baseIva = precioPublico - descuentoEfectivo;
-    const ivaCalc = this.nuevoProducto.aplicaIva ? (baseIva * 0.16) : 0;
+    const ivaCalc = this.nuevoProducto.aplicaIva ? (baseIva * (Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16) / 100)) : 0;
     
     this.nuevoProducto.precioVenta = baseIva + ivaCalc;
     this.nuevoProducto.precioUnitario = precioPublico;
@@ -447,7 +448,7 @@ export class ProductosComponent implements OnInit {
       codigoBarras: this.nuevoProducto.codigoBarras,
       precioCompra: Number(this.nuevoProducto.precioCompra || 0),
       precioUnitario: Number(this.nuevoProducto.precioPublico || 0),
-        iva: this.nuevoProducto.aplicaIva ? 16 : 0,
+        iva: Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16),
       utilidad: Number(this.nuevoProducto.utilidad || 0),
       precioPublico: Number(this.nuevoProducto.precioPublico || 0),
       aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,
@@ -487,7 +488,7 @@ export class ProductosComponent implements OnInit {
       codigoBarras: this.nuevoProducto.codigoBarras || undefined,
       precioCompra: Number(this.nuevoProducto.precioCompra || 0),
       precioUnitario: Number(this.nuevoProducto.precioPublico || 0),
-      iva: this.nuevoProducto.aplicaIva ? 16 : 0,
+      iva: Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16),
       utilidad: Number(this.nuevoProducto.utilidad || 0),
       precioPublico: Number(this.nuevoProducto.precioPublico || 0),
       aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,

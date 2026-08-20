@@ -346,7 +346,7 @@ export class CarritoComponent implements OnInit {
         precioUnitario: Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)),
           descuento: item.descuento || 0,
           aplicaIva: item.producto.aplicaIva !== false,
-          montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva || 16) / 100)) : 0,
+          montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) : 0,
       })),
     };
 

@@ -47,8 +47,7 @@ export class PosService {
       const price = this.getPrecioActivo(item.producto, qty);
       const discount = Number(item.descuento) || 0;
       const sub = (price * qty) - discount; // IVA is applied AFTER discount
-      const ivaVal = Number(item.producto.iva);
-      let iva = ivaVal !== 0 ? ivaVal : ivaDefecto;
+      let iva = item.producto.iva !== undefined ? Number(item.producto.iva) : ivaDefecto;
         if (item.producto.aplicaIva === false) iva = 0;
         // Removed invalid line
       const tasa = iva < 0 ? 0 : iva / 100;
