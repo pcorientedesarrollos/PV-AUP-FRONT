@@ -60,7 +60,7 @@
                   }
                 </div>
                 <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                  <span>{{ item.producto.precioUnitario | currency }} c/u</span>
+                  <span>{{ (item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario) | currency }} c/u</span>
                   @if (item.descuento) {
                     <span class="text-rose-500 font-bold">Desc: -{{ item.descuento | currency }}</span>
                   }
@@ -72,7 +72,15 @@
                   </div>
               </div>
 
-              <!-- Controles de cantidad (Simplificado) -->
+              <!-- IVA Checkbox -->
+                <label class="flex items-center gap-1 text-[10px] text-slate-500 font-bold uppercase tracking-wider mr-2 cursor-pointer flex-shrink-0" title="Cobrar IVA">
+                  <input type="checkbox"
+                    [ngModel]="item.producto.aplicaIva !== false"
+                    (ngModelChange)="pos.toggleIva(item.uid!, $event)"
+                    class="w-3.5 h-3.5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500">
+                  IVA
+                </label>
+                <!-- Controles de cantidad (Simplificado) -->
               <div class="flex items-center border border-gray-300 rounded overflow-hidden bg-white flex-shrink-0">
                 <button
                   (click)="pos.cambiarCantidad(item.uid!, -1)"
@@ -93,11 +101,16 @@
               </div>
 
               <!-- Precio Total del Item -->
-              <div class="text-right w-20 flex-shrink-0">
-                <p class="text-sm font-bold text-gray-900">
-                  {{ (item.subtotal - (item.descuento || 0)) | currency }}
-                </p>
-              </div>
+                <div class="text-right flex-shrink-0 min-w-[5rem]">
+                  <p class="text-sm font-bold text-gray-900">
+                    {{ (item.subtotal - (item.descuento || 0)) | currency }}
+                  </p>
+                  @if (item.producto.aplicaIva !== false) {
+                    <p class="text-[10px] text-slate-500 font-medium whitespace-nowrap">
+                      +{{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva || 16) / 100)) | currency }} IVA
+                    </p>
+                  }
+                </div>
             </div>
           }
         }

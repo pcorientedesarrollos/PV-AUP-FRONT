@@ -17,6 +17,9 @@ export interface Producto {
   nombre: string;
   precioUnitario: number;
   precioPublico?: number;
+  precioVenta?: number;
+  aplicaIva?: boolean;
+  iva?: number;
   precioMayoreo?: number;
   descuento?: number;
   minimoMayoreo?: number;
@@ -24,7 +27,6 @@ export interface Producto {
   stockMinimo?: number;
   imagenUrl?: string;
   codigoBarras?: string;
-  iva?: number;
   claveProdServ?: string;
   claveUnidad?: string;
   idCategoria?: number;

@@ -438,7 +438,7 @@ export class ProductosComponent implements OnInit {
     const ivaCalc = this.nuevoProducto.aplicaIva ? (baseIva * 0.16) : 0;
     
     this.nuevoProducto.precioVenta = baseIva + ivaCalc;
-    this.nuevoProducto.precioUnitario = pc;
+    this.nuevoProducto.precioUnitario = precioPublico;
   }
 
   private guardarDatosGenerales(id: number) {
@@ -446,7 +446,8 @@ export class ProductosComponent implements OnInit {
       nombre: this.nuevoProducto.nombre,
       codigoBarras: this.nuevoProducto.codigoBarras,
       precioCompra: Number(this.nuevoProducto.precioCompra || 0),
-      precioUnitario: Number(this.nuevoProducto.precioCompra || 0),
+      precioUnitario: Number(this.nuevoProducto.precioPublico || 0),
+        iva: this.nuevoProducto.aplicaIva ? 16 : 0,
       utilidad: Number(this.nuevoProducto.utilidad || 0),
       precioPublico: Number(this.nuevoProducto.precioPublico || 0),
       aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,
@@ -485,7 +486,8 @@ export class ProductosComponent implements OnInit {
       nombre: this.nuevoProducto.nombre,
       codigoBarras: this.nuevoProducto.codigoBarras || undefined,
       precioCompra: Number(this.nuevoProducto.precioCompra || 0),
-      precioUnitario: Number(this.nuevoProducto.precioCompra || 0),
+      precioUnitario: Number(this.nuevoProducto.precioPublico || 0),
+      iva: this.nuevoProducto.aplicaIva ? 16 : 0,
       utilidad: Number(this.nuevoProducto.utilidad || 0),
       precioPublico: Number(this.nuevoProducto.precioPublico || 0),
       aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,

@@ -343,8 +343,10 @@ export class CarritoComponent implements OnInit {
       carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,
-        precioUnitario: Number(item.producto.precioUnitario),
-        descuento: item.descuento || 0,
+        precioUnitario: Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)),
+          descuento: item.descuento || 0,
+          aplicaIva: item.producto.aplicaIva !== false,
+          montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva || 16) / 100)) : 0,
       })),
     };
 
@@ -408,9 +410,9 @@ export class CarritoComponent implements OnInit {
       productos: items.map((i: any) => ({
         nombre: i.producto.nombre,
         cantidad: i.cantidad,
-        precioUnitario: i.producto.precioUnitario,
+        precioUnitario: (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario),
         descuento: i.descuento || 0,
-        subtotal: i.cantidad * i.producto.precioUnitario
+        subtotal: i.cantidad * (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario)
       }))
     };
     

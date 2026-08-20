@@ -48,7 +48,9 @@ export class PosService {
       const discount = Number(item.descuento) || 0;
       const sub = (price * qty) - discount; // IVA is applied AFTER discount
       const ivaVal = Number(item.producto.iva);
-      const iva = ivaVal !== 0 ? ivaVal : ivaDefecto;
+      let iva = ivaVal !== 0 ? ivaVal : ivaDefecto;
+        if (item.producto.aplicaIva === false) iva = 0;
+        // Removed invalid line
       const tasa = iva < 0 ? 0 : iva / 100;
       return acc + (sub * tasa);
     }, 0);
@@ -150,7 +152,7 @@ export class PosService {
 
 
   private getPrecioActivo(producto: Producto, cantidad: number): number {
-    const precioBase = Number(producto.precioUnitario) || 0;
+    const precioBase = Number(producto.precioPublico) || Number(producto.precioVenta) || Number(producto.precioUnitario) || 0;
     const minimoMayoreo = Number(producto.minimoMayoreo) || 0;
     const precioMayoreo = Number(producto.precioMayoreo) || 0;
     if (minimoMayoreo > 0 && cantidad >= minimoMayoreo && precioMayoreo > 0) {
@@ -235,6 +237,12 @@ export class PosService {
     );
   }
 
+  toggleIva(uid: string, aplicaIva: boolean) {
+    this._carrito.update(items =>
+      items.map(i => i.uid === uid ? { ...i, producto: { ...i.producto, aplicaIva } } : i)
+    );
+  }
+
   actualizarCantidad(uid: string, cantidad: number) {
     this._carrito.update(items =>
       items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (Number(i.producto.descuento) || 0) * cantidad } : i)
@@ -246,7 +254,7 @@ export class PosService {
       items.map(i => {
         if (i.uid === uid) {
           const qty = Number(i.cantidad) || 0;
-          const price = Number(i.producto.precioUnitario) || 0;
+          const price = Number(i.producto.precioPublico) || Number(i.producto.precioVenta) || Number(i.producto.precioUnitario) || 0;
           const maxDescuento = qty * price;
           const finalDescuento = Math.min(Math.max(0, descuento), maxDescuento);
           return { ...i, descuento: finalDescuento };

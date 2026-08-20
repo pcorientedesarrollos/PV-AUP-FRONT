@@ -220,11 +220,11 @@
                   <td class="px-6 py-4 text-sm text-gray-900 text-right">
                     @if ((prod.descuento || 0) > 0) {
                       <div class="flex flex-col items-end leading-tight">
-                        <span class="text-[10px] text-slate-400 line-through font-bold">{{ prod.precioUnitario | currency }}</span>
-                        <span class="font-black text-rose-500">{{ (prod.precioUnitario - (prod.descuento || 0)) | currency }}</span>
+                        <span class="text-[10px] text-slate-400 line-through font-bold">{{ prod.precioVenta | currency }}</span>
+                        <span class="font-black text-rose-500">{{ ((prod.precioVenta || 0) - (prod.descuento || 0)) | currency }}</span>
                       </div>
                     } @else {
-                      <span class="font-black text-emerald-600">{{ prod.precioUnitario | currency }}</span>
+                      <span class="font-black text-emerald-600">{{ prod.precioVenta | currency }}</span>
                     }
                   </td>
                   <!-- Historial de compras -->
@@ -309,10 +309,10 @@
                   <div class="mt-2 flex items-center justify-between">
                     <div class="flex flex-col items-start leading-tight">
                       @if ((prod.descuento || 0) > 0) {
-                        <span class="text-[9px] text-slate-400 line-through font-bold">{{ prod.precioUnitario | currency }}</span>
-                        <span class="text-rose-500 font-black text-xs">{{ (prod.precioUnitario - (prod.descuento || 0)) | currency }}</span>
+                        <span class="text-[9px] text-slate-400 line-through font-bold">{{ prod.precioVenta | currency }}</span>
+                        <span class="text-rose-500 font-black text-xs">{{ ((prod.precioVenta || 0) - (prod.descuento || 0)) | currency }}</span>
                       } @else {
-                        <span class="text-emerald-600 font-black text-xs">{{ prod.precioUnitario | currency }}</span>
+                        <span class="text-emerald-600 font-black text-xs">{{ prod.precioVenta | currency }}</span>
                       }
                     </div>
                     <button (click)="abrirModal(prod)"
