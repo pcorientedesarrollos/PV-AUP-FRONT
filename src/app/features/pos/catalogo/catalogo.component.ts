@@ -100,17 +100,11 @@ export class CatalogoComponent implements OnInit {
   }
 
   onEnterBuscador(event: Event) {
-    const filtrados = this.productosFiltrados();
-    if (filtrados.length === 1) {
-      this.agregar(filtrados[0]);
-      this.busqueda.set(''); // Limpia el buscador para el siguiente scan
-
-      // Vuelve a enfocar el input para seguir escaneando
-      setTimeout(() => {
-        const input = event.target as HTMLInputElement;
-        if (input) input.focus();
-      }, 0);
-    }
+    // Se solicit� que no se agregue autom�ticamente. Solo se busca.
+    setTimeout(() => {
+      const input = event.target as HTMLInputElement;
+      if (input) input.focus();
+    }, 0);
   }
 
   onCameraScan(codigo: string) {

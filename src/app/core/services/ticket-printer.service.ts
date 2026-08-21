@@ -150,16 +150,21 @@ export class TicketPrinterService {
     if (detalles && Array.isArray(detalles)) {
       detalles.forEach((d: any) => {
         const nombre = d.productoNombre || d.producto?.nombre || d.nombre || 'Producto';
-        const importe = d.importe || d.subtotal || 0;
-        const descuento = d.descuento || 0;
-        html += `
+        const importeBase = Number(d.importe || d.subtotal || 0);
+          const descuento = Number(d.descuento || 0);
+          const aplicaIva = d.aplicaIva !== false && (d.producto?.aplicaIva !== false);
+          const tasaIva = d.producto?.iva !== undefined ? Number(d.producto?.iva) : 16;
+          const montoIva = aplicaIva ? (importeBase - descuento) * (tasaIva / 100) : 0;
+          const importeConIva = importeBase + montoIva;
+
+          html += `
             <tr>
               <td class="text-left" style="vertical-align: top;">${d.cantidad}</td>
               <td class="text-left">
                 ${nombre}
                 ${descuento > 0 ? `<br><small><i>- Desc: $${Number(descuento).toFixed(2)}</i></small>` : ''}
               </td>
-              <td class="text-right" style="vertical-align: top;">$${Number(importe).toFixed(2)}</td>
+              <td class="text-right" style="vertical-align: top;">$${Number(importeConIva).toFixed(2)}</td>
             </tr>
         `;
       });
@@ -185,12 +190,7 @@ export class TicketPrinterService {
             }
             
             let res = '';
-            if (subtotal > 0) {
-              res += `SUBTOTAL: $${subtotal.toFixed(2)}<br>`;
-            }
-            if (iva > 0) {
-              res += `IVA: $${iva.toFixed(2)}<br>`;
-            }
+            
             if (venta.descuento > 0) {
               res += `DESCUENTOS: -$${Number(venta.descuento).toFixed(2)}<br>`;
             }

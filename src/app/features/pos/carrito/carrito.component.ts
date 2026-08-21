@@ -394,6 +394,28 @@ export class CarritoComponent implements OnInit {
     }
   }
 
+  
+  modificarPrecioItem(item: any) {
+    if (!this.auth.tienePermiso('aplicar_descuentos')) {
+      this.toast.show('No tienes permisos para modificar precios', 'error');
+      return;
+    }
+    const currentPrice = item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario;
+    const nuevo = window.prompt('Ingrese el nuevo precio unitario para ' + item.producto.nombre + ':', currentPrice);
+    if (nuevo !== null && nuevo.trim() !== '') {
+      const precioNum = parseFloat(nuevo);
+      if (!isNaN(precioNum) && precioNum >= 0) {
+        // Update product price locally
+        item.producto.precioPublico = precioNum;
+        item.producto.precioVenta = precioNum;
+        item.producto.precioUnitario = precioNum;
+        // Trigger pos service update
+        this.pos.setCantidadExacta(item.uid, item.cantidad);
+      }
+    }
+  }
+
+
   imprimirTicket() {
     const cliente = this.pos.clienteSeleccionado();
     const items = this.ultimoTicketItems().length > 0 ? this.ultimoTicketItems() : this.pos.carrito();
