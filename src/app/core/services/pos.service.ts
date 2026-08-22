@@ -1,5 +1,5 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { of, tap } from 'rxjs';
 import { SyncService } from './sync.service';
 import { ConfigService } from './config.service';
@@ -129,20 +129,43 @@ export class PosService {
     return this.http.patch<any>(`${this.API}/pos/usuarios/${id}`, payload);
   }
 
-  getProductos() {
-    return this.http.get<any[]>(`${this.API}/pos/productos`).pipe(
-      tap((prods: any[]) => {
-        this._productos.set(prods);
-        const mapa: Record<number, number> = {};
-        prods.forEach(item => mapa[item.idProducto] = item.stockActual || 0);
+  getProductos(page: number = 1, limit: number = 20, search: string = '') {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('search', search);
+
+    return this.http.get<any>(`${this.API}/pos/productos`, { params }).pipe(
+      tap((res: any) => {
+        // res contains { data, total, page, limit, totalPages }
+        this._productos.set(res.data);
+        const mapa: Record<number, number> = { ...this._stockActual() };
+        res.data.forEach((item: any) => mapa[item.idProducto] = item.stockActual || 0);
         this._stockActual.set(mapa);
       })
     );
   }
 
+  buscarProductoPorCodigo(codigo: string) {
+    const params = new HttpParams().set('codigo', codigo);
+    return this.http.get<any>(`${this.API}/pos/productos/buscar`, { params }).pipe(
+      tap(prod => {
+        if (prod) {
+          const mapa = { ...this._stockActual() };
+          mapa[prod.idProducto] = prod.stockActual || 0;
+          this._stockActual.set(mapa);
+        }
+      })
+    );
+  }
+
   // ─── Clientes ─────────────────────────────────────────────────────────────────
-  getClientes() {
-    return this.http.get<Cliente[]>(`${this.API}/pos/clientes`);
+  getClientes(page: number = 1, limit: number = 20, search: string = '') {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString())
+      .set('search', search);
+    return this.http.get<any>(`${this.API}/pos/clientes`, { params });
   }
 
   altaRapidaCliente(payload: AltaRapidaPayload) {
@@ -166,31 +189,70 @@ export class PosService {
 
   // ─── Carrito ──────────────────────────────────────────────────────────────────
   agregarAlCarrito(producto: Producto, forzar: boolean = false, silent: boolean = false): boolean {
-    const itemEnCarrito = this._carrito().find(i => i.producto.idProducto === producto.idProducto);
-    const cantidadAumentada = (itemEnCarrito ? itemEnCarrito.cantidad : 0) + 1;
+    const totalEnCarrito = this._carrito()
+      .filter(i => i.producto.idProducto === producto.idProducto)
+      .reduce((sum, i) => sum + i.cantidad, 0);
+    const cantidadAumentada = totalEnCarrito + 1;
+
+    if (!forzar) {
+      const stockDisponible = this.stockActual()[producto.idProducto] || 0;
+      if (stockDisponible <= 0) {
+        this.solicitarConfirmacionStock(producto, 'vacio', () => this.agregarAlCarrito(producto, true, silent));
+        return false;
+      } else if (cantidadAumentada > stockDisponible) {
+        this.solicitarConfirmacionStock(producto, 'excedido', () => this.agregarAlCarrito(producto, true, silent));
+        return false;
+      }
+    }
 
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
-      const idx = items.findIndex((i) => i.producto.idProducto === producto.idProducto && !i.descuento && !producto.descuento);
-      if (idx >= 0) {
-        const updated = [...items];
-        updated[idx] = {
-          ...updated[idx],
-          cantidad: updated[idx].cantidad + 1,
-          subtotal: (updated[idx].cantidad + 1) * price,
-          descuento: (Number(producto.descuento) || 0) * (updated[idx].cantidad + 1),
-        };
-        return updated;
-      }
+      const idx = items.findIndex((i) => {
+          const isCustomDiscount = i.descuento !== (Number(i.producto.descuento) || 0) * i.cantidad;
+          return i.producto.idProducto === producto.idProducto && !isCustomDiscount;
+        });
+
+        if (idx >= 0) {
+          const updated = [...items];
+          const qty = updated[idx].cantidad + 1;
+          const newPrice = this.getPrecioActivo(producto, qty);
+          
+          updated[idx] = {
+            ...updated[idx],
+            producto: producto, // Update product info in case price/discount changed in DB
+            cantidad: qty,
+            subtotal: qty * newPrice,
+            descuento: (Number(producto.descuento) || 0) * qty,
+          };
+          return updated;
+        }
       return [
-        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: Number(producto.descuento) || 0 },
         ...items,
+        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: Number(producto.descuento) || 0 }
       ];
     });
     return true;
   }
 
   cambiarCantidad(uid: string, delta: number, forzar: boolean = false): boolean {
+    const itemEnCarrito = this._carrito().find(i => i.uid === uid);
+    if (!itemEnCarrito) return false;
+    const nuevaCantidad = itemEnCarrito.cantidad + delta;
+    
+    if (delta > 0 && !forzar) {
+      const stockDisponible = this.stockActual()[itemEnCarrito.producto.idProducto] || 0;
+      const totalEnCarrito = this._carrito()
+        .filter(i => i.producto.idProducto === itemEnCarrito.producto.idProducto)
+        .reduce((sum, i) => sum + i.cantidad, 0);
+      const nuevaCantidadTotal = totalEnCarrito + delta;
+
+      if (nuevaCantidadTotal > stockDisponible) {
+        // If it was already at 0 or less, maybe show vacio? 
+        // But if they are increasing, it's 'excedido' (or 'vacio' if 0)
+        this.solicitarConfirmacionStock(itemEnCarrito.producto, stockDisponible <= 0 ? 'vacio' : 'excedido', () => this.cambiarCantidad(uid, delta, true));
+        return false;
+      }
+    }
 
     this._carrito.update((items) =>
       items
@@ -310,23 +372,25 @@ export class PosService {
   }
 
   // ─── Control de Modal de Stock ────────────────────────────────────────────────
+  private _accionPendienteStock: (() => void) | null = null;
   private _productoAdvertenciaStock = signal<{ producto: Producto; tipo: 'vacio' | 'excedido' } | null>(null);
   readonly productoAdvertenciaStock = this._productoAdvertenciaStock.asReadonly();
 
-  solicitarConfirmacionStock(producto: Producto, tipo: 'vacio' | 'excedido') {
+  solicitarConfirmacionStock(producto: Producto, tipo: 'vacio' | 'excedido', accionConfirmada: () => void) {
+    this._accionPendienteStock = accionConfirmada;
     this._productoAdvertenciaStock.set({ producto, tipo });
   }
 
   confirmarVentaSinStock() {
-    const adv = this._productoAdvertenciaStock();
-    if (adv) {
-      // Como el modal cubre todo, forzamos agregarAlCarrito para no re-disparar el check
-      this.agregarAlCarrito(adv.producto, true);
-      this._productoAdvertenciaStock.set(null);
+    if (this._accionPendienteStock) {
+      this._accionPendienteStock();
+      this._accionPendienteStock = null;
     }
+    this._productoAdvertenciaStock.set(null);
   }
 
   cancelarVentaSinStock() {
+    this._accionPendienteStock = null;
     this._productoAdvertenciaStock.set(null);
   }
 

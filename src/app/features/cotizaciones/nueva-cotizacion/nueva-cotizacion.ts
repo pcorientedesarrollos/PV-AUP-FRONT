@@ -50,11 +50,14 @@ export class NuevaCotizacionComponent implements OnInit {
   ngOnInit() {
     this.cargarClientes();
     this.cargarTipoCambio();
-    this.posService.getProductos().subscribe();
-  }
+    }
 
-  cargarClientes() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe(data => this.clientes.set(data));
+  cargarClientes(search: string = '') {
+    this.posService.getClientes(1, 20, search).subscribe((res: any) => {
+      const data = res.data || [];
+      this.clientes.set(data);
+      this.clientesFiltrados.set(data);
+    });
   }
   
   cargarTipoCambio() {
@@ -69,14 +72,7 @@ export class NuevaCotizacionComponent implements OnInit {
     });
   }
 
-  clientesFiltrados = computed(() => {
-    const term = this.clienteBuscado().toLowerCase().trim();
-    if (!term) return this.clientes();
-    return this.clientes().filter(c => 
-      (c.nombreCompleto || '').toLowerCase().includes(term) || 
-      (c.rfc || '').toLowerCase().includes(term)
-    );
-  });
+  clientesFiltrados = signal<any[]>([]);
 
   seleccionarClienteDropdown(cliente: any) {
     this.idCliente.set(cliente.idCliente);
@@ -88,16 +84,7 @@ export class NuevaCotizacionComponent implements OnInit {
     this.idCliente.set(null);
   }
 
-  productosFiltrados = computed(() => {
-    const term = this.busquedaProducto().toLowerCase().trim();
-    if (!term || term.length < 2) return [];
-    
-    return this.posService.productos().filter(p => 
-      (p.nombre && p.nombre.toLowerCase().includes(term)) ||
-      (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term)) ||
-      (p.idProducto && p.idProducto.toString() === term)
-    );
-  });
+  productosFiltrados = signal<any[]>([]);
 
   agregarAlCarrito(producto: any) {
     const current = this.carrito();

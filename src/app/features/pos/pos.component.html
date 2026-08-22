@@ -51,16 +51,7 @@
           }
         </button>
 
-        <button
-          id="btn-corte"
-          (click)="abrirCorteCaja()"
-          class="hidden sm:flex text-emerald-700 hover:text-emerald-800 bg-slate-100 hover:bg-emerald-100 border border-gray-200 hover:border-emerald-300 rounded px-3 py-1.5 text-xs font-medium transition-all items-center gap-1 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span>Corte</span>
-        </button>
-
-        <div class="w-px h-6 bg-gray-200 hidden md:block mx-1"></div>
+        
 
         <button
           id="btn-logout"
@@ -118,16 +109,17 @@
   <!-- Modal: Advertencia de Stock -->
   @if (pos.productoAdvertenciaStock() !== null) {
     <div class="modal-overlay">
-      <div class="modal-container flex flex-col slideInDown">
-        <!-- Header -->
-        <div class="modal-header bg-honey-primary/10 border-honey-primary/20 flex items-center gap-3">
-          <div class="bg-honey-primary/20 text-honey-dark p-2 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      <div class="bg-white rounded-xl shadow-2xl max-w-md w-full flex flex-col overflow-hidden m-4 border border-gray-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              </div>
+              <h3 class="text-base font-bold text-gray-900">
+                {{ pos.productoAdvertenciaStock()?.tipo === 'vacio' ? '¡Sin Stock Disponible!' : '¡Límite de Stock Superado!' }}
+              </h3>
+            </div>
           </div>
-          <h3 class="modal-title text-honey-dark">
-            {{ pos.productoAdvertenciaStock()?.tipo === 'vacio' ? '¡Sin Stock Disponible!' : '¡Límite de Stock Superado!' }}
-          </h3>
-        </div>
 
         <!-- Body -->
         <div class="modal-body space-y-4">
@@ -161,13 +153,18 @@
   <!-- Modal: Corte de Caja -->
   @if (mostrarCorteCaja()) {
     <div class="modal-overlay">
-      <div class="modal-container flex flex-col bg-white border border-gray-200 slideInDown">
-        <div class="modal-header bg-white border-gray-200">
-          <h3 class="modal-title text-gray-900">Corte de Caja</h3>
-          <button (click)="cerrarCorteCaja()" class="text-slate-400 hover:text-rose-400 transition-colors focus:outline-none">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full flex flex-col overflow-hidden m-4 border border-gray-100">
+          <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              </div>
+              <h3 class="text-base font-bold text-gray-900">Corte de Caja</h3>
+            </div>
+            <button (click)="cerrarCorteCaja()" class="w-8 h-8 flex items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors focus:outline-none">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
         <div class="modal-body space-y-4 text-gray-900">
           @if (datosCorte()) {
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">

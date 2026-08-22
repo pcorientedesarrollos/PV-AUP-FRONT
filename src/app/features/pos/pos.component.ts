@@ -86,20 +86,18 @@ export class PosComponent implements OnInit {
 
   buscarYAgregarPorCodigo(codigo: string) {
     const query = codigo.toLowerCase().trim();
-    const productos = this.pos.productos();
-    
-    // Buscar coincidencia exacta por código de barras o clave
-    const productoEncontrado = productos.find(p => 
-      (p.codigoBarras && p.codigoBarras.toLowerCase() === query) ||
-      (p.idProducto && p.idProducto.toString().toLowerCase() === query)
-    );
-
-    if (productoEncontrado) {
-      this.pos.agregarAlCarrito(productoEncontrado);
-      // Notificar al usuario (podríamos usar un toast, pero con el sonido del escáner y la actualización visual es suficiente)
-    } else {
-      console.warn('Producto no encontrado en escaneo global:', codigo);
-    }
+    this.pos.buscarProductoPorCodigo(query).subscribe({
+      next: (productoEncontrado) => {
+        if (productoEncontrado) {
+          this.pos.agregarAlCarrito(productoEncontrado);
+        } else {
+          console.warn('Producto no encontrado en escaneo global:', codigo);
+        }
+      },
+      error: (err) => {
+        console.warn('Error en escaneo global:', err);
+      }
+    });
   }
 
   navegar(ruta: string) {

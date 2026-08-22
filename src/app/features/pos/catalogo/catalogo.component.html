@@ -14,7 +14,7 @@
               id="buscador-productos"
               type="search"
               [ngModel]="busqueda()"
-              (ngModelChange)="busqueda.set($event)"
+              (ngModelChange)="busquedaModificada($event)"
               (keyup.enter)="onEnterBuscador($event)"
               placeholder="Buscar por ID, nombre o código de barras (F3)..."
               class="form-input w-full pl-10 pr-12"
@@ -173,10 +173,30 @@
 
       <!-- Footer con conteo -->
       <div class="px-4 py-3 bg-white border-t border-gray-200 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-slate-500 shadow-[0_-4px_10px_rgba(0,0,0,0.02)] relative z-10 transition-colors">
-        <span>{{ productosFiltrados().length }} producto(s) en catálogo</span>
+        <span>{{ totalRegistros() }} PRODUCTO(S) EN CATÁLOGO</span>
+        
+        <div class="flex items-center gap-2">
+          <button 
+            (click)="cambiarPagina(-1)"
+            [disabled]="paginaActual() === 1"
+            class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded disabled:opacity-50 text-sm font-medium transition-colors"
+          >
+            Anterior
+          </button>
+          <span class="text-sm text-gray-600 font-medium mx-2">
+            Página {{ paginaActual() }} de {{ totalPaginas() }}
+          </span>
+          <button 
+            (click)="cambiarPagina(1)"
+            [disabled]="paginaActual() === totalPaginas()"
+            class="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded disabled:opacity-50 text-sm font-medium transition-colors"
+          >
+            Siguiente
+          </button>
+        </div>
         <button
           id="btn-recargar-catalogo"
-          (click)="cargarProductos()"
+          (click)="buscarEnBackend(busqueda(), 1)"
           class="text-honey-primary hover:text-honey-dark flex items-center gap-1 transition-colors focus:outline-none"
           title="Recargar catálogo"
         >

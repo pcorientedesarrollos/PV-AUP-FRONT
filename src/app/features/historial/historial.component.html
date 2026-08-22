@@ -115,7 +115,7 @@
 
     <!-- Tabla -->
     <div class="honey-table-container flex-1">
-      <div class="table-wrapper overflow-x-auto w-full">
+      <div class="table-wrapper overflow-x-auto w-full pb-24 min-h-[300px]">
       @if (cargando()) {
         <div class="flex justify-center items-center h-full py-12">
           <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-amber-500"></div>
@@ -125,7 +125,7 @@
           <thead class="bg-gray-50">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hora</th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Hora</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
               @if (isAdmin()) {
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendedor</th>
@@ -136,7 +136,7 @@
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
-            @for (venta of ventasPaginadas(); track venta.idCajaChica) {
+            @for (venta of ventasPaginadas(); track venta.idCajaChica; let i = $index; let count = $count) {
               <tr class="transition-colors group">
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                   <span [ngClass]="{'line-through text-red-400': venta.tipo === 'C'}">SRV-{{ venta.idCajaChica }}</span>
@@ -150,7 +150,10 @@
                     <span class="ml-2 badge-warning">Dev. Parcial</span>
                   }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.hora }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">
+                    <div>{{ venta.fecha | date:'dd/MM/yyyy' }}</div>
+                    <div class="text-xs text-gray-500">{{ venta.hora }}</div>
+                  </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium break-words" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">{{ venta.nombre }}</td>
                 @if (isAdmin()) {
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" [ngClass]="{'line-through text-gray-400': venta.tipo === 'C'}">
@@ -167,7 +170,7 @@
                     <button class="p-2 text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </button>
-                    <div class="absolute right-10 top-0 w-48 bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                    <div class="absolute right-0 w-40 bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60]" [ngClass]="(i >= count - 2 && count > 3) ? 'bottom-full mb-1' : 'top-full mt-1'">
                       <div class="py-1">
                         <button (click)="verDetalles(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-amber-600 transition-colors">
                           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -234,19 +237,32 @@
   <!-- Modal Ver Ticket -->
   @if (ventaSeleccionada()) {
     <div class="modal-overlay">
-      <div class="modal-container">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh]">
         <!-- Ticket Header -->
-        <div class="modal-header relative">
-          <button (click)="cerrarModal()" class="close-button absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">✕</button>
-          <h2 class="modal-title tracking-wider">APICULTORES UNIDOS</h2>
-          <p class="text-gray-500 font-medium text-sm mt-1">Ticket #{{ ventaSeleccionada().idCajaChica }}</p>
-          @if (ventaSeleccionada().tipo === 'C') {
-            <p class="text-red-500 font-bold mt-1 text-sm uppercase">¡Venta Cancelada!</p>
-          }
-          <p class="text-gray-400 text-xs mt-1">{{ ventaSeleccionada().fecha | date:'dd/MM/yyyy' }} {{ ventaSeleccionada().hora }}</p>
-        </div>
-
-        <!-- Ticket Body -->
+        <div class="flex items-center justify-between px-5 py-4 border-b border-amber-100 bg-amber-50">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-amber-900 tracking-wider">APICULTORES UNIDOS</h3>
+                <p class="text-xs text-amber-600/70 font-medium mt-0.5">Ticket #{{ ventaSeleccionada().idCajaChica }}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center gap-4">
+              <div class="text-right">
+                @if (ventaSeleccionada().tipo === 'C') {
+                  <p class="text-red-500 font-bold text-xs uppercase mb-0.5">&iexcl;Venta Cancelada!</p>
+                }
+                <p class="text-amber-700/70 text-xs">{{ ventaSeleccionada().fecha | date:'dd/MM/yyyy' }} {{ ventaSeleccionada().hora }}</p>
+              </div>
+              <button (click)="cerrarModal()" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-amber-200 text-amber-500 hover:text-amber-700 hover:bg-amber-100 transition-colors focus:outline-none bg-white">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+          </div>
+          <!-- Ticket Body -->
         <div class="modal-body">
           <div class="mb-4 flex justify-between">
             <div>
@@ -302,7 +318,7 @@
         </div>
 
         <!-- Ticket Footer -->
-        <div class="modal-footer justify-center">
+        <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
           <button (click)="imprimirTicket()" class="btn-submit flex-1 flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
             <span>Imprimir</span>
@@ -315,18 +331,20 @@
   <!-- Modal Confirmación de Cancelación -->
   @if (ventaACancelar()) {
     <div class="modal-overlay">
-      <div class="modal-container">
+      <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh]">
         <!-- Header -->
-        <div class="modal-header bg-red-50 border-red-100 justify-start gap-3 flex flex-row items-center">
-          <div class="bg-red-100 text-red-600 p-2 rounded-full">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+        <div class="flex items-center justify-between px-5 py-4 border-b border-red-100 bg-red-50">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-red-100 text-red-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              </div>
+              <h3 class="text-base font-bold text-red-900">&iquest;Anular Venta?</h3>
+            </div>
+            <button (click)="ventaACancelar.set(null)" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-red-200 text-red-400 hover:text-red-600 hover:bg-red-100 transition-colors focus:outline-none bg-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
           </div>
-          <div>
-            <h3 class="modal-title text-red-900">¿Anular Venta?</h3>
-          </div>
-        </div>
-
-        <!-- Body -->
+          <!-- Body -->
         <div class="modal-body text-gray-600 text-sm">
           <p>Estás a punto de anular el Ticket <span class="font-bold text-gray-900">#{{ ventaACancelar().idCajaChica }}</span>.</p>
           <p class="mt-2 text-red-600 font-medium">Esta acción devolverá los artículos al inventario y el dinero se descontará del corte final.</p>
@@ -334,7 +352,7 @@
         </div>
 
         <!-- Footer -->
-        <div class="modal-footer">
+        <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
           <button (click)="cancelarCancelacion()" class="btn-cancel">
             No, mantener venta
           </button>
@@ -349,7 +367,7 @@
   <!-- Modal de Alerta de Éxito o Error -->
   @if (alertaMensaje()) {
     <div class="modal-overlay">
-      <div class="modal-container text-center max-w-sm">
+      <div class="bg-white rounded-xl shadow-2xl max-w-sm w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh] text-center">
         <div class="modal-body">
           <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4"
                [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'">
@@ -366,7 +384,7 @@
             {{ alertaMensaje()?.texto }}
           </p>
         </div>
-        <div class="modal-footer justify-center">
+        <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
           <button (click)="cerrarAlerta()" class="btn-submit w-full mt-4" [ngClass]="alertaMensaje()?.tipo === 'exito' ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-800 hover:bg-gray-900'">
             Entendido
           </button>
@@ -378,16 +396,22 @@
   <!-- Modal Devolución Parcial -->
   @if (ventaADevolverParcial()) {
     <div class="modal-overlay">
-      <div class="modal-container max-w-lg">
-        <div class="modal-header flex justify-between items-center relative">
-          <div>
-            <h2 class="modal-title">Devolución Parcial</h2>
-            <p class="text-xs text-gray-500">Ticket #{{ ventaADevolverParcial().idCajaChica }}</p>
+      <div class="bg-white rounded-xl shadow-2xl max-w-lg w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh]">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gray-200 text-gray-700 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Devoluci&oacute;n Parcial</h3>
+                <p class="text-xs text-gray-500 mt-0.5">Ticket #{{ ventaADevolverParcial().idCajaChica }}</p>
+              </div>
+            </div>
+            <button (click)="cerrarDevolucionParcial()" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none bg-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
           </div>
-          <button (click)="cerrarDevolucionParcial()" class="close-button text-gray-400 hover:text-gray-600 transition-colors p-2">✕</button>
-        </div>
-
-        <div class="modal-body">
+          <div class="modal-body">
           <p class="text-sm text-gray-600 mb-4">Indica la cantidad a devolver de cada producto. Los artículos devueltos regresarán al inventario y el dinero se descontará del ticket.</p>
           
           <div class="space-y-3">
@@ -410,7 +434,7 @@
           </div>
         </div>
 
-        <div class="modal-footer flex gap-2">
+        <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
           <button (click)="cerrarDevolucionParcial()" class="btn-cancel flex-1">Cancelar</button>
           <button (click)="ejecutarDevolucionParcial()" class="btn-submit flex-1">Confirmar Devolución</button>
         </div>
@@ -421,16 +445,19 @@
   <!-- Modal Facturar -->
   @if (mostrarModalFactura()) {
     <div class="modal-overlay">
-      <div class="modal-container">
-        <div class="modal-header flex items-center justify-between">
-          <h2 class="modal-title flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            Facturar Ticket #{{ ventaAFacturar().idCajaChica }}
-          </h2>
-          <button (click)="cerrarModalFactura()" class="close-button text-gray-400 hover:text-gray-600 transition-colors focus:outline-none">✕</button>
-        </div>
-        
-        <div class="modal-body">
+      <div class="bg-white rounded-xl shadow-2xl max-w-5xl w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh]">
+        <div class="flex items-center justify-between px-5 py-4 border-b border-indigo-100 bg-indigo-50">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              </div>
+              <h3 class="text-base font-bold text-indigo-900">Facturar Ticket #{{ ventaAFacturar().idCajaChica }}</h3>
+            </div>
+            <button (click)="cerrarModalFactura()" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-indigo-200 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 transition-colors focus:outline-none bg-white">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          </div>
+          <div class="modal-body">
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Columna Izquierda: Formulario -->
             <div class="space-y-4">
@@ -604,7 +631,7 @@
         </div>
       </div>
 
-        <div class="modal-footer">
+        <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
           <button (click)="cerrarModalFactura()" class="btn-cancel" [disabled]="facturando()">Cancelar</button>
           <button (click)="generarFactura()" class="btn-submit flex items-center justify-center min-w-[140px]" [disabled]="facturando()">
             @if (facturando()) {
@@ -625,17 +652,22 @@
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarModalDevolucion()) {
   <div class="modal-overlay" (click)="mostrarModalDevolucion.set(false)">
-    <div class="modal-container" (click)="$event.stopPropagation()">
-      <div class="modal-header flex items-center justify-between">
-        <div>
-          <h2 class="modal-title">↩ Devolución</h2>
-          <p class="text-sm text-gray-500">Venta: <span class="font-mono font-bold">{{ ventaParaDevolver()?.folio }}</span></p>
+    <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full flex flex-col overflow-hidden m-4 border border-gray-100 max-h-[90vh]" (click)="$event.stopPropagation()">
+      <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gray-50">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-gray-200 text-gray-700 flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+            </div>
+            <div>
+              <h3 class="text-base font-bold text-gray-900">Devoluci&oacute;n</h3>
+              <p class="text-xs text-gray-500 mt-0.5">Venta: <span class="font-mono font-bold">{{ ventaParaDevolver()?.folio }}</span></p>
+            </div>
+          </div>
+          <button (click)="mostrarModalDevolucion.set(false)" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none bg-white">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
         </div>
-        <button (click)="mostrarModalDevolucion.set(false)" class="close-button text-gray-400 hover:text-gray-700">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
-      </div>
-      <div class="modal-body space-y-4">
+        <div class="modal-body space-y-4">
         <p class="text-sm text-gray-600">Selecciona los productos a devolver y ajusta las cantidades:</p>
         <!-- Productos -->
         <div class="space-y-2">
@@ -687,7 +719,7 @@
           <span class="text-lg font-black text-red-600">{{ montoDevolucion | currency:'MXN':'$':'1.2-2' }}</span>
         </div>
       </div>
-      <div class="modal-footer flex justify-end gap-3">
+      <div class="bg-gray-50 border-t border-gray-100 px-5 py-4 flex justify-end gap-3 mt-auto">
         <button (click)="mostrarModalDevolucion.set(false)" class="btn-cancel">Cancelar</button>
         <button (click)="confirmarDevolucion()" [disabled]="guardandoDevolucion()"
                 class="btn-submit bg-red-500 hover:bg-red-600 flex items-center gap-2">

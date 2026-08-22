@@ -26,53 +26,23 @@ export class CatalogoComponent implements OnInit {
   ultimosEscaneos = signal<{texto: string, exito: boolean, hora: Date}[]>([]);
   categorias = signal<any[]>([]);
 
-  productosFiltrados = computed(() => {
-    const q = this.busqueda().toLowerCase().trim();
-    if (!q) {
-      return [];
-    }
-    const familia = this.filtroFamilia();
-
-    return this.productos().filter((p) => {
-      // Filtro Stock
-      if (this.soloConStock()) {
-        const stock = p.stockActual || 0;
-        if (stock <= 0) return false;
-      }
-
-      // Filtro de texto
-      const coincideTexto = !q || 
-        p.nombre.toLowerCase().includes(q) ||
-        (p.codigoBarras && p.codigoBarras.toLowerCase().includes(q)) ||
-        (p.idProducto.toString() === q);
-
-      // Filtro de familia
-      let coincideFamilia = true;
-      if (familia !== 'todas') {
-        const id = p.categoria?.idCategoria || p.idCategoria || 0;
-        coincideFamilia = (id === familia);
-      }
-
-      return coincideTexto && coincideFamilia;
-    });
-  });
+  productosFiltrados = signal<Producto[]>([]);
+  paginaActual = signal(1);
+  totalPaginas = signal(1);
+  totalRegistros = signal(0);
 
   constructor(public pos: PosService) {}
 
-
+  ngOnInit() {
+    this.cargarCategorias();
+    this.buscarEnBackend('', 1);
+  }
 
   getColorFamilia(idCategoria: number | undefined): string {
     if (!idCategoria) return 'bg-slate-600';
     const cat = this.categorias().find(c => c.idCategoria === idCategoria);
     if (cat && cat.color) return cat.color;
-    
-    // Default color if none specified
     return 'bg-amber-500';
-  }
-
-  ngOnInit() {
-    this.cargarProductos();
-    this.cargarCategorias();
   }
 
   cargarCategorias() {
@@ -82,17 +52,52 @@ export class CatalogoComponent implements OnInit {
     });
   }
 
-  cargarProductos() {
+  buscarEnBackend(term: string, page: number = 1) {
     this.cargando.set(true);
-    this.pos.getProductos().subscribe({
-      next: (productos) => {
-        this.productos.set(productos);
+    let params: any = { page: page, limit: 20 };
+    if (term) params.search = term;
+    if (this.filtroFamilia() !== 'todas') params.categoria = this.filtroFamilia();
+    if (this.soloConStock()) params.stock = '1';
+
+    this.pos.getProductos(params.page, 20, params.search || '').subscribe({
+      next: (res: any) => {
+        this.productosFiltrados.set(res.data || []);
+        this.paginaActual.set(res.meta?.currentPage || 1);
+        this.totalPaginas.set(res.meta?.totalPages || 1);
+        this.totalRegistros.set(res.meta?.totalItems || 0);
         this.cargando.set(false);
       },
       error: () => {
+        this.productosFiltrados.set([]);
         this.cargando.set(false);
-      },
+      }
     });
+  }
+
+  private searchTimeout: any;
+  busquedaModificada(term: string) {
+    this.busqueda.set(term);
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.buscarEnBackend(term, 1);
+    }, 300);
+  }
+
+  filtroFamiliaModificado(familia: number | 'todas') {
+    this.filtroFamilia.set(familia);
+    this.buscarEnBackend(this.busqueda(), 1);
+  }
+
+  soloConStockModificado(checked: boolean) {
+    this.soloConStock.set(checked);
+    this.buscarEnBackend(this.busqueda(), 1);
+  }
+
+  cambiarPagina(delta: number) {
+    const nueva = this.paginaActual() + delta;
+    if (nueva > 0 && nueva <= this.totalPaginas()) {
+      this.buscarEnBackend(this.busqueda(), nueva);
+    }
   }
 
   agregar(producto: Producto, silent: boolean = false): boolean {
@@ -100,35 +105,34 @@ export class CatalogoComponent implements OnInit {
   }
 
   onEnterBuscador(event: Event) {
-    // Se solicit� que no se agregue autom�ticamente. Solo se busca.
-    setTimeout(() => {
-      const input = event.target as HTMLInputElement;
-      if (input) input.focus();
-    }, 0);
+    if (this.searchTimeout) clearTimeout(this.searchTimeout);
+    this.buscarEnBackend(this.busqueda(), 1);
   }
 
   onCameraScan(codigo: string) {
-    // Asigna el código al buscador brevemente
     this.busqueda.set(codigo);
-    
-    // Busca el producto directamente
-    const prod = this.productos().find(p => p.codigoBarras === codigo || p.idProducto.toString() === codigo);
-    if (prod) {
-      const success = this.agregar(prod, true); // silent = true
-      if (success) {
-        this.ultimosEscaneos.update(list => [{texto: prod.nombre, exito: true, hora: new Date()}, ...list].slice(0, 4));
-      } else {
-        this.ultimosEscaneos.update(list => [{texto: `Sin stock: ${prod.nombre}`, exito: false, hora: new Date()}, ...list].slice(0, 4));
+    this.pos.buscarProductoPorCodigo(codigo).subscribe({
+      next: (prod) => {
+        if (prod) {
+          const success = this.agregar(prod, true);
+          if (success) {
+            this.ultimosEscaneos.update(list => [{texto: prod.nombre, exito: true, hora: new Date()}, ...list].slice(0, 4));
+          } else {
+            this.ultimosEscaneos.update(list => [{texto: `Sin stock: ${prod.nombre}`, exito: false, hora: new Date()}, ...list].slice(0, 4));
+          }
+          setTimeout(() => {
+            this.busqueda.set('');
+            this.buscarEnBackend('', 1);
+          }, 800);
+        } else {
+          this.ultimosEscaneos.update(list => [{texto: `No encontrado: ${codigo}`, exito: false, hora: new Date()}, ...list].slice(0, 4));
+        }
       }
-      // Limpia el buscador después de un breve delay
-      setTimeout(() => this.busqueda.set(''), 800);
-    } else {
-      this.ultimosEscaneos.update(list => [{texto: `No encontrado: ${codigo}`, exito: false, hora: new Date()}, ...list].slice(0, 4));
-    }
+    });
   }
 
   cerrarCamara() {
     this.escaneandoConCamara.set(false);
-    this.ultimosEscaneos.set([]); // Limpiar historial al cerrar
+    this.ultimosEscaneos.set([]);
   }
 }

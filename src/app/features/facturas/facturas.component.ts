@@ -126,7 +126,7 @@ export class FacturasComponent implements OnInit {
           if (res.cp) this.formData.cp = res.cp;
           if (res.regimenFiscal) this.formData.regimen = res.regimenFiscal;
         } else {
-          alert('Error al leer Cédula: ' + (res.error || 'Formato no reconocido'));
+          alert('El sistema no detect\u00F3 texto en el PDF. Aseg\u00FArate de que sea la Constancia original del SAT y no una imagen escaneada.');
         }
       },
       error: () => {
@@ -210,10 +210,10 @@ export class FacturasComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`, {
+    this.http.get<any>(`${environment.apiUrl}/pos/clientes?limit=1000`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
-      next: (data) => this.clientesGuardados.set(data),
+      next: (res) => this.clientesGuardados.set(res.data || []),
       error: (err) => console.error('Error al cargar clientes:', err)
     });
   }

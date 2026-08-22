@@ -27,6 +27,7 @@ export class CarritoComponent implements OnInit {
   ultimoTotal = signal(0);
   ultimoSubtotal = signal(0);
   ultimoIva = signal(0);
+  ultimoMetodoPago = signal<string>('Efectivo');
   ultimoTicketItems = signal<any[]>([]);
   idUltimaVenta = signal<number | null>(null);
   folioUltimaVenta = signal<string | null>(null);
@@ -57,44 +58,25 @@ export class CarritoComponent implements OnInit {
 
   // Payment Modal State
   modalPagoAbierto = signal(false);
-  metodoPago = signal<'Efectivo' | 'Tarjeta' | 'Transferencia'>('Efectivo');
-  cantidadRecibida = signal<number | null>(null);
-  
-  // Para pago secundario (saldo restante)
-  requierePagoSecundario = signal(false);
-  metodoPagoSecundario = signal<'Efectivo' | 'Tarjeta' | 'Transferencia' | null>(null);
+  pagoEfectivo = signal<number | null>(null);
+  pagoTarjeta = signal<number | null>(null);
+  pagoTransferencia = signal<number | null>(null);
 
   totalIngresado = computed(() => {
-    if (this.metodoPago() !== 'Efectivo') {
-       return this.cantidadRecibida() || this.totalPagarFinal();
-    }
-    // Si estamos en flujo secundario, asumimos que el restante lo cubrirá el 2do método
-    if (this.requierePagoSecundario() && this.metodoPagoSecundario()) {
-       return this.totalPagarFinal();
-    }
-    return this.cantidadRecibida() || 0;
+    return (this.pagoEfectivo() || 0) + (this.pagoTarjeta() || 0) + (this.pagoTransferencia() || 0);
   });
 
   cambio = computed(() => {
-    const recibido = this.cantidadRecibida() || 0;
     const total = this.totalPagarFinal();
-    
-    // Si el usuario ingresa más que el total en efectivo, hay cambio
-    if (this.metodoPago() === 'Efectivo' && recibido > total) {
-       return Math.max(0, recibido - total);
-    }
-    return 0;
+    const ingresado = this.totalIngresado();
+    return ingresado - total;
   });
 
   // Ventas Pausadas Modal
   modalPausadasAbierto = signal(false);
 
   // Computed filtered list
-  clientesFiltrados = computed(() => {
-    const term = this.busquedaCliente().trim().toLowerCase();
-    if (!term) return this.clientes();
-    return this.clientes().filter(c => c.nombreCompleto.toLowerCase().includes(term));
-  });
+  clientesFiltrados = computed(() => this.clientes());
 
   // Derived selected client name for the trigger button
   nombreClienteSeleccionado = computed(() => {
@@ -115,13 +97,14 @@ export class CarritoComponent implements OnInit {
     this.cargarClientes();
   }
 
-  cargarClientes() {
-    this.pos.getClientes().subscribe({
-      next: (clientes) => {
+  cargarClientes(search: string = '') {
+    this.pos.getClientes(1, 20, search).subscribe({
+      next: (res: any) => {
+        const clientes = res.data || [];
         const unicos: Cliente[] = [];
         const vistos = new Set<string>();
         for (const c of clientes) {
-          const nombreLimpio = c.nombreCompleto.trim().toUpperCase();
+          const nombreLimpio = (c.nombreCompleto || '').trim().toUpperCase();
           if (!vistos.has(nombreLimpio)) {
             unicos.push(c);
             vistos.add(nombreLimpio);
@@ -130,6 +113,11 @@ export class CarritoComponent implements OnInit {
         this.clientes.set(unicos);
       },
     });
+  }
+
+  busquedaClienteChanged(term: string) {
+    this.busquedaCliente.set(term);
+    this.cargarClientes(term);
   }
 
   toggleDropdown() {
@@ -283,47 +271,46 @@ export class CarritoComponent implements OnInit {
 
   cobrar() {
     if (this.pos.carrito().length === 0) return;
-    this.metodoPago.set('Efectivo');
-    this.cantidadRecibida.set(null); 
-    this.requierePagoSecundario.set(false);
-    this.metodoPagoSecundario.set(null);
+    this.pagoEfectivo.set(null);
+      this.pagoTarjeta.set(null);
+      this.pagoTransferencia.set(null);
     this.modalPagoAbierto.set(true);
   }
   
+  cobroExacto() {
+    this.pagoEfectivo.set(this.totalPagarFinal());
+    this.pagoTarjeta.set(null);
+    this.pagoTransferencia.set(null);
+  }
+
   cerrarModalPago() {
     this.modalPagoAbierto.set(false);
-    this.requierePagoSecundario.set(false);
-    this.metodoPagoSecundario.set(null);
+    
   }
 
   confirmarCobro() {
     if (this.pos.carrito().length === 0) return;
     
     const aPagar = this.totalPagarFinal();
-    let isMixto = false;
-    let efectivoIngresado = this.cantidadRecibida() || aPagar;
+    const ingresado = this.totalIngresado();
     
-    if (efectivoIngresado > 0 && efectivoIngresado < (aPagar - 0.01)) {
-      if (!this.requierePagoSecundario()) {
-        if (confirm(`El monto ingresado ($${efectivoIngresado}) es menor al total ($${aPagar}). ¿Deseas pagar el resto con un segundo método de pago?`)) {
-          this.requierePagoSecundario.set(true);
-        }
-        return;
-      } else {
-        if (!this.metodoPagoSecundario()) {
-          alert('Selecciona con qué método vas a pagar el saldo restante.');
-          return;
-        }
-        isMixto = true;
-      }
-    } else {
-      efectivoIngresado = aPagar;
+    if (ingresado < aPagar) {
+      // Not enough funds
+      return;
     }
 
     this.cargando.set(true);
 
     const cliente = this.pos.clienteSeleccionado();
-    const saldoRestante = aPagar - efectivoIngresado;
+    
+    const ef = this.pagoEfectivo() || 0;
+    const tar = this.pagoTarjeta() || 0;
+    const tr = this.pagoTransferencia() || 0;
+
+    let primary = 'Efectivo';
+    let maxAmt = ef;
+    if (tar > maxAmt) { primary = 'Tarjeta'; maxAmt = tar; }
+    if (tr > maxAmt) { primary = 'Transferencia'; maxAmt = tr; }
 
     const payload = {
       idCliente: cliente?.idCliente,
@@ -333,26 +320,27 @@ export class CarritoComponent implements OnInit {
       descuento: this.descuentoGlobal(),
       totalPagado: aPagar,
       idUsuario: this.auth.sesion()?.idUsuario,
-      idSucursal: this.auth.sesion()?.idSucursal || 1, // Defaulting to 1 if not set
-      metodoPago: isMixto ? 'Mixto' : this.metodoPago(),
-      montoEfectivo: isMixto ? (this.metodoPago() === 'Efectivo' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Efectivo' ? saldoRestante : undefined)) : (this.metodoPago() === 'Efectivo' ? aPagar : undefined),
-      montoTarjeta: isMixto ? (this.metodoPago() === 'Tarjeta' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Tarjeta' ? saldoRestante : undefined)) : (this.metodoPago() === 'Tarjeta' ? aPagar : undefined),
-      montoTransferencia: isMixto ? (this.metodoPago() === 'Transferencia' ? efectivoIngresado : (this.metodoPagoSecundario() === 'Transferencia' ? saldoRestante : undefined)) : (this.metodoPago() === 'Transferencia' ? aPagar : undefined),
-      efectivoRecibido: this.metodoPago() === 'Efectivo' ? (this.cantidadRecibida() || aPagar) : (isMixto && this.metodoPagoSecundario() === 'Efectivo' ? saldoRestante : undefined),
-      cambioEntregado: this.cambio(),
+      idSucursal: this.auth.sesion()?.idSucursal || 1,
+      metodoPago: primary,
+      montoEfectivo: ef > 0 ? (ef - Math.max(0, this.cambio())) : (0 - Math.max(0, this.cambio())),
+      montoTarjeta: tar,
+      montoTransferencia: tr,
+      efectivoRecibido: ef,
+      cambioEntregado: Math.max(0, this.cambio()),
       carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,
         precioUnitario: Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)),
-          descuento: item.descuento || 0,
-          aplicaIva: item.producto.aplicaIva !== false,
-          montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) : 0,
+        descuento: item.descuento || 0,
+        aplicaIva: item.producto.aplicaIva !== false,
+        montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) : 0,
       })),
     };
 
     this.ultimoTotal.set(payload.totalPagado);
     this.ultimoSubtotal.set(this.pos.subtotal());
     this.ultimoIva.set(this.pos.totalIva());
+    this.ultimoMetodoPago.set(primary);
     this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
 
       this.pos.checkout(payload).subscribe({
@@ -428,7 +416,7 @@ export class CarritoComponent implements OnInit {
       totalCobrado: this.ultimoTotal(),
       subtotal: this.ultimoTotal() > 0 ? this.ultimoSubtotal() : this.pos.subtotal(),
       totalIva: this.ultimoTotal() > 0 ? this.ultimoIva() : this.pos.totalIva(),
-      metodoPago: this.metodoPago(),
+      metodoPago: this.ultimoMetodoPago(),
       productos: items.map((i: any) => ({
         nombre: i.producto.nombre,
         cantidad: i.cantidad,

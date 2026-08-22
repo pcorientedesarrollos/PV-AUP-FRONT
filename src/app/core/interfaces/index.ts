@@ -73,6 +73,13 @@ export interface CheckoutPayload {
   idUsuario?: number;
   idSucursal?: number;
   efectivoRecibido?: number;
+  metodoPago?: string;
+  montoEfectivo?: number;
+  montoTarjeta?: number;
+  montoTransferencia?: number;
+  subtotal?: number;
+  totalIva?: number;
+  descuento?: number;
   cambioEntregado?: number;
   carrito: ProductoVenta[];
 }
