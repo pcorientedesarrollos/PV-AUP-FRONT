@@ -70,9 +70,9 @@ export class CatalogoComponent implements OnInit {
     this.pos.getProductos(params.page, 20, params.search || '').subscribe({
       next: (res: any) => {
         this.productosFiltrados.set(res.data || []);
-        this.paginaActual.set(res.meta?.currentPage || 1);
-        this.totalPaginas.set(res.meta?.totalPages || 1);
-        this.totalRegistros.set(res.meta?.totalItems || 0);
+        this.paginaActual.set(res.page || res.meta?.currentPage || 1);
+        this.totalPaginas.set(res.totalPages || res.meta?.totalPages || 1);
+        this.totalRegistros.set(res.total || res.meta?.totalItems || 0);
         this.cargando.set(false);
       },
       error: () => {

@@ -111,10 +111,10 @@ export class FacturaModalComponent implements OnInit, OnChanges {
   }
 
   cargarClientes() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`, {
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes?limit=1000`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
-      next: (data) => this.clientesGuardados.set(data),
+      next: (res: any) => this.clientesGuardados.set(res.data || res),
       error: (err) => console.error('Error al cargar clientes:', err)
     });
   }

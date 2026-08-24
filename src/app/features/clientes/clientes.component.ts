@@ -204,8 +204,9 @@ export class ClientesComponent implements OnInit {
   cargarClientes() {
     this.cargando.set(true);
     this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
-      next: (data) => {
-        const mapeados = data.map(c => ({
+      next: (res: any) => {
+        const data = res.data || res;
+        const mapeados = data.map((c: any) => ({
           idCliente: c.idCliente,
           nombre: c.nombreCompleto,
           telefono: c.telefono,

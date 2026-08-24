@@ -246,7 +246,7 @@
               </div>
               <div>
                 <h3 class="text-base font-bold text-amber-900 tracking-wider">APICULTORES UNIDOS</h3>
-                <p class="text-xs text-amber-600/70 font-medium mt-0.5">Ticket #{{ ventaSeleccionada().idCajaChica }}</p>
+                <p class="text-xs text-amber-600/70 font-medium mt-0.5">Ticket #{{ ventaSeleccionada().folio || ventaSeleccionada().idCajaChica }}</p>
               </div>
             </div>
             
@@ -404,7 +404,7 @@
               </div>
               <div>
                 <h3 class="text-base font-bold text-gray-900">Devoluci&oacute;n Parcial</h3>
-                <p class="text-xs text-gray-500 mt-0.5">Ticket #{{ ventaADevolverParcial().idCajaChica }}</p>
+                <p class="text-xs text-gray-500 mt-0.5">Ticket #{{ ventaADevolverParcial().folio || ventaADevolverParcial().idCajaChica }}</p>
               </div>
             </div>
             <button (click)="cerrarDevolucionParcial()" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-gray-200 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus:outline-none bg-white">
@@ -451,7 +451,7 @@
               <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               </div>
-              <h3 class="text-base font-bold text-indigo-900">Facturar Ticket #{{ ventaAFacturar().idCajaChica }}</h3>
+              <h3 class="text-base font-bold text-indigo-900">Facturar Ticket #{{ ventaAFacturar().folio || ventaAFacturar().idCajaChica }}</h3>
             </div>
             <button (click)="cerrarModalFactura()" class="w-8 h-8 flex flex-shrink-0 items-center justify-center rounded-full border border-indigo-200 text-indigo-400 hover:text-indigo-600 hover:bg-indigo-100 transition-colors focus:outline-none bg-white">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>

@@ -128,10 +128,10 @@ export class TicketPrinterService {
     html += `
         <div class="divider"></div>
         <div class="mb-1">
-          <div>Ticket #${venta.idCajaChica || venta.id || 'N/A'}</div>
+          <div>Ticket #${venta.folio || venta.idCajaChica || venta.id || 'N/A'}</div>
           <div>Fecha: ${venta.fecha || new Date().toLocaleString()}</div>
-          <div>Caja: TERMINAL 01</div>
-          <div>Cliente: Público en General</div>
+          <div>Cajero: ${venta.usuarioNombre || venta.nombreUsuario || 'Admin'}</div>
+          <div>Cliente: ${venta.nombreCliente || venta.cliente?.nombreCompleto || 'P�blico en General'}</div>
         </div>
         <div class="divider"></div>
 
@@ -150,23 +150,29 @@ export class TicketPrinterService {
     if (detalles && Array.isArray(detalles)) {
       detalles.forEach((d: any) => {
         const nombre = d.productoNombre || d.producto?.nombre || d.nombre || 'Producto';
-        const importeBase = Number(d.importe || d.subtotal || 0);
+        const importeOriginal = (d.precioUnitario && d.cantidad) ? (Number(d.precioUnitario) * Number(d.cantidad)) : (Number(d.importe || d.subtotal || 0) + Number(d.descuento || 0));
+          const importeBase = Number(d.importe || d.subtotal || 0);
           const descuento = Number(d.descuento || 0);
           const aplicaIva = d.aplicaIva !== false && (d.producto?.aplicaIva !== false);
           const tasaIva = d.producto?.iva !== undefined ? Number(d.producto?.iva) : 16;
           const montoIva = aplicaIva ? (importeBase - descuento) * (tasaIva / 100) : 0;
-          const importeConIva = importeBase + montoIva;
+          const importeConIva = importeOriginal;
 
           html += `
             <tr>
               <td class="text-left" style="vertical-align: top;">${d.cantidad}</td>
               <td class="text-left">
                 ${nombre}
-                ${descuento > 0 ? `<br><small><i>- Desc: $${Number(descuento).toFixed(2)}</i></small>` : ''}
+                
               </td>
               <td class="text-right" style="vertical-align: top;">$${Number(importeConIva).toFixed(2)}</td>
             </tr>
-        `;
+              ${descuento > 0 ? `<tr>
+                <td></td>
+                <td class="text-left"><small><i>- Descuento</i></small></td>
+                <td class="text-right"><small><i>-$${Number(descuento).toFixed(2)}</i></small></td>
+              </tr>` : ''}
+          `;
       });
     }
 
@@ -177,25 +183,24 @@ export class TicketPrinterService {
         
         <div class="text-right bold mb-1" style="font-size: 1.1em;">
           ${(() => {
-            const total = Number(venta.total || venta.totalPagado || venta.totalCobrado || 0);
-            let subtotal = Number(venta.subtotal || 0);
-            let iva = Number(venta.totalIva || 0);
-            
-            if (!subtotal) {
-              const detalles = venta.detalles || venta.productos || [];
-              subtotal = detalles.reduce((sum: any, d: any) => sum + Number(d.importe || d.subtotal || 0), 0);
-            }
-            if (!iva && total > subtotal) {
-              iva = total - subtotal;
-            }
-            
-            let res = '';
-            
-            if (venta.descuento > 0) {
-              res += `DESCUENTOS: -$${Number(venta.descuento).toFixed(2)}<br>`;
-            }
-            return res;
-          })()}
+              const total = Number(venta.total || venta.totalPagado || venta.totalCobrado || 0);
+              let subtotal = Number(venta.subtotal || 0);
+              let iva = Number(venta.totalIva || 0);
+              
+              if (!subtotal) {
+                const detalles = venta.detalles || venta.productos || [];
+                subtotal = detalles.reduce((sum: any, d: any) => sum + ((d.precioUnitario && d.cantidad) ? (Number(d.precioUnitario) * Number(d.cantidad)) : (Number(d.importe || d.subtotal || 0) + Number(d.descuento || 0))), 0);
+              }
+              
+              let res = '';
+              
+              const sumDescItems = detalles.reduce((acc: any, d: any) => acc + Number(d.descuento || 0), 0);
+                const descGlobal = Number(venta.descuento || 0) - sumDescItems;
+                if (descGlobal > 0.01) {
+                res += `DESCUENTO: -$${descGlobal.toFixed(2)}<br>`;
+              }
+              return res;
+            })()}
           TOTAL: $${Number(venta.total || venta.totalPagado || venta.totalCobrado || 0).toFixed(2)}
         </div>
         <div class="text-center mb-2" style="font-size: 0.9em;">

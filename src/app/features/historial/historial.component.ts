@@ -167,8 +167,8 @@ export class HistorialComponent implements OnInit {
   ];
 
   cargarClientes() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
-      next: (data) => this.clientes.set(data),
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes?limit=1000`).subscribe({
+      next: (data: any) => this.clientes.set(data.data || data),
       error: (err) => console.error('Error cargando clientes', err)
     });
   }
@@ -360,7 +360,8 @@ export class HistorialComponent implements OnInit {
             ...d,
             idDetalle: d.idDetalle,
             concepto: d.producto?.nombre || 'Producto',
-            importe: d.subtotal
+            precio: d.precioUnitario || (d.subtotal / (d.cantidad || 1)),
+              importe: (d.precioUnitario && d.cantidad) ? (Number(d.precioUnitario) * Number(d.cantidad)) : (Number(d.subtotal || 0) + Number(d.descuento || 0))
           })) || []
         }));
         
@@ -489,18 +490,26 @@ export class HistorialComponent implements OnInit {
     if (!venta) return;
 
     this.printer.imprimirTicketVenta({
-      id: venta.idCajaChica,
+      id: venta.folio || venta.idCajaChica,
       fecha: `${venta.fecha.split('T')[0]} ${venta.hora}`,
       nombreUsuario: venta.usuarioNombre || 'Sistema',
       nombreCliente: venta.nombre,
-      descuento: 0, // En historial la DB no parece retornar descuento desglosado aún
+      descuento: venta.descuento || 0,
       totalCobrado: venta.total,
+      subtotal: venta.subtotal,
+      totalIva: venta.iva,
       metodoPago: venta.metodoPago || 'Efectivo',
+      efectivo: venta.efectivo || 0,
+      tarjeta: venta.tarjeta || 0,
+      transferencia: venta.transferencia || 0,
+      efectivoRecibido: venta.efectivo || venta.total, // Asumimos que dio exacto si no hay registro
+      cambio: 0,
       productos: venta.detalles.map((d: any) => ({
         nombre: d.concepto,
         cantidad: d.cantidad,
         precioUnitario: d.precioUnitario || (d.importe / d.cantidad),
-        subtotal: d.importe
+        subtotal: d.importe,
+        descuento: d.descuento || 0
       }))
     });
   }

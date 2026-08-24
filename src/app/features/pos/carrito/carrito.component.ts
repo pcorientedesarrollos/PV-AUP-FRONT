@@ -353,7 +353,7 @@ export class CarritoComponent implements OnInit {
       this.ultimoTransferencia.set(payload.montoTransferencia);
       this.ultimoCambio.set(payload.cambioEntregado);
       this.ultimoEfectivoRecibido.set(payload.efectivoRecibido);
-    this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
+    this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario, aplicaIva: d.aplicaIva }, cantidad: d.cantidad, descuento: d.descuento })));
 
       this.pos.checkout(payload).subscribe({
         next: (res: any) => {
@@ -420,7 +420,7 @@ export class CarritoComponent implements OnInit {
     const cliente = this.pos.clienteSeleccionado();
     const items = this.ultimoTicketItems().length > 0 ? this.ultimoTicketItems() : this.pos.carrito();
     const ventaSimulada = {
-      id: 'Última Venta',
+      folio: this.folioUltimaVenta() || '�ltima Venta',
       fecha: new Date().toLocaleString(),
       nombreUsuario: this.auth.sesion()?.usuario || 'Admin',
       nombreCliente: cliente?.nombreCompleto || 'PÚBLICO GENERAL',
