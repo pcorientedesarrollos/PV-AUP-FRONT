@@ -1,4 +1,4 @@
-import { Component, signal, OnInit, computed } from '@angular/core';
+import { Component, signal, OnInit, computed, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PosService } from '../../../core/services/pos.service';
@@ -15,6 +15,14 @@ import { environment } from '../../../../environments/environment';
   host: { class: 'flex flex-col h-full relative' },
 })
 export class CatalogoComponent implements OnInit {
+  @ViewChild('searchInput') searchInput!: ElementRef<HTMLInputElement>;
+
+  public enfocarBuscador() {
+    if (this.searchInput) {
+      this.searchInput.nativeElement.focus();
+    }
+  }
+
   apiUrl = environment.apiUrl;
   productos = signal<Producto[]>([]);
   busqueda = signal('');

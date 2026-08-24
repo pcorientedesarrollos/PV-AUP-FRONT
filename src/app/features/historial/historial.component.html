@@ -298,11 +298,11 @@
 
           <div class="flex justify-between items-center text-sm text-gray-500 mb-1">
             <span>Subtotal</span>
-            <span>{{ (ventaSeleccionada().subtotal || (ventaSeleccionada().total / 1.16)) | currency }}</span>
+            <span>{{ (ventaSeleccionada().subtotal || (ventaSeleccionada().total / ivaFactor)) | currency }}</span>
           </div>
           <div class="flex justify-between items-center text-sm text-gray-500 mb-1">
-            <span>IVA (16%)</span>
-            <span>{{ (ventaSeleccionada().iva || (ventaSeleccionada().total - (ventaSeleccionada().total / 1.16))) | currency }}</span>
+            <span>IVA ({{ ivaPorcentaje }}%)</span>
+            <span>{{ (ventaSeleccionada().iva || (ventaSeleccionada().total - (ventaSeleccionada().total / ivaFactor))) | currency }}</span>
           </div>
           @if ((ventaSeleccionada().descuento || 0) > 0) {
             <div class="flex justify-between items-center text-sm text-red-500 font-bold mb-3">
@@ -595,11 +595,11 @@
                 <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
                   <div class="flex justify-between items-center text-xs text-gray-600 mb-1">
                     <span>Subtotal:</span>
-                    <span>{{ (ventaAFacturar().subtotal || (ventaAFacturar().total / 1.16)) | currency }}</span>
+                    <span>{{ (ventaAFacturar().subtotal || (ventaAFacturar().total / ivaFactor)) | currency }}</span>
                   </div>
                   <div class="flex justify-between items-center text-xs text-gray-600 mb-2">
-                    <span>IVA (16%):</span>
-                    <span>{{ (ventaAFacturar().iva || (ventaAFacturar().total - (ventaAFacturar().total / 1.16))) | currency }}</span>
+                    <span>IVA ({{ ivaPorcentaje }}%):</span>
+                    <span>{{ (ventaAFacturar().iva || (ventaAFacturar().total - (ventaAFacturar().total / ivaFactor))) | currency }}</span>
                   </div>
                   <div class="flex justify-between items-center text-lg font-black text-gray-900">
                     <span>Total a facturar:</span>
@@ -617,7 +617,7 @@
                     <span>$0.00</span>
                   </div>
                   <div class="flex justify-between items-center text-xs text-gray-400 mb-2">
-                    <span>IVA (16%):</span>
+                    <span>IVA ({{ ivaPorcentaje }}%):</span>
                     <span>$0.00</span>
                   </div>
                   <div class="flex justify-between items-center text-lg font-black text-gray-400">

@@ -86,6 +86,30 @@ export class NuevaCotizacionComponent implements OnInit {
 
   productosFiltrados = signal<any[]>([]);
 
+  buscarProducto(term: string) {
+    this.busquedaProducto.set(term);
+    if (!term || term.trim().length < 2) {
+      this.productosFiltrados.set([]);
+      return;
+    }
+    
+    const termLower = term.toLowerCase().trim();
+    // Use posService.productos() or make API call if needed. Assuming posService has loaded products?
+    // Wait, posService might not have products loaded. Let's make an API call just to be safe, like PosService does.
+    // Or check if posService has a search method.
+    this.buscandoConceptos.set(true);
+    this.http.get<any>(`${environment.apiUrl}/pos/productos?search=${termLower}&limit=10`).subscribe({
+      next: (res) => {
+        this.productosFiltrados.set(res.data || []);
+        this.buscandoConceptos.set(false);
+      },
+      error: () => {
+        this.productosFiltrados.set([]);
+        this.buscandoConceptos.set(false);
+      }
+    });
+  }
+
   agregarAlCarrito(producto: any) {
     const current = this.carrito();
     const existe = current.find(item => item.idProducto === producto.idProducto);
@@ -104,7 +128,7 @@ export class NuevaCotizacionComponent implements OnInit {
         cantidad: 1,
         precioCompra: pUnit,
         aplicaIva: tieneIva,
-        iva: Number(producto.iva) || 16,
+        iva: Number(producto.iva) || this.configService.config().ivaPorDefecto,
         moneda: 'MXN', 
         tipoCambio: this.tipoCambio(),
         utilidadPorcentaje: this.utilidadGlobal(),
@@ -116,6 +140,7 @@ export class NuevaCotizacionComponent implements OnInit {
       this.revisarEstadoGlobalIva();
     }
     this.busquedaProducto.set('');
+    this.productosFiltrados.set([]);
   }
 
   onClienteCreado(cliente: any) {
@@ -153,10 +178,9 @@ export class NuevaCotizacionComponent implements OnInit {
       item.searchResults = [];
       return;
     }
-    item.searchResults = this.posService.productos().filter(p => 
-      (p.nombre && p.nombre.toLowerCase().includes(term)) ||
-      (p.codigoBarras && p.codigoBarras.toLowerCase().includes(term))
-    ).slice(0, 10);
+    this.http.get<any>(`${environment.apiUrl}/pos/productos?search=${term}&limit=10`).subscribe(res => {
+      item.searchResults = res.data || [];
+    });
   }
 
   onManualBlur(item: any) {
@@ -170,7 +194,7 @@ export class NuevaCotizacionComponent implements OnInit {
     item.nombre = producto.nombre;
     item.nombreConcepto = producto.nombre;
     item.precioCompra = Number(producto.precioUnitario) || 0;
-    item.iva = Number(producto.iva) || 16;
+    item.iva = Number(producto.iva) || this.configService.config().ivaPorDefecto;
     item.aplicaIva = producto.aplicaIva !== undefined ? producto.aplicaIva : this.aplicarIva();
     item.showSearch = false;
     this.recalcularFila(item);
@@ -305,7 +329,7 @@ export class NuevaCotizacionComponent implements OnInit {
         idProducto: c.idProducto || null,
         nombreConcepto: c.nombreConcepto || null,
         cantidad: c.cantidad,
-        precioUnitario: c.precioCompra,
+        precioUnitario: c.precioVenta,
         moneda: c.moneda,
         utilidadPorcentaje: c.utilidadPorcentaje,
         utilidadValor: c.ganancia,

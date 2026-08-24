@@ -199,8 +199,18 @@ export class TicketPrinterService {
           TOTAL: $${Number(venta.total || venta.totalPagado || venta.totalCobrado || 0).toFixed(2)}
         </div>
         <div class="text-center mb-2" style="font-size: 0.9em;">
-          <span>Efectivo: $${Number(venta.efectivoRecibido || venta.total || venta.totalCobrado || 0).toFixed(2)}</span><br>
-          <span>Cambio: $${Number(venta.cambio || 0).toFixed(2)}</span>
+          ${venta.tarjeta > 0 || venta.transferencia > 0 ? `
+            <div style="border-top: 1px dashed #000; margin: 5px 0;"></div>
+            <b>PAGADO CON:</b><br>
+            ${venta.efectivo > 0 || venta.cambio > 0 ? '<span>Efectivo: $' + Number(venta.efectivoRecibido || venta.efectivo || 0).toFixed(2) + '</span><br>' : ''}
+            ${venta.tarjeta > 0 ? '<span>Tarjeta: $' + Number(venta.tarjeta).toFixed(2) + '</span><br>' : ''}
+            ${venta.transferencia > 0 ? '<span>Transferencia: $' + Number(venta.transferencia).toFixed(2) + '</span><br>' : ''}
+            <div style="border-top: 1px dashed #000; margin: 5px 0;"></div>
+            <span>Cambio: $${Number(venta.cambio || 0).toFixed(2)}</span>
+            ` : `
+            <span>Efectivo: $${Number(venta.efectivoRecibido || venta.total || venta.totalCobrado || 0).toFixed(2)}</span><br>
+            <span>Cambio: $${Number(venta.cambio || 0).toFixed(2)}</span>
+            `}
         </div>
         
         <div class="text-center bold" style="margin-top: 15px;">

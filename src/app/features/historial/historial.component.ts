@@ -7,6 +7,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { TicketPrinterService } from '../../core/services/ticket-printer.service';
+import { ConfigService } from '../../core/services/config.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -103,8 +104,13 @@ export class HistorialComponent implements OnInit {
     private http: HttpClient, 
     private router: Router, 
     public auth: AuthService,
-    private printer: TicketPrinterService
-  , public exportService: ExportService) {}
+    private printer: TicketPrinterService,
+    public exportService: ExportService,
+    private configService: ConfigService
+  ) {}
+
+  get ivaFactor() { return 1 + (this.configService.config().ivaPorDefecto || 16) / 100; }
+  get ivaPorcentaje() { return this.configService.config().ivaPorDefecto || 16; }
 
   isAdmin() {
     return this.auth.sesion()?.idPerfil === 1 || this.auth.sesion()?.idPerfil === 3;
@@ -347,6 +353,9 @@ export class HistorialComponent implements OnInit {
           tieneFactura: v.facturas && v.facturas.length > 0 && v.facturas.some((f: any) => f.estatus === 'Emitida'),
           facturaPdf: v.facturas && v.facturas.length > 0 ? v.facturas.find((f: any) => f.estatus === 'Emitida')?.urlPdf : null,
           total: v.totalPagado,
+          iva: v.totalIva,
+          subtotal: v.subtotal,
+          descuento: Math.max(v.descuento || 0, v.detalles?.reduce((acc: number, d: any) => acc + (d.descuento || 0), 0) || 0),
           detalles: v.detalles?.map((d: any) => ({
             ...d,
             idDetalle: d.idDetalle,
@@ -490,7 +499,7 @@ export class HistorialComponent implements OnInit {
       productos: venta.detalles.map((d: any) => ({
         nombre: d.concepto,
         cantidad: d.cantidad,
-        precioUnitario: d.importe / d.cantidad,
+        precioUnitario: d.precioUnitario || (d.importe / d.cantidad),
         subtotal: d.importe
       }))
     });

@@ -8,6 +8,7 @@ import { TicketPrinterService } from '../../../core/services/ticket-printer.serv
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfigService } from '../../../core/services/config.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -19,6 +20,7 @@ import { Router } from '@angular/router';
 export class CarritoComponent implements OnInit {
   nuevoCliente = output<void>();
   toast = inject(ToastService);
+  configService = inject(ConfigService);
 
   clientes = signal<Cliente[]>([]);
   clienteSeleccionadoId = signal<string>('');
@@ -28,6 +30,11 @@ export class CarritoComponent implements OnInit {
   ultimoSubtotal = signal(0);
   ultimoIva = signal(0);
   ultimoMetodoPago = signal<string>('Efectivo');
+  ultimoEfectivo = signal<number>(0);
+  ultimoTarjeta = signal<number>(0);
+  ultimoTransferencia = signal<number>(0);
+  ultimoCambio = signal<number>(0);
+  ultimoEfectivoRecibido = signal<number>(0);
   ultimoTicketItems = signal<any[]>([]);
   idUltimaVenta = signal<number | null>(null);
   folioUltimaVenta = signal<string | null>(null);
@@ -317,12 +324,12 @@ export class CarritoComponent implements OnInit {
       nombreCliente: cliente?.nombreCompleto ?? 'PÚBLICO GENERAL',
       subtotal: this.pos.subtotal(),
       totalIva: this.pos.totalIva(),
-      descuento: this.descuentoGlobal(),
+      descuento: this.pos.totalDescuentos() + this.descuentoGlobal(),
       totalPagado: aPagar,
       idUsuario: this.auth.sesion()?.idUsuario,
       idSucursal: this.auth.sesion()?.idSucursal || 1,
       metodoPago: primary,
-      montoEfectivo: ef > 0 ? (ef - Math.max(0, this.cambio())) : (0 - Math.max(0, this.cambio())),
+      montoEfectivo: Math.max(0, ef - Math.max(0, this.cambio())),
       montoTarjeta: tar,
       montoTransferencia: tr,
       efectivoRecibido: ef,
@@ -330,10 +337,10 @@ export class CarritoComponent implements OnInit {
       carrito: this.pos.carrito().map((item) => ({
         idProducto: item.producto.idProducto,
         cantidad: item.cantidad,
-        precioUnitario: Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)),
+        precioUnitario: Number(item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario || 0),
         descuento: item.descuento || 0,
         aplicaIva: item.producto.aplicaIva !== false,
-        montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) : 0,
+        montoIva: item.producto.aplicaIva !== false ? (((Number((item.producto.precioPublico || item.producto.precioVenta || item.producto.precioUnitario)) * item.cantidad) - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : this.configService.config().ivaPorDefecto) / 100)) : 0,
       })),
     };
 
@@ -341,6 +348,11 @@ export class CarritoComponent implements OnInit {
     this.ultimoSubtotal.set(this.pos.subtotal());
     this.ultimoIva.set(this.pos.totalIva());
     this.ultimoMetodoPago.set(primary);
+      this.ultimoEfectivo.set(payload.montoEfectivo);
+      this.ultimoTarjeta.set(payload.montoTarjeta);
+      this.ultimoTransferencia.set(payload.montoTransferencia);
+      this.ultimoCambio.set(payload.cambioEntregado);
+      this.ultimoEfectivoRecibido.set(payload.efectivoRecibido);
     this.ultimoTicketItems.set(payload.carrito.map(d => ({ producto: { nombre: this.pos.carrito().find(c => c.producto.idProducto === d.idProducto)?.producto.nombre || 'Producto', precioUnitario: d.precioUnitario }, cantidad: d.cantidad })));
 
       this.pos.checkout(payload).subscribe({
@@ -417,13 +429,21 @@ export class CarritoComponent implements OnInit {
       subtotal: this.ultimoTotal() > 0 ? this.ultimoSubtotal() : this.pos.subtotal(),
       totalIva: this.ultimoTotal() > 0 ? this.ultimoIva() : this.pos.totalIva(),
       metodoPago: this.ultimoMetodoPago(),
+        efectivoRecibido: this.ultimoEfectivoRecibido(),
+        cambio: this.ultimoCambio(),
+        efectivo: this.ultimoEfectivo(),
+        tarjeta: this.ultimoTarjeta(),
+        transferencia: this.ultimoTransferencia(),
       productos: items.map((i: any) => ({
-        nombre: i.producto.nombre,
-        cantidad: i.cantidad,
-        precioUnitario: (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario),
-        descuento: i.descuento || 0,
-        subtotal: i.cantidad * (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario)
-      }))
+          nombre: i.producto.nombre,
+          cantidad: i.cantidad,
+          precioUnitario: (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario),
+          descuento: i.descuento || 0,
+          subtotal: i.cantidad * (i.producto.precioPublico || i.producto.precioVenta || i.producto.precioUnitario),
+          aplicaIva: i.producto.aplicaIva,
+          iva: i.producto.iva !== undefined ? i.producto.iva : this.configService.config().ivaPorDefecto,
+          producto: i.producto
+        }))
     };
     
     this.printer.imprimirTicketVenta(ventaSimulada);

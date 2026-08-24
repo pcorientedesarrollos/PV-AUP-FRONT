@@ -22,7 +22,7 @@ export class CorteCajaComponent implements OnInit {
   
   // Para la apertura
   montoApertura = signal<number>(0);
-  nombreCajero = signal<string>('CAJERO PRINCIPAL');
+  nombreCajero = signal<string>('');
 
   // Para el conteo manual
   efectivoContado = signal<number | null>(null);
@@ -51,6 +51,7 @@ export class CorteCajaComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.nombreCajero.set(this.auth.sesion()?.usuario || 'CAJERO PRINCIPAL');
     this.cargarCorte();
     if (this.isAdmin()) {
       this.cargarHistorialCortes();
@@ -133,8 +134,10 @@ export class CorteCajaComponent implements OnInit {
 
   calcularDiferencia(): number {
     if (this.efectivoContado() === null || !this.datosCorte()) return 0;
-    // La diferencia se calcula contra el total esperado EN FÍSICO (solo efectivo)
-    return this.efectivoContado()! - this.datosCorte().totalTeoricoFisico;
+    // Solo comparar contra lo que debe haber físicamente en el cajón:
+    // fondo inicial de apertura + ventas cobradas en efectivo
+    const esperadoEnCajon = (this.datosCorte().fondoCaja || 0) + (this.datosCorte().ventasEfectivo || 0);
+    return this.efectivoContado()! - esperadoEnCajon;
   }
 
   realizarCorte() {

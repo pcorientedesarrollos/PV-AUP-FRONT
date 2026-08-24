@@ -25,6 +25,7 @@ import { Cliente } from '../../core/interfaces';
 })
 export class PosComponent implements OnInit {
   @ViewChild('carritoRef') carritoRef!: CarritoComponent;
+  @ViewChild(CatalogoComponent) catalogoRef!: CatalogoComponent;
 
   carritoVisible = signal(false);
   mostrarNuevoCliente = signal(false);
@@ -48,6 +49,13 @@ export class PosComponent implements OnInit {
 
   @HostListener('document:keydown', ['$event'])
   handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'F3') {
+      event.preventDefault();
+      if (this.catalogoRef) {
+        this.catalogoRef.enfocarBuscador();
+      }
+    }
+
     if (event.key === 'F12') {
       if (this.carritoRef && this.pos.carrito().length > 0) {
         event.preventDefault();

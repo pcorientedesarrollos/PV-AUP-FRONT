@@ -11,7 +11,7 @@
               </svg>
             </div>
             <input
-              id="buscador-productos"
+              #searchInput id="buscador-productos"
               type="search"
               [ngModel]="busqueda()"
               (ngModelChange)="busquedaModificada($event)"
@@ -63,7 +63,7 @@
               </thead>
               <tbody class="divide-y divide-gray-100">
                 @for (producto of productosFiltrados(); track producto.idProducto) {
-                  <tr (click)="agregar(producto)" class="cursor-pointer hover:bg-amber-50/50 transition-colors group">
+                  <tr class="hover:bg-amber-50/50 transition-colors group">
                     <td class="py-3 px-4">
                       <div class="flex items-center gap-3">
                         @if (producto.imagenUrl) {
@@ -111,7 +111,7 @@
                       }
                     </td>
                     <td class="py-3 px-4 text-center">
-                      <button (click)="agregar(producto); $event.stopPropagation()" class="bg-honey-primary hover:bg-honey-dark text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-honey-primary focus:ring-offset-1 w-full">
+                      <button (click)="agregar(producto)" class="bg-honey-primary hover:bg-honey-dark text-white font-bold text-xs px-4 py-1.5 rounded-full shadow-sm hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-honey-primary focus:ring-offset-1 w-full">
                         Agregar
                       </button>
                     </td>
