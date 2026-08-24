@@ -167,7 +167,7 @@ export class HistorialComponent implements OnInit {
   ];
 
   cargarClientes() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes?limit=1000`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes?limit=10000`).subscribe({
       next: (data: any) => this.clientes.set(data.data || data),
       error: (err) => console.error('Error cargando clientes', err)
     });

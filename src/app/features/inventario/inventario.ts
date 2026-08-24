@@ -188,7 +188,7 @@ export class InventarioComponent implements OnInit {
   }
 
   cargarCatalogo() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe({
       next: (data) => {
         const unicos = [];
         const vistos = new Set<string>();

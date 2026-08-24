@@ -60,14 +60,21 @@ export class ClientesComponent implements OnInit {
     }
 
     const term = this.busqueda().toLowerCase();
-    if (!term) return list;
-    
-    return list.filter(c => 
-      c.nombre.toLowerCase().includes(term) || 
-      (c.domicilio && c.domicilio.toLowerCase().includes(term)) ||
-      (c.telefono && c.telefono.includes(term))
-    );
-  });
+      if (!term) return list;
+      
+      return list.filter(c => 
+        (c.idCliente && c.idCliente.toString().includes(term)) ||
+        (c.nombre && c.nombre.toLowerCase().includes(term)) || 
+        (c.rfc && c.rfc.toLowerCase().includes(term)) ||
+        (c.correo && c.correo.toLowerCase().includes(term)) ||
+        (c.domicilio && c.domicilio.toLowerCase().includes(term)) ||
+        (c.telefono && c.telefono.includes(term)) ||
+        (c.regimenFiscal && c.regimenFiscal.toLowerCase().includes(term)) ||
+        (c.usoCfdi && c.usoCfdi.toLowerCase().includes(term)) ||
+        (c.formaPago && c.formaPago.toLowerCase().includes(term)) ||
+        (c.metodoPago && c.metodoPago.toLowerCase().includes(term))
+      );
+    });
 
   // --- PAGINACIÓN ---
   paginaActual = signal(1);
@@ -203,7 +210,7 @@ export class ClientesComponent implements OnInit {
 
   cargarClientes() {
     this.cargando.set(true);
-    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/clientes?limit=10000`).subscribe({
       next: (res: any) => {
         const data = res.data || res;
         const mapeados = data.map((c: any) => ({

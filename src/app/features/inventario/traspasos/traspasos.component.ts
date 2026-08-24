@@ -67,7 +67,7 @@ export class TraspasosComponent implements OnInit {
   cargarProductosOrigen(idSucursal: number) {
     this.cargando.set(true);
     // Asumiendo que el endpoint de productos acepta idSucursal para filtrar el inventario específico
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?idSucursal=${idSucursal}`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000&idSucursal=${idSucursal}`).subscribe({
       next: (data) => {
         this.productosDisponibles.set(data);
         this.cargando.set(false);

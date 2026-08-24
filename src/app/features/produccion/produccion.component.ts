@@ -56,7 +56,7 @@ export class ProduccionComponent implements OnInit {
 
   cargarProductos() {
     this.cargando.set(true);
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe({
       next: (data) => { 
         this.productos.set(data || []); 
         this.cargando.set(false); 

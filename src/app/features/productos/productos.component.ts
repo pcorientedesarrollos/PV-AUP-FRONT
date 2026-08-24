@@ -309,7 +309,7 @@ export class ProductosComponent implements OnInit {
 
   cargarProductos() {
     this.cargando.set(true);
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos`).subscribe({
+    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe({
       next: (data: any) => { this.productos.set(data.data || data); this.cargando.set(false); },
       error: (err) => { (function(...args: any[]){})('Error al cargar productos:', err); this.cargando.set(false); }
     });

@@ -210,7 +210,7 @@ export class FacturasComponent implements OnInit {
   }
 
   cargarClientes() {
-    this.http.get<any>(`${environment.apiUrl}/pos/clientes?limit=1000`, {
+    this.http.get<any>(`${environment.apiUrl}/pos/clientes?limit=10000`, {
       headers: { 'x-sucursal-id': this.idSucursalSesion.toString() }
     }).subscribe({
       next: (res) => this.clientesGuardados.set(res.data || []),
