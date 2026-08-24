@@ -211,12 +211,16 @@ export class PosService {
 
     if (!forzar) {
       const stockDisponible = this.stockActual()[producto.idProducto] || 0;
-      if (stockDisponible <= 0) {
-        this.solicitarConfirmacionStock(producto, 'vacio', () => this.agregarAlCarrito(producto, true, silent));
-        return false;
-      } else if (cantidadAumentada > stockDisponible) {
-        this.solicitarConfirmacionStock(producto, 'excedido', () => this.agregarAlCarrito(producto, true, silent));
-        return false;
+      // Skip prompt if they already accepted it for this product
+      const yaAcepto = totalEnCarrito > Math.max(0, stockDisponible);
+      if (!yaAcepto) {
+        if (stockDisponible <= 0) {
+          this.solicitarConfirmacionStock(producto, 'vacio', () => this.agregarAlCarrito(producto, true, silent));
+          return false;
+        } else if (cantidadAumentada > stockDisponible) {
+          this.solicitarConfirmacionStock(producto, 'excedido', () => this.agregarAlCarrito(producto, true, silent));
+          return false;
+        }
       }
     }
 
