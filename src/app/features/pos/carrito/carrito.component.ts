@@ -76,7 +76,7 @@ export class CarritoComponent implements OnInit {
   cambio = computed(() => {
     const total = this.totalPagarFinal();
     const ingresado = this.totalIngresado();
-    return ingresado - total;
+    return Number((ingresado - total).toFixed(2));
   });
 
   // Ventas Pausadas Modal
@@ -301,7 +301,7 @@ export class CarritoComponent implements OnInit {
     const aPagar = this.totalPagarFinal();
     const ingresado = this.totalIngresado();
     
-    if (ingresado < aPagar) {
+    if (this.cambio() < 0) {
       // Not enough funds
       return;
     }
