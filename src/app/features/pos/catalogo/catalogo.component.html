@@ -96,13 +96,13 @@
                       }
                     </td>
                     <td class="py-3 px-4 text-center">
-                      @if ((pos.stockActual()[producto.idProducto] || 0) > 5) {
+                      @if ((pos.stockRestanteVisual(producto.idProducto) || 0) > 5) {
                         <span class="inline-flex items-center justify-center px-2 py-1 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded text-xs font-bold min-w-[3rem]">
-                          {{ pos.stockActual()[producto.idProducto] }}
+                          {{ pos.stockRestanteVisual(producto.idProducto) }}
                         </span>
-                      } @else if ((pos.stockActual()[producto.idProducto] || 0) > 0) {
+                      } @else if ((pos.stockRestanteVisual(producto.idProducto) || 0) > 0) {
                         <span class="inline-flex items-center justify-center px-2 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded text-xs font-bold min-w-[3rem] animate-pulse shadow-sm">
-                          {{ pos.stockActual()[producto.idProducto] }}
+                          {{ pos.stockRestanteVisual(producto.idProducto) }}
                         </span>
                       } @else {
                         <span class="inline-flex items-center justify-center px-2 py-1 bg-rose-50 text-rose-700 border border-rose-200 rounded text-xs font-bold min-w-[3rem]">

@@ -72,6 +72,21 @@ export class PosService {
   private _stockActual = signal<Record<number, number>>({});
   readonly stockActual = this._stockActual.asReadonly();
 
+  readonly cantidadesEnCarrito = computed(() => {
+    const mapa: Record<number, number> = {};
+    this._carrito().forEach(item => {
+      mapa[item.producto.idProducto] = (mapa[item.producto.idProducto] || 0) + item.cantidad;
+    });
+    return mapa;
+  });
+
+  stockRestanteVisual(idProducto: number): number {
+    const bd = this._stockActual()[idProducto] || 0;
+    const carrito = this.cantidadesEnCarrito()[idProducto] || 0;
+    return bd - carrito;
+  }
+
+
   getSucursales() {
     return this.http.get<any[]>(`${this.API}/pos/sucursales`);
   }
