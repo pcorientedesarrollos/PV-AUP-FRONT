@@ -30,7 +30,7 @@ export class ProduccionComponent implements OnInit {
   ]);
   
   productosOrigenFraccionar = computed(() => {
-    return this.productos().filter(p => p.tipoArticulo === 'Comod�n' || p.tipoArticulo === 'Materia Prima');
+    return this.productos().filter(p => (p.tipoArticulo || '').startsWith('Comod') || p.tipoArticulo === 'Materia Prima');
   });
 
   // Producir
