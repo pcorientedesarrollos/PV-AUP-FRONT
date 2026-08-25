@@ -32,19 +32,20 @@ export class DashboardComponent implements OnInit {
   }
 
   // Chart
-  public barChartLegend = false;
+  public barChartLegend = true;
   public barChartPlugins = [];
   public barChartData: ChartConfiguration<'bar'>['data'] = {
     labels: [],
     datasets: [
-      { data: [], label: 'Ventas ($)', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' }
+      { data: [], label: 'Esta Semana', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' },
+      { data: [], label: 'Semana Anterior', backgroundColor: 'rgba(156, 163, 175, 0.5)', borderRadius: 4, hoverBackgroundColor: 'rgba(156, 163, 175, 0.8)' }
     ]
   };
   public barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: false },
+      legend: { display: true, position: 'top' },
       tooltip: {
         callbacks: {
           label: function(context) {
@@ -71,6 +72,19 @@ export class DashboardComponent implements OnInit {
       }
     }
   };
+
+  public pieChartOptions: ChartConfiguration<'pie'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'right' }
+    }
+  };
+  public pieChartData: ChartConfiguration<'pie'>['data'] = {
+    labels: ['Efectivo', 'Tarjeta', 'Transferencia'],
+    datasets: [{ data: [0, 0, 0], backgroundColor: ['#22c55e', '#3b82f6', '#8b5cf6'] }]
+  };
+
 
   // Stats
   stats = signal<any>(null);
@@ -124,9 +138,19 @@ export class DashboardComponent implements OnInit {
           this.barChartData = {
             labels: data.graficaDias.map((d: any) => d.fecha),
             datasets: [
-              { data: data.graficaDias.map((d: any) => d.total), label: 'Ventas', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' }
+              { data: data.graficaDias.map((d: any) => d.total), label: 'Esta Semana', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' },
+              { data: data.graficaDiasAnterior ? data.graficaDiasAnterior.map((d: any) => d.total) : [], label: 'Semana Anterior', backgroundColor: 'rgba(156, 163, 175, 0.5)', borderRadius: 4, hoverBackgroundColor: 'rgba(156, 163, 175, 0.8)' }
             ]
           };
+        }
+        if (data && data.metodosPago) {
+          this.pieChartData = {
+            labels: ['Efectivo', 'Tarjeta', 'Transferencia'],
+            datasets: [{ 
+              data: [data.metodosPago.Efectivo || 0, data.metodosPago.Tarjeta || 0, data.metodosPago.Transferencia || 0], 
+              backgroundColor: ['#22c55e', '#3b82f6', '#8b5cf6'] 
+            }]
+          }
         }
       },
       error: (err) => { console.error('Error cargando stats', err); this.cargandoStats.set(false); }

@@ -1,4 +1,7 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Routes, Router } from '@angular/router';
+import { AuthService } from './core/services/auth.service';
+
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
 import { soporteGuard } from './core/guards/soporte.guard';
@@ -124,7 +127,12 @@ export const routes: Routes = [
       },
       {
         path: 'facturas',
-        canActivate: [adminGuard],
+        canActivate: [() => {
+          const auth = inject(AuthService);
+          if (auth.sesion()?.idPerfil === 1 || auth.sesion()?.idPerfil === 3 || auth.sesion()?.idPerfil === 2 || auth.tienePermiso('facturar')) return true;
+          inject(Router).navigate(['/home']);
+          return false;
+        }],
         loadComponent: () =>
           import('./features/facturas/facturas.component').then((m) => m.FacturasComponent),
       },

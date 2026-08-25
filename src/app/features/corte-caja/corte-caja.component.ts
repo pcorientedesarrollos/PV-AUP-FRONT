@@ -158,6 +158,9 @@ export class CorteCajaComponent implements OnInit {
         this.corteRealizado.set(true);
         // Cerramos el turno en frontend para bloquear ventas
         this.auth.cerrarTurno();
+        if (typeof window !== 'undefined' && window.sessionStorage) {
+          sessionStorage.setItem('corteRealizadoEnSesion', 'true');
+        }
       },
       error: (err) => {
         console.error('Error al realizar corte:', err);

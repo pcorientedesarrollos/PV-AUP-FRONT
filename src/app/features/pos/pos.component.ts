@@ -113,6 +113,15 @@ export class PosComponent implements OnInit {
   }
 
   ngOnInit() {
+    // Si ya hicieron un corte de caja en esta misma sesión, no los dejamos abrir otra.
+    // Tienen que cerrar sesión e iniciar de nuevo por seguridad.
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      if (sessionStorage.getItem('corteRealizadoEnSesion') === 'true') {
+        alert("La caja ha sido cerrada correctamente. Por seguridad, debes cerrar sesión y volver a iniciar para abrir una nueva caja.");
+        this.auth.logout();
+        return;
+      }
+    }
     this.turnoAbierto.set(this.auth.turnoAbierto());
 
     const checkTurno = setInterval(() => {

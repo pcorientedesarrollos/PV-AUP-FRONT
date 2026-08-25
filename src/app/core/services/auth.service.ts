@@ -49,6 +49,7 @@ export class AuthService {
       sessionStorage.removeItem('sesion');
       sessionStorage.removeItem('sesionActiva');
       sessionStorage.removeItem('turnoAbierto');
+      sessionStorage.removeItem('corteRealizadoEnSesion');
       window.location.href = '/login';
     } else {
       this._sesionReal.set(null);

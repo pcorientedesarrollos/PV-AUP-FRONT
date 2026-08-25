@@ -401,7 +401,7 @@
               </button>
 
               @if (idUltimaVenta()) {
-                @if (auth.tienePermiso('facturar')) {
+                @if (auth.tienePermiso('facturar') || auth.sesion()?.idPerfil === 2) {
                   <button
                   (click)="irAFacturar()"
                   class="flex-1 py-2 px-4 bg-indigo-600 text-white hover:bg-indigo-500 border border-indigo-200 rounded font-bold shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2"
