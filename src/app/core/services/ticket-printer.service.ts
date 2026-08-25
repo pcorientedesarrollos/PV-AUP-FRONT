@@ -156,7 +156,8 @@ export class TicketPrinterService {
           const aplicaIva = d.aplicaIva !== false && (d.producto?.aplicaIva !== false);
           const tasaIva = d.producto?.iva !== undefined ? Number(d.producto?.iva) : 16;
           const montoIva = aplicaIva ? (importeBase - descuento) * (tasaIva / 100) : 0;
-          const importeConIva = importeOriginal;
+          const importeConIva = aplicaIva ? importeOriginal * (1 + tasaIva / 100) : importeOriginal;
+          const descuentoConIva = aplicaIva ? descuento * (1 + tasaIva / 100) : descuento;
 
           html += `
             <tr>
@@ -170,7 +171,7 @@ export class TicketPrinterService {
               ${descuento > 0 ? `<tr>
                 <td></td>
                 <td class="text-left"><small><i>- Descuento</i></small></td>
-                <td class="text-right"><small><i>-$${Number(descuento).toFixed(2)}</i></small></td>
+                <td class="text-right"><small><i>-$${Number(descuentoConIva).toFixed(2)}</i></small></td>
               </tr>` : ''}
           `;
       });
@@ -195,7 +196,8 @@ export class TicketPrinterService {
               let res = '';
               
               const sumDescItems = detalles.reduce((acc: any, d: any) => acc + Number(d.descuento || 0), 0);
-                const descGlobal = Number(venta.descuento || 0) - sumDescItems;
+                const descGlobalRaw = Number(venta.descuento || 0) - sumDescItems;
+                const descGlobal = descGlobalRaw > 0 ? descGlobalRaw * (1 + ((16) / 100)) : 0;
                 if (descGlobal > 0.01) {
                 res += `DESCUENTO: -$${descGlobal.toFixed(2)}<br>`;
               }
@@ -425,3 +427,5 @@ export class TicketPrinterService {
     }
   }
 }
+
+

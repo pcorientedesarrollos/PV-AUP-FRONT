@@ -82,6 +82,7 @@ export class NuevaCotizacionComponent implements OnInit {
   
   onClienteInput() {
     this.idCliente.set(null);
+    this.cargarClientes(this.clienteBuscado());
   }
 
   productosFiltrados = signal<any[]>([]);
@@ -354,3 +355,4 @@ export class NuevaCotizacionComponent implements OnInit {
     this.router.navigate(['/cotizaciones']);
   }
 }
+
