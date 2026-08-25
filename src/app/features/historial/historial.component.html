@@ -121,8 +121,8 @@
           <div class="animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-amber-500"></div>
         </div>
       } @else {
-        <table class="honey-table table-hoverable table-bordered">
-          <thead class="bg-gray-50">
+        <table class="w-full text-sm">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Folio</th>
               <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha / Hora</th>
@@ -170,7 +170,7 @@
                     <button class="p-2 text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </button>
-                    <div class="absolute right-0 w-40 bg-white border border-gray-200 divide-y divide-gray-100 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60]" [ngClass]="(i >= count - 2 && count > 3) ? 'bottom-full mb-1' : 'top-full mt-1'">
+                    <div class="absolute right-0 w-40 bg-white border border-gray-200 divide-y divide-slate-100 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60]" [ngClass]="(i >= count - 2 && count > 3) ? 'bottom-full mb-1' : 'top-full mt-1'">
                       <div class="py-1">
                         <button (click)="verDetalles(venta)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-amber-600 transition-colors">
                           <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
@@ -576,7 +576,7 @@
               </div>
               
               @if (ventaAFacturar()) {
-                <div class="max-h-48 overflow-y-auto bg-white p-2 text-sm divide-y divide-gray-100 custom-scrollbar flex-1">
+                <div class="max-h-48 overflow-y-auto bg-white p-2 text-sm divide-y divide-slate-100 custom-scrollbar flex-1">
                   @for (item of ventaAFacturar().detalles; track item.idDetalle) {
                     <div class="py-2 px-2 flex justify-between items-start gap-4 hover:bg-gray-50 transition-colors">
                       <div class="flex-1">

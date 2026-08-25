@@ -65,8 +65,8 @@
             <p class="text-sm">Haz clic en "Nuevo Proveedor" para agregar uno</p>
           </div>
         } @else {
-          <table class="honey-table table-hoverable table-bordered">
-            <thead class="bg-gray-50">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Proveedor</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">RFC</th>
@@ -416,10 +416,10 @@
           <p class="text-sm text-gray-500 italic">📝 {{ compraDetalle().notas }}</p>
         }
         <!-- Detalle productos -->
-        <div class="honey-table-container">
-          <div class="table-wrapper overflow-x-auto w-full">
+        <div class="flex flex-col flex-1">
+          <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
             <table class="honey-table table-bordered">
-              <thead class="bg-gray-50">
+              <thead class="bg-slate-50 border-b border-slate-200">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
                   <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Cant.</th>

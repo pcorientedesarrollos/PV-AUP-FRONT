@@ -91,7 +91,7 @@
 
     <!-- Tablas -->
     <div class="honey-table-container flex-1">
-      <div class="table-wrapper overflow-x-auto w-full">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
         <!-- VISTA DE MOVIMIENTOS (HISTORIAL) -->
         @if (cargando()) {
           <div class="flex justify-center items-center h-full py-12">
@@ -104,8 +104,8 @@
             <p class="text-sm mt-1">No hay movimientos registrados.</p>
           </div>
         } @else {
-          <table class="honey-table table-hoverable table-bordered">
-            <thead class="bg-gray-50">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Fecha</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">Concepto</th>
@@ -472,7 +472,7 @@
 
         <!-- Resultados de Búsqueda -->
         @if (busquedaMerma.length > 0) {
-          <ul class="border border-gray-200 rounded-md divide-y divide-gray-100 max-h-40 overflow-y-auto">
+          <ul class="border border-gray-200 rounded-md divide-y divide-slate-100 max-h-40 overflow-y-auto">
             @for (prod of getProductosMermaFiltrados(); track prod.idProducto) {
               <li class="p-2 hover:bg-red-50 cursor-pointer flex justify-between items-center text-sm" (click)="onProductoMermaChange(prod.idProducto); busquedaMerma = ''">
                 <span class="font-medium text-gray-700 truncate pr-2">{{ prod.nombre }}</span>

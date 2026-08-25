@@ -39,7 +39,7 @@ import { AuthService } from '../../core/services/auth.service';
       <div class="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col">
         <div class="overflow-x-auto flex-1">
           <table class="w-full text-left text-sm text-slate-700">
-            <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200">
+            <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 text-slate-500">
               <tr>
                 <th class="py-3 px-4 font-semibold">ID</th>
                 <th class="py-3 px-4 font-semibold">Nombre</th>

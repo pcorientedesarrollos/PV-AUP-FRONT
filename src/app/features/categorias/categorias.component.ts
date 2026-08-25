@@ -54,9 +54,9 @@ import { PaginacionComponent } from '../../shared/components/paginacion/paginaci
       <div class="flex-1 overflow-hidden flex flex-col pb-4">
         @if (!vistaTarjetas()) {
           <div class="flex-1 bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-0 relative z-10">
-            <div class="overflow-auto flex-1 custom-scrollbar">
-              <table class="w-full text-left text-sm text-slate-700 whitespace-nowrap">
-                <thead class="sticky top-0 z-10 bg-slate-900 text-slate-200 text-sm">
+            <div class="overflow-x-auto flex-1 custom-scrollbar">
+              <table class="w-full text-left text-sm text-slate-700 ">
+                <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200 text-slate-500 text-sm">
                   <tr>
                     <th class="py-3 px-4 font-semibold w-16">ID</th>
                     <th class="py-3 px-4 font-semibold w-24">Color</th>
