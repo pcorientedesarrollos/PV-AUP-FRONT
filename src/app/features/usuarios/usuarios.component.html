@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
+<div class="h-full flex flex-col bg-transparent w-full">
   
   <!-- Encabezado con Botones de Acción -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
@@ -100,11 +100,11 @@
           <tbody class="bg-white divide-y divide-gray-200">
             @for (usr of usuariosFiltrados(); track usr.idUsuario) {
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 text-sm font-medium">#{{ usr.idUsuario }}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                <td class="px-6 py-4 text-center text-gray-500 text-sm font-medium">#{{ usr.idUsuario }}</td>
+                <td class="px-6 py-4 text-sm text-gray-900 font-medium">
                   {{ usr.usuario }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 text-sm text-gray-900">
                   @if (usr.idPerfil === 1) {
                     <span class="badge-warning inline-flex items-center gap-1.5 font-bold">
                       <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Administrador
@@ -120,7 +120,7 @@
                   }
                 </td>
                 @if (isSoporte()) {
-                  <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                  <td class="px-6 py-4 text-center text-sm">
                     @if (usr.oculto === 1) {
                       <span class="badge-danger font-bold text-[10px]">Inactivo</span>
                     } @else {
@@ -128,7 +128,7 @@
                     }
                   </td>
                 }
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                <td class="px-6 py-4 text-center text-sm">
                   <div class="flex items-center justify-center gap-2">
                     <button (click)="abrirModal(usr)" class="text-gray-400 hover:text-amber-600 transition-colors p-1" title="Editar Usuario">
                       <svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" /></svg>

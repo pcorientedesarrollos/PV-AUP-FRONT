@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
+<div class="h-full flex flex-col bg-transparent w-full">
 
   <!-- Encabezado -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -84,23 +84,23 @@
             <tbody class="bg-white divide-y divide-gray-200">
               @for (d of devolucionesPaginadas(); track d.idDevolucion) {
                 <tr (click)="verDetalles(d)" class="cursor-pointer">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{{ d.fechaDevolucion | date:'dd/MM/yy HH:mm' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 text-sm text-gray-600">{{ d.fechaDevolucion | date:'dd/MM/yy HH:mm' }}</td>
+                  <td class="px-6 py-4 ">
                     <span class="font-mono text-sm font-bold text-gray-900">{{ d.venta?.folio || '—' }}</span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap hidden sm:table-cell">
+                  <td class="px-6 py-4 hidden sm:table-cell">
                     <span class="text-xs px-2.5 py-0.5 rounded-full font-bold"
                           [ngClass]="d.tipo === 'Total' ? 'badge-danger' : 'badge-warning'">
                       {{ d.tipo }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">{{ d.motivo || '—' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                  <td class="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">{{ d.motivo || '—' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-500 hidden md:table-cell">
                     @if (d.items?.length) {
                       <span class="text-xs">{{ d.items.length }} producto(s)</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-black text-red-600">{{ d.montoDevuelto | currency:'MXN':'$':'1.2-2' }}</td>
+                  <td class="px-6 py-4 text-right text-sm font-black text-red-600">{{ d.montoDevuelto | currency:'MXN':'$':'1.2-2' }}</td>
                 </tr>
               }
             </tbody>
@@ -175,9 +175,9 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                   @for (item of devolucionSeleccionada().items; track item.idProducto) {
                     <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ item.nombre }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-900">{{ item.cantidad }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                      <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ item.nombre }}</td>
+                      <td class="px-6 py-4 text-sm text-center text-gray-900">{{ item.cantidad }}</td>
+                      <td class="px-6 py-4 text-sm text-center">
                         @if ((item.destino || 'stock') === 'stock') {
                           <span class="badge-success inline-flex items-center gap-1 font-bold">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -190,7 +190,7 @@
                           </span>
                         }
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                      <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">
                         {{ (item.cantidad * item.precioUnitario) | currency:'MXN':'$':'1.2-2' }}
                       </td>
                     </tr>

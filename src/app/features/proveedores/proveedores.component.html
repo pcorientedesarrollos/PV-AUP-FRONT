@@ -1,4 +1,4 @@
-<div class="h-full flex flex-col bg-transparent max-w-7xl mx-auto w-full">
+<div class="h-full flex flex-col bg-transparent w-full">
 
   <!-- Encabezado y Acciones -->
   <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
@@ -81,42 +81,42 @@
               @for (p of proveedoresPaginados(); track p.idProveedor) {
                 <tr>
                   <td class="px-6 py-4 text-sm text-gray-900 whitespace-normal min-w-[200px] max-w-[300px] break-words">{{ p.nombre }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 text-sm text-gray-900">
                     @if (p.rfc) {
                       {{ p.rfc }}
                     } @else {
                       <span class="text-gray-400 italic">No registrado</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 text-sm text-gray-900">
                     @if (p.formaPago) {
                       {{ getNombreFormaPago(p.formaPago) }}
                     } @else {
                       <span class="text-gray-400 italic">-</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 text-sm text-gray-900">
                     @if (p.metodoPago) {
                       {{ p.metodoPago }}
                     } @else {
                       <span class="text-gray-400 italic">-</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 text-sm text-gray-900">
                     @if (p.usoCfdi) {
                       {{ getNombreUsoCfdi(p.usoCfdi) }}
                     } @else {
                       <span class="text-gray-400 italic">-</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td class="px-6 py-4 text-sm text-gray-900">
                     @if (p.cp) {
                       {{ p.cp }}
                     } @else {
                       <span class="text-gray-400 italic">-</span>
                     }
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <td class="px-6 py-4 text-sm text-center">
                     <div class="flex items-center justify-center gap-2">
                       <button (click)="cargarComprasDeProveedor(p)" class="text-gray-400 hover:text-indigo-600 transition-colors p-1" title="Ver Compras">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -430,10 +430,10 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 @for (d of compraDetalle().detalles; track d.idDetalleCompra) {
                   <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ d.producto?.nombre || '—' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-600">{{ d.cantidad }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-600">{{ d.precioCosto | currency:'MXN':'$':'1.2-2' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ d.producto?.nombre || '—' }}</td>
+                    <td class="px-6 py-4 text-sm text-center text-gray-600">{{ d.cantidad }}</td>
+                    <td class="px-6 py-4 text-sm text-right text-gray-600">{{ d.precioCosto | currency:'MXN':'$':'1.2-2' }}</td>
+                    <td class="px-6 py-4 text-right text-sm font-bold text-gray-900">{{ d.subtotal | currency:'MXN':'$':'1.2-2' }}</td>
                   </tr>
                 }
               </tbody>

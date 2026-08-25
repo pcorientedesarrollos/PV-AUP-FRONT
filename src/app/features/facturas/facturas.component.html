@@ -103,7 +103,7 @@
     <div class="honey-table-container flex-1 flex flex-col min-h-0">
       <!-- Wrapper con overflow para scroll responsivo -->
       <div class="table-wrapper flex-1 overflow-auto bg-white border-b border-gray-200">
-        <table class="honey-table table-hoverable table-bordered w-full min-w-[900px]">
+        <table class="honey-table table-hoverable table-bordered w-full ">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
               @if (modoVista() === 'facturas') {
@@ -121,7 +121,7 @@
           <tbody class="bg-white divide-y divide-gray-200">
             @for (f of registrosPaginados(); track (modoVista() === 'facturas' ? f.idFactura : f.idVenta)) {
               <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 ">
                   @if (modoVista() === 'facturas') {
                     <div class="font-bold text-gray-900 text-sm">{{ f.uuid ? f.uuid.substring(0, 13) + '...' : 'Generando...' }}</div>
                     <div class="text-xs text-gray-500 mt-1">Venta ID: {{ f.venta?.idVenta }}</div>
@@ -129,10 +129,10 @@
                     <div class="font-bold text-gray-900 text-sm">{{ f.folio || 'VTA-' + f.idVenta }}</div>
                   }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600 hidden md:table-cell">
+                <td class="px-6 py-4 text-sm text-gray-600 hidden md:table-cell">
                   {{ (modoVista() === 'facturas' ? f.fechaEmision : f.fechaVenta) | date:'dd/MMM/yyyy HH:mm' }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-6 py-4 ">
                   @if (modoVista() === 'facturas') {
                     <div class="font-semibold text-gray-800 text-sm">{{ f.nombreCliente }}</div>
                     <div class="text-xs text-gray-500 mt-1">{{ f.rfcCliente }}</div>
@@ -141,10 +141,10 @@
                     <div class="text-xs text-gray-500 mt-1">{{ f.cliente?.rfc || 'XAXX010101000' }}</div>
                   }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap font-bold text-emerald-600 text-right text-sm">
+                <td class="px-6 py-4 font-bold text-emerald-600 text-right text-sm">
                   {{ (modoVista() === 'facturas' ? f.total : f.totalPagado) | currency }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                <td class="px-6 py-4 text-center text-sm">
                   @if (modoVista() === 'facturas') {
                     @if (f.estatus === 'Cancelada') {
                       <span class="bg-red-100 text-red-800 font-bold px-2 py-1 rounded-md text-xs">Cancelada</span>
@@ -155,7 +155,7 @@
                     <span class="bg-yellow-100 text-yellow-800 font-bold px-2 py-1 rounded-md text-xs">Pendiente</span>
                   }
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
+                <td class="px-6 py-4 text-center text-sm">
                   <div class="flex justify-center gap-2">
                   @if (modoVista() === 'facturas') {
                     @if (f.estatus === 'Cancelada') {

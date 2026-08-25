@@ -119,7 +119,7 @@
             <tbody class="bg-white divide-y divide-gray-200">
               @for (item of registrosPaginados(); track $index) {
                 <tr class="transition-colors group">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td class="px-6 py-4 text-sm text-gray-500">
                     {{ item.fecha | date:'dd/MM/yy HH:mm' }}
                   </td>
                   <td class="px-6 py-4 whitespace-normal text-sm font-bold text-gray-800 leading-tight max-w-[200px] sm:max-w-[250px] break-words group-hover:text-indigo-700 transition-colors">
@@ -127,17 +127,17 @@
                     <div class="sm:hidden text-xs text-gray-400 font-normal mt-1">{{ item.descripcion || item.subcuenta }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-normal text-sm text-gray-500 min-w-[200px] max-w-[400px] break-words hidden sm:table-cell">{{ item.descripcion || item.subcuenta || 'Sin descripción' }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-gray-700 text-right">{{ item.cantidad || item.entradas || 0 }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center">
+                  <td class="px-6 py-4 text-sm font-black text-gray-700 text-right">{{ item.cantidad || item.entradas || 0 }}</td>
+                  <td class="px-6 py-4 text-sm text-center">
                     <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
                           [ngClass]="getBadgeColor(item.movimiento)">
                       {{ item.movimiento || 'Entrada' }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-center text-gray-500 hidden md:table-cell">
+                  <td class="px-6 py-4 text-sm text-center text-gray-500 hidden md:table-cell">
                     {{ item.usuario?.nombreCompleto || item.usuario?.nombreUsuario || 'Sistema' }}
                   </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-center relative">
+                <td class="px-6 py-4 text-sm text-center relative">
                   <div class="flex items-center justify-center">
                     <button (click)="toggleMenu(item); $event.stopPropagation()" class="text-gray-400 hover:text-indigo-500 hover:bg-indigo-50 p-1.5 rounded-lg transition-colors focus:outline-none">
                       <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

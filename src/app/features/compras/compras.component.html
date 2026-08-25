@@ -87,11 +87,11 @@
                     (click)="verDetalle(compra)"
                     class="cursor-pointer"
                     [ngClass]="compraDetalle()?.idCompra === compra.idCompra ? 'bg-amber-50 border-l-4 border-l-amber-500' : ''">
-                    <td class="px-6 py-4 whitespace-nowrap font-bold">{{ compra.folio }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">{{ compra.fechaCompra | date:'medium' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap font-medium">{{ compra.proveedor?.nombre || 'Sin Proveedor' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ compra.folioFacturaProveedor || '-' }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900">{{ compra.total | currency:'MXN':'symbol':'1.2-2' }}</td>
+                    <td class="px-6 py-4 font-bold">{{ compra.folio }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ compra.fechaCompra | date:'medium' }}</td>
+                    <td class="px-6 py-4 font-medium">{{ compra.proveedor?.nombre || 'Sin Proveedor' }}</td>
+                    <td class="px-6 py-4 text-gray-500">{{ compra.folioFacturaProveedor || '-' }}</td>
+                    <td class="px-6 py-4 text-right font-black text-gray-900">{{ compra.total | currency:'MXN':'symbol':'1.2-2' }}</td>
                   </tr>
                 }
                 @if (comprasFiltradas().length === 0) {
@@ -239,31 +239,31 @@
             <tbody class="bg-white divide-y divide-gray-200">
               @for (det of registrosPaginados(); track $index) {
                 <tr>
-                  <td class="px-6 py-4 whitespace-nowrap border-l-2 border-transparent hover:border-amber-500">
+                  <td class="px-6 py-4 border-l-2 border-transparent hover:border-amber-500">
                     <p class="font-bold text-gray-900">{{ det.compraFolio }}</p>
                     <span class="text-[11px] text-gray-500 font-mono">{{ det.compraFecha | date:'dd/MM/yy HH:mm' }}</span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 ">
                     <p class="font-bold text-gray-900 text-xs">{{ det.compraProveedor?.nombre || 'Desconocido' }}</p>
                     <p class="text-[10px] font-mono text-gray-500">{{ det.compraProveedor?.rfc || 'XAXX010101000' }}</p>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
+                  <td class="px-6 py-4 ">
                     <p class="font-bold text-gray-900 text-xs">{{ det.producto?.nombre }}</p>
                     <p class="text-[10px] text-gray-500">Clave: {{ det.producto?.codigoBarras || det.producto?.idProducto }}</p>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-center font-black text-gray-900">
+                  <td class="px-6 py-4 text-center font-black text-gray-900">
                     {{ det.cantidad | number:'1.0-0' }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-600 font-medium">
+                  <td class="px-6 py-4 text-right text-gray-600 font-medium">
                     {{ det.precioCosto | currency }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-gray-900">
+                  <td class="px-6 py-4 text-right font-bold text-gray-900">
                     {{ (det.cantidad * det.precioCosto) | currency }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-gray-500 text-[11px]">
+                  <td class="px-6 py-4 text-right text-gray-500 text-[11px]">
                     {{ (det.cantidad * det.precioCosto * 0.16) | currency }}
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right font-black text-gray-900">
+                  <td class="px-6 py-4 text-right font-black text-gray-900">
                     {{ (det.cantidad * det.precioCosto * 1.16) | currency }}
                   </td>
                 </tr>
