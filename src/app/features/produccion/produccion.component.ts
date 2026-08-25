@@ -30,7 +30,7 @@ export class ProduccionComponent implements OnInit {
   ]);
   
   productosOrigenFraccionar = computed(() => {
-    return this.productos().filter(p => p.tipoArticulo === 'Comodín' || p.tipoArticulo === 'Materia Prima');
+    return this.productos().filter(p => p.tipoArticulo === 'Comod�n' || p.tipoArticulo === 'Materia Prima');
   });
 
   // Producir
@@ -57,8 +57,9 @@ export class ProduccionComponent implements OnInit {
   cargarProductos() {
     this.cargando.set(true);
     this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe({
-      next: (data) => { 
-        this.productos.set(data || []); 
+      next: (res: any) => { 
+        const data = res.data || res || []; 
+        this.productos.set(data); 
         this.cargando.set(false); 
       },
       error: (err) => { 
