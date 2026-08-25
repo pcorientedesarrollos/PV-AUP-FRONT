@@ -199,7 +199,7 @@ export class NuevaCompraComponent implements OnInit {
     
     for (const c of (res.conceptos || [])) {
       if (c.productoEncontrado) {
-        const index = nuevosItems.findIndex(i => i.idProducto === c.productoEncontrado.idProducto);
+        const index = nuevosItems.findIndex(i => i.idProducto === c.productoEncontrado.idProducto && i.precioCosto === (c.costoUnitario || c.productoEncontrado.precioUnitario || 0));
         if (index >= 0) {
           nuevosItems[index].cantidad += c.cantidad;
         } else {
@@ -313,3 +313,4 @@ export class NuevaCompraComponent implements OnInit {
     }
   }
 }
+
