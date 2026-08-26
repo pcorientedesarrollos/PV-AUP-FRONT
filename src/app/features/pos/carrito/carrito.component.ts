@@ -182,14 +182,30 @@ export class CarritoComponent implements OnInit {
       alert('El descuento no puede ser negativo.');
       return;
     }
-    if (this.inputTipoDescuento() === 'porcentaje' && desc > 100) {
-      alert('El descuento no puede ser mayor al 100%.');
+
+    let utilidadTotal = 0;
+    this.pos.carrito().forEach(item => {
+      const pPublico = Number(item.producto.precioPublico) || Number(item.producto.precioVenta) || Number(item.producto.precioUnitario) || 0;
+      const pCompra = Number((item.producto as any).precioCompra) || 0;
+      utilidadTotal += (pPublico - pCompra) * (Number(item.cantidad) || 0);
+    });
+
+    const utilidadDisponible = utilidadTotal - this.pos.totalDescuentos();
+
+    let descuentoMonto = desc;
+    if (this.inputTipoDescuento() === 'porcentaje') {
+      if (desc > 100) {
+        alert('El descuento no puede ser mayor al 100%.');
+        return;
+      }
+      descuentoMonto = (this.pos.totalPagar() * desc) / 100;
+    }
+
+    if (descuentoMonto > utilidadDisponible) {
+      alert(`El descuento global ($${descuentoMonto.toFixed(2)}) supera la utilidad disponible de la venta ($${utilidadDisponible.toFixed(2)}). No se puede aplicar.`);
       return;
     }
-    if (this.inputTipoDescuento() === 'cantidad' && desc > this.pos.totalPagar()) {
-      alert('El descuento no puede ser mayor al total de la venta.');
-      return;
-    }
+
     this.tipoDescuento.set(this.inputTipoDescuento());
     this.valorDescuento.set(desc);
     this.cerrarModalDescuento();
@@ -230,17 +246,26 @@ export class CarritoComponent implements OnInit {
     const itemEnCarrito = this.pos.carrito().find(i => i.uid === id);
     if (!itemEnCarrito) return;
 
+    const qty = Number(itemEnCarrito.cantidad) || 0;
+    const pPublico = Number(itemEnCarrito.producto.precioPublico) || Number(itemEnCarrito.producto.precioVenta) || Number(itemEnCarrito.producto.precioUnitario) || 0;
+    const pCompra = Number((itemEnCarrito.producto as any).precioCompra) || 0;
+    const utilidadTotalItem = (pPublico - pCompra) * qty;
+
+    let descMonto = desc;
     if (this.inputTipoDescuentoItem() === 'porcentaje') {
       if (desc > 100) {
         alert('El descuento no puede ser mayor al 100%.');
         return;
       }
-      const qty = Number(itemEnCarrito.cantidad) || 0;
-      const price = Number(itemEnCarrito.producto.precioUnitario) || 0;
-      desc = (desc / 100) * (price * qty); // Convierte porcentaje a cantidad monetaria
+      descMonto = (desc / 100) * (pPublico * qty); // Convierte porcentaje a cantidad monetaria
     }
 
-    this.pos.aplicarDescuentoAItem(id, desc);
+    if (descMonto > utilidadTotalItem) {
+      alert(`El descuento ($${descMonto.toFixed(2)}) supera la utilidad de este artículo ($${utilidadTotalItem.toFixed(2)}). No se puede aplicar.`);
+      return;
+    }
+
+    this.pos.aplicarDescuentoAItem(id, descMonto);
     this.cerrarModalDescuentoItem();
   }
 

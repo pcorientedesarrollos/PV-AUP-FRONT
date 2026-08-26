@@ -394,7 +394,32 @@ export class ProductosComponent implements OnInit {
     }
   }
 
+  validarUtilidadDescuento(): boolean {
+    if (!this.nuevoProducto.aplicaDescuento) return true;
+
+    const pPublico = Number(this.nuevoProducto.precioPublico || 0);
+    const pCompra = Number(this.nuevoProducto.precioCompra || 0);
+    const utilidad = pPublico - pCompra;
+
+    let descuentoMonetario = 0;
+    if (this.nuevoProducto.tipoDescuento === 'monto') {
+      descuentoMonetario = Number(this.nuevoProducto.descuento || 0);
+    } else {
+      descuentoMonetario = (pPublico * Number(this.nuevoProducto.descuento || 0)) / 100;
+    }
+
+    if (descuentoMonetario > utilidad) {
+      return confirm(`El descuento ($${descuentoMonetario.toFixed(2)}) es mayor que la utilidad del producto ($${utilidad.toFixed(2)}). Esto generará pérdidas.\n\n¿Estás seguro de que deseas guardar el producto con este descuento?`);
+    }
+
+    return true;
+  }
+
   guardarProducto() {
+    if (!this.validarUtilidadDescuento()) {
+      return;
+    }
+
     if (this.esNuevoProducto()) {
       this.crearNuevoProducto();
       return;
