@@ -152,14 +152,13 @@
           <table class="w-full text-sm">
             <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Clave</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Código Barras</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center cursor-pointer select-none group/stock" (click)="ciclarFiltroStock()">
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider w-20">Clave</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Producto</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Código Barra</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center cursor-pointer select-none group/stock" (click)="ciclarFiltroStock()">
                   <div class="flex items-center justify-center gap-1.5">
                     <span [ngClass]="{
-                      'text-gray-200': filtroStock() === 'todos',
+                      'text-gray-400': filtroStock() === 'todos',
                       'text-red-400':   filtroStock() === 'sin-stock',
                       'text-amber-400': filtroStock() === 'stock-bajo',
                       'text-emerald-400': filtroStock() === 'disponible'
@@ -167,17 +166,22 @@
                     <svg class="w-3 h-3 text-gray-400 group-hover/stock:text-amber-400 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
                   </div>
                 </th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Estado</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Precio Venta</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center">Compras</th>
-                <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-center w-20">Editar</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Estado</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Precio de Venta</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Descuento</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">IVA</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-right">Precio Público</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Compras</th>
+                <th class="px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center w-20">Editar</th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200 text-sm">
+            <tbody class="bg-white divide-y divide-slate-100 text-sm">
               @for (prod of productosPaginados(); track prod.idProducto) {
                 <tr class="hover:bg-amber-50/50 transition-colors group">
-                  <td class="px-6 py-4 text-sm text-gray-900 font-mono">#{{ prod.idProducto }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">
+                  <!-- Clave -->
+                  <td class="px-4 py-3 text-sm text-gray-900 font-mono">#{{ prod.idProducto }}</td>
+                  <!-- Producto -->
+                  <td class="px-4 py-3 text-sm text-gray-900">
                     <div class="flex items-center gap-3">
                       @if (prod.imagenUrl) {
                         <img [src]="apiUrl + prod.imagenUrl"
@@ -187,12 +191,13 @@
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                       }
-                      <span class="font-semibold text-slate-800">{{ prod.nombre }}</span>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-semibold text-slate-800 truncate">{{ prod.nombre }}</span>
+                        <span class="text-[10px] text-slate-400 truncate">{{ getNombreCategoria(prod) }}</span>
+                      </div>
                     </div>
                   </td>
-                  <td class="py-3 px-4">
-                    <span class="px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600">{{ getNombreCategoria(prod) }}</span>
-                  </td>
+                  <!-- Código de Barras -->
                   <td class="py-3 px-4 text-center">
                     @if (prod.codigoBarras) {
                       <span (click)="codigoBarrasVisualizar.set(prod.codigoBarras)"
@@ -200,9 +205,10 @@
                         ||| {{ prod.codigoBarras }}
                       </span>
                     } @else {
-                      <span class="text-slate-300 text-xs italic">Sin código</span>
+                      <span class="text-slate-300 text-xs italic">—</span>
                     }
                   </td>
+                  <!-- Stock -->
                   <td class="py-3 px-4 text-center">
                     <span class="font-black text-lg" [ngClass]="{
                       'text-red-500': getStockClass(prod) === 'stock-cero',
@@ -210,24 +216,43 @@
                       'text-slate-800': getStockClass(prod) === 'stock-ok'
                     }">{{ prod.stockActual | number:'1.0-0' }}</span>
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-900 text-center">
+                  <!-- Estado -->
+                  <td class="px-4 py-3 text-center">
                     <span [ngClass]="{
                       'badge-danger': getStockClass(prod) === 'stock-cero',
                       'badge-warning': getStockClass(prod) === 'stock-bajo',
                       'badge-success': getStockClass(prod) === 'stock-ok'
                     }">{{ getStockLabel(prod) }}</span>
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-900 text-right">
+                  <!-- Precio de Venta (precioPublico = base sin descuento) -->
+                  <td class="px-4 py-3 text-right">
+                    <span class="font-semibold text-slate-700">{{ prod.precioPublico | currency }}</span>
+                  </td>
+                  <!-- Descuento -->
+                  <td class="px-4 py-3 text-right">
                     @if (prod.aplicaDescuento && (prod.descuento || 0) > 0) {
-                      <div class="flex flex-col items-end leading-tight">
-                        <span class="text-[10px] text-slate-400 line-through font-bold">{{ prod.precioPublico | currency }}</span>
-                        <span class="font-black text-rose-500">{{ prod.precioVenta | currency }}</span>
-                      </div>
+                      @if (prod.tipoDescuento === 'monto') {
+                        <span class="text-xs font-bold text-rose-500">-{{ prod.descuento | currency }}</span>
+                      } @else {
+                        <span class="text-xs font-bold text-rose-500">-{{ prod.descuento }}%</span>
+                      }
                     } @else {
-                      <span class="font-black text-emerald-600">{{ prod.precioVenta | currency }}</span>
+                      <span class="text-xs text-slate-300">—</span>
                     }
                   </td>
-                  <!-- Historial de compras -->
+                  <!-- IVA -->
+                  <td class="px-4 py-3 text-center">
+                    @if (prod.aplicaIva) {
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">{{ prod.iva || 16 }}%</span>
+                    } @else {
+                      <span class="text-xs text-slate-300">—</span>
+                    }
+                  </td>
+                  <!-- Precio Público (precioVenta = precio final al cliente) -->
+                  <td class="px-4 py-3 text-right">
+                    <span class="font-black text-emerald-600">{{ prod.precioVenta | currency }}</span>
+                  </td>
+                  <!-- Compras -->
                   <td class="py-3 px-4 text-center">
                     <button
                       (click)="verComprasProducto(prod)"
@@ -243,7 +268,9 @@
                       Compras
                     </button>
                   </td>
+                  <!-- Editar -->
                   <td class="py-3 px-4 text-center">
+
                     <button (click)="abrirModal(prod)"
                             class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-100 hover:bg-amber-100 text-slate-400 hover:text-amber-600 transition-colors focus:outline-none">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
@@ -707,9 +734,9 @@
               </div>
             </div>
 
-            <!-- 3. Precio Público (readonly) -->
+            <!-- 3. Precio de Venta (readonly) -->
             <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio Público</label>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Precio de Venta</label>
               <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400 font-bold text-sm pointer-events-none">$</span>
                 <input type="number" [value]="nuevoProducto.precioPublico" readonly
@@ -741,7 +768,7 @@
               }
             </div>
 
-            <!-- 5. Aplica IVA y Precio Venta Final -->
+            <!-- 5. Aplica IVA y Precio Público -->
             <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-amber-50 p-4 rounded-xl border border-amber-200">
               <div class="flex flex-col gap-2">
                   <label class="flex items-center gap-2 cursor-pointer">
@@ -763,7 +790,7 @@
                 </div>
 
               <div class="text-right w-full sm:w-auto">
-                <span class="block text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1">Precio Venta Final</span>
+                <span class="block text-[11px] font-bold text-amber-700 uppercase tracking-wider mb-1">Precio Público</span>
                 <span class="text-2xl font-black text-slate-800">{{ nuevoProducto.precioVenta | currency }}</span>
               </div>
             </div>

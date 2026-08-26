@@ -505,7 +505,7 @@ export class InventarioComponent implements OnInit {
       'Producto': p.nombre || 'N/A',
       'Categoría': p.categoria?.nombre || 'N/A',
       'Stock Actual': p.stockActual || 0,
-      'Precio Venta': p.precioPublico || 0,
+      'Precio Público': p.precioPublico || 0,
       'Costo': p.precioUnitario || 0,
       'Sucursal': p.sucursal?.nombre || 'N/A'
     }));

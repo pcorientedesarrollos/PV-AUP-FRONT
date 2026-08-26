@@ -40,16 +40,18 @@ export class PosService {
   );
 
   readonly totalIva = computed(() => {
-    // Tomamos el IVA por defecto del ConfigService
     const ivaDefecto = this.configService.config().ivaPorDefecto || 0; 
     return this._carrito().reduce((acc, item) => {
       const qty = Number(item.cantidad) || 0;
       const price = this.getPrecioActivo(item.producto, qty);
       const discount = Number(item.descuento) || 0;
-      const sub = (price * qty) - discount; // IVA is applied AFTER discount
-      let iva = item.producto.iva !== undefined ? Number(item.producto.iva) : ivaDefecto;
-        if (item.producto.aplicaIva === false) iva = 0;
-        // Removed invalid line
+      const sub = (price * qty) - discount;
+      
+      let iva = 0;
+      if (item.producto.aplicaIva !== false) {
+        iva = item.producto.iva !== undefined ? Number(item.producto.iva) : ivaDefecto;
+      }
+      
       const tasa = iva < 0 ? 0 : iva / 100;
       return acc + (sub * tasa);
     }, 0);
@@ -227,7 +229,8 @@ export class PosService {
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
       const idx = items.findIndex((i) => {
-          const isCustomDiscount = i.descuento !== (Number(i.producto.descuento) || 0) * i.cantidad;
+          const expectedDesc = i.producto.aplicaDescuento ? (Number(i.producto.descuento) || 0) * i.cantidad : 0;
+          const isCustomDiscount = i.descuento !== expectedDesc;
           return i.producto.idProducto === producto.idProducto && !isCustomDiscount;
         });
 
@@ -241,13 +244,13 @@ export class PosService {
             producto: producto, // Update product info in case price/discount changed in DB
             cantidad: qty,
             subtotal: qty * newPrice,
-            descuento: (Number(producto.descuento) || 0) * qty,
+            descuento: (producto.aplicaDescuento ? (Number(producto.descuento) || 0) * qty : 0),
           };
           return updated;
         }
       return [
         ...items,
-        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: Number(producto.descuento) || 0 }
+        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: producto.aplicaDescuento ? (Number(producto.descuento) || 0) : 0 }
       ];
     });
     return true;
@@ -280,7 +283,7 @@ export class PosService {
           const nuevaCantidad = item.cantidad + delta;
           if (nuevaCantidad <= 0) return null;
           const price = this.getPrecioActivo(item.producto, nuevaCantidad);
-          const nuevoDescuento = (Number(item.producto.descuento) || 0) * nuevaCantidad;
+          const nuevoDescuento = item.producto.aplicaDescuento ? (Number(item.producto.descuento) || 0) * nuevaCantidad : 0;
           return {
             ...item,
             cantidad: nuevaCantidad,
@@ -306,7 +309,7 @@ export class PosService {
       items.map((item) => {
         if (item.uid !== uid) return item;
         const price = this.getPrecioActivo(item.producto, Number(cantidad));
-        const nuevoDescuento = (Number(item.producto.descuento) || 0) * Number(cantidad);
+        const nuevoDescuento = item.producto.aplicaDescuento ? (Number(item.producto.descuento) || 0) * Number(cantidad) : 0;
         return {
           ...item,
           cantidad: Number(cantidad),
@@ -325,7 +328,7 @@ export class PosService {
 
   actualizarCantidad(uid: string, cantidad: number) {
     this._carrito.update(items =>
-      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (Number(i.producto.descuento) || 0) * cantidad } : i)
+      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (i.producto.aplicaDescuento ? (Number(i.producto.descuento) || 0) * cantidad : 0) } : i)
     );
   }
 

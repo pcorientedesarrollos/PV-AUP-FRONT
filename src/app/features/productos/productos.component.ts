@@ -656,7 +656,7 @@ export class ProductosComponent implements OnInit {
       'Nombre': p.nombre,
       'Categoría': p.categoria?.nombre || 'N/A',
       'Stock Actual': p.stockActual,
-      'Precio Venta': p.precioPublico || 0,
+      'Precio Público': p.precioPublico || 0,
       'Costo': p.precioUnitario || 0
     }));
     this.exportService.exportToExcel(data, 'Productos');

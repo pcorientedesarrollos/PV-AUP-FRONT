@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../core/services/auth.service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-facturas',
@@ -185,7 +185,7 @@ export class FacturasComponent implements OnInit {
   clientesGuardados = signal<any[]>([]);
   private route = inject(ActivatedRoute);
 
-  constructor(private http: HttpClient, public auth: AuthService, public exportService: ExportService) {}
+  constructor(private http: HttpClient, public auth: AuthService, public exportService: ExportService, private router: Router) {}
 
   ngOnInit() {
     const ses = this.auth.sesion();

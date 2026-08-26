@@ -141,9 +141,9 @@
               <th class="py-3 px-2 text-center w-24">Moneda/TC</th>
               <th class="py-3 px-2 text-center w-24">Utilidad %</th>
               <th class="py-3 px-2 text-center w-16">IVA</th>
-              <th class="py-3 px-2 text-right">Precio Público</th>
+              <th class="py-3 px-2 text-right">Precio de Venta</th>
               <th class="py-3 px-2 text-right">Ganancia</th>
-              <th class="py-3 px-2 text-right">Precio Venta</th>
+              <th class="py-3 px-2 text-right">Precio Público</th>
               <th class="py-3 px-2 text-center"></th>
             </tr>
           </thead>
@@ -205,7 +205,7 @@
                   <input type="checkbox" [ngModel]="item.aplicaIva" (ngModelChange)="onRowIvaChange(item, $event)" class="w-4 h-4 text-indigo-600 rounded border-slate-300 dark:border-slate-600 focus:ring-indigo-500 bg-white dark:bg-slate-800">
                 </td>
 
-                <!-- Precio Venta (readonly) -->
+                <!-- Precio Público (readonly) -->
                 <td class="py-3 px-2 text-right">
                   <span class="text-sm font-medium text-slate-800 dark:text-white">${{ item.precioVenta.toFixed(2) }}</span>
                 </td>

@@ -117,6 +117,28 @@ export class CatalogoComponent implements OnInit {
     this.buscarEnBackend(this.busqueda(), 1);
   }
 
+
+  getDescuentoEfectivo(prod: any): number {
+    if (!prod.aplicaDescuento || !prod.descuento) return 0;
+    const descVal = Number(prod.descuento);
+    if (prod.tipoDescuento === 'monto') {
+      return descVal;
+    }
+    return (Number(prod.precioPublico || 0) * descVal) / 100;
+  }
+
+  getPrecioVentaFinal(prod: any): number {
+    const base = Number(prod.precioPublico || 0) - this.getDescuentoEfectivo(prod);
+    const iva = prod.aplicaIva ? (base * (Number(prod.iva !== undefined ? prod.iva : 16) / 100)) : 0;
+    return base + iva;
+  }
+  
+  getPrecioVentaSinDescuento(prod: any): number {
+    const base = Number(prod.precioPublico || 0);
+    const iva = prod.aplicaIva ? (base * (Number(prod.iva !== undefined ? prod.iva : 16) / 100)) : 0;
+    return base + iva;
+  }
+
   onCameraScan(codigo: string) {
     this.busqueda.set(codigo);
     this.pos.buscarProductoPorCodigo(codigo).subscribe({

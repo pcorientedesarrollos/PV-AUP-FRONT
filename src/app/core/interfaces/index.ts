@@ -19,6 +19,7 @@ export interface Producto {
   precioPublico?: number;
   precioVenta?: number;
   aplicaIva?: boolean;
+  aplicaDescuento?: boolean;
   iva?: number;
   precioMayoreo?: number;
   descuento?: number;
