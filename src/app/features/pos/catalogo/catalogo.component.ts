@@ -23,6 +23,16 @@ export class CatalogoComponent implements OnInit {
     }
   }
 
+  getDescuentoMonetario(producto: any): number {
+    if (!producto.aplicaDescuento) return 0;
+    const desc = Number(producto.descuento) || 0;
+    if (producto.tipoDescuento === 'porcentaje') {
+      const precioBase = Number(producto.precioPublico) || Number(producto.precioUnitario) || Number(producto.precioVenta) || 0;
+      return (precioBase * desc) / 100;
+    }
+    return desc;
+  }
+
   apiUrl = environment.apiUrl;
   productos = signal<Producto[]>([]);
   busqueda = signal('');
@@ -166,3 +176,4 @@ export class CatalogoComponent implements OnInit {
     this.ultimosEscaneos.set([]);
   }
 }
+
