@@ -140,6 +140,9 @@
                 </div>
                 <div class="flex items-center gap-2 mt-1 text-xs text-slate-500">
                   <span>{{ item.producto.codigoBarras || 'S/C' }}</span>
+                  @if (item.descuento) {
+                    <span class="text-rose-500 font-bold">Desc: -{{ item.descuento | currency }}</span>
+                  }
                   @if (auth.tienePermiso('aplicar_descuentos')) {
                     <button (click)="abrirModalDescuentoItem(item.uid!, item.descuento || 0)" class="bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider transition-colors ml-2 flex items-center gap-1 shadow-sm" title="Aplicar descuento por ítem">
                     🏷️ Descuento
