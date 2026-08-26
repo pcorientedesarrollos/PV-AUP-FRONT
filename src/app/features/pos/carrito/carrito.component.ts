@@ -59,9 +59,7 @@ export class CarritoComponent implements OnInit {
   inputDescuento = signal<number | null>(null);
   inputTipoDescuento = signal<'cantidad' | 'porcentaje'>('cantidad');
 
-  totalPagarFinal = computed(() => {
-    return Math.max(0, this.pos.totalPagar() - this.descuentoGlobal());
-  });
+  totalPagarFinal = computed(() => Math.max(0, this.pos.totalPagar()));
 
   // Payment Modal State
   modalPagoAbierto = signal(false);
@@ -349,7 +347,7 @@ export class CarritoComponent implements OnInit {
       nombreCliente: cliente?.nombreCompleto ?? 'PÚBLICO GENERAL',
       subtotal: this.pos.subtotal(),
       totalIva: this.pos.totalIva(),
-      descuento: this.pos.totalDescuentos() + this.descuentoGlobal(),
+      descuento: this.pos.totalDescuentos(),
       totalPagado: aPagar,
       idUsuario: this.auth.sesion()?.idUsuario,
       idSucursal: this.auth.sesion()?.idSucursal || 1,
@@ -449,7 +447,7 @@ export class CarritoComponent implements OnInit {
       fecha: new Date().toLocaleString(),
       nombreUsuario: this.auth.sesion()?.usuario || 'Admin',
       nombreCliente: cliente?.nombreCompleto || 'PÚBLICO GENERAL',
-      descuento: this.pos.totalDescuentos() + this.descuentoGlobal(),
+      descuento: this.pos.totalDescuentos(),
       totalCobrado: this.ultimoTotal(),
       subtotal: this.ultimoTotal() > 0 ? this.ultimoSubtotal() : this.pos.subtotal(),
       totalIva: this.ultimoTotal() > 0 ? this.ultimoIva() : this.pos.totalIva(),

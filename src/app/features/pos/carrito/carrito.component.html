@@ -183,14 +183,14 @@
                 <div class="text-right flex-shrink-0 min-w-[5rem] relative group" (click)="modificarPrecioItem(item)" title="Modificar precio total" style="cursor: pointer;">
                   <p class="text-sm font-bold text-gray-900 group-hover:text-honey-primary transition-colors">
                     @if (item.producto.aplicaIva !== false) {
-                      {{ (item.subtotal * (1 + ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100))) | currency }}
+                      {{ ((item.subtotal - (item.descuento || 0)) * (1 + ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100))) | currency }}
                     } @else {
-                      {{ item.subtotal | currency }}
+                      {{ (item.subtotal - (item.descuento || 0)) | currency }}
                     }
                   </p>
                   <p class="text-[10px] text-slate-500 font-medium whitespace-nowrap group-hover:text-slate-700">
                     @if (item.producto.aplicaIva !== false) {
-                      {{ item.subtotal | currency }} + {{ (item.subtotal * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) | currency }} IVA
+                      {{ (item.subtotal - (item.descuento || 0)) | currency }} + {{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) | currency }} IVA
                     }
                   </p>
                 </div>
@@ -220,26 +220,24 @@
           </div>
 
           <div class="flex justify-between items-center text-sm font-bold text-slate-500">
-            <span>IVA</span>
-            <span class="text-gray-900">{{ pos.totalIva() | currency }}</span>
-          </div>
+          <div class="space-y-2 mb-4 relative z-10">
+            
+            <div class="flex justify-between items-center text-sm font-bold text-slate-500 pt-2">
+              <span>Subtotal</span>
+              <span class="text-gray-900">{{ (pos.subtotal() - pos.totalDescuentos()) | currency }}</span>
+            </div>
 
-          <div class="flex justify-between items-center text-sm font-bold">
-            @if (auth.tienePermiso('aplicar_descuentos')) {
-              <button (click)="abrirModalDescuento()" class="text-honey-primary hover:text-honey-dark underline decoration-dashed underline-offset-4 focus:outline-none flex items-center gap-1 transition-colors" title="Descuento extra en toda la venta">
-              <span>Descuentos {{ tipoDescuento() === 'porcentaje' && valorDescuento() > 0 ? '(' + valorDescuento() + '%\)' : '' }}</span>
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-              </button>
-              }
-              <span class="text-rose-500">-{{ pos.totalDescuentos() + descuentoGlobal() | currency }}</span>
-          </div>
+            <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+              <span>IVA</span>
+              <span class="text-gray-900">{{ pos.totalIva() | currency }}</span>
+            </div>
 
-          <div class="pt-3 border-t border-dashed border-gray-300 flex justify-between items-end mt-2">
-            <span class="text-sm font-black text-gray-900 uppercase tracking-widest">Total</span>
-            <span class="text-4xl font-black text-emerald-600 tracking-tighter">
-              {{ totalPagarFinal() | currency }}
-            </span>
-          </div>
+            <div class="pt-3 border-t border-dashed border-gray-300 flex justify-between items-end mt-2">
+              <span class="text-sm font-black text-gray-900 uppercase tracking-widest">Total</span>
+              <span class="text-4xl font-black text-emerald-600 tracking-tighter">
+                {{ totalPagarFinal() | currency }}
+              </span>
+            </div>
 
           <button
             id="btn-cobrar"
@@ -569,3 +567,4 @@
         </div>
       </div>
     }
+

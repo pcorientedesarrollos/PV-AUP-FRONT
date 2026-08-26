@@ -23,6 +23,17 @@ export class CatalogoComponent implements OnInit {
     }
   }
 
+  getPrecioFinalConIva(producto: any): number {
+    const base = Number(producto.precioPublico) || Number(producto.precioUnitario) || Number(producto.precioVenta) || 0;
+    const desc = this.getDescuentoMonetario(producto);
+    const sub = base - desc;
+    if (producto.aplicaIva !== false) {
+      const iva = producto.iva !== undefined ? Number(producto.iva) : 16;
+      return sub * (1 + (iva / 100));
+    }
+    return sub;
+  }
+
   getPrecioBaseConIva(producto: any): number {
     const base = Number(producto.precioPublico) || Number(producto.precioUnitario) || Number(producto.precioVenta) || 0;
     if (producto.aplicaIva !== false) {
@@ -185,5 +196,6 @@ export class CatalogoComponent implements OnInit {
     this.ultimosEscaneos.set([]);
   }
 }
+
 
 
