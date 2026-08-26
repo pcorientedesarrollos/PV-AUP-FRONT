@@ -190,6 +190,16 @@ export class PosService {
   }
 
 
+  private getDescuentoTotalItem(producto: any, cantidad: number): number {
+    if (!producto.aplicaDescuento) return 0;
+    const desc = Number(producto.descuento) || 0;
+    if (producto.tipoDescuento === 'porcentaje') {
+      const precioBase = Number(producto.precioPublico) || Number(producto.precioVenta) || Number(producto.precioUnitario) || 0;
+      return ((precioBase * desc) / 100) * cantidad;
+    }
+    return desc * cantidad;
+  }
+
   private getPrecioActivo(producto: Producto, cantidad: number): number {
     const precioBase = Number(producto.precioPublico) || Number(producto.precioVenta) || Number(producto.precioUnitario) || 0;
     const minimoMayoreo = Number(producto.minimoMayoreo) || 0;
@@ -229,7 +239,7 @@ export class PosService {
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
       const idx = items.findIndex((i) => {
-          const expectedDesc = i.producto.aplicaDescuento ? (Number(i.producto.descuento) || 0) * i.cantidad : 0;
+          const expectedDesc = this.getDescuentoTotalItem(i.producto, i.cantidad);
           const isCustomDiscount = i.descuento !== expectedDesc;
           return i.producto.idProducto === producto.idProducto && !isCustomDiscount;
         });
@@ -244,13 +254,13 @@ export class PosService {
             producto: producto, // Update product info in case price/discount changed in DB
             cantidad: qty,
             subtotal: qty * newPrice,
-            descuento: (producto.aplicaDescuento ? (Number(producto.descuento) || 0) * qty : 0),
+            descuento: (this.getDescuentoTotalItem(producto, qty)),
           };
           return updated;
         }
       return [
         ...items,
-        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: producto.aplicaDescuento ? (Number(producto.descuento) || 0) : 0 }
+        { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: this.getDescuentoTotalItem(producto, 1) }
       ];
     });
     return true;
@@ -283,7 +293,7 @@ export class PosService {
           const nuevaCantidad = item.cantidad + delta;
           if (nuevaCantidad <= 0) return null;
           const price = this.getPrecioActivo(item.producto, nuevaCantidad);
-          const nuevoDescuento = item.producto.aplicaDescuento ? (Number(item.producto.descuento) || 0) * nuevaCantidad : 0;
+          const nuevoDescuento = this.getDescuentoTotalItem(item.producto, nuevaCantidad);
           return {
             ...item,
             cantidad: nuevaCantidad,
@@ -309,7 +319,7 @@ export class PosService {
       items.map((item) => {
         if (item.uid !== uid) return item;
         const price = this.getPrecioActivo(item.producto, Number(cantidad));
-        const nuevoDescuento = item.producto.aplicaDescuento ? (Number(item.producto.descuento) || 0) * Number(cantidad) : 0;
+        const nuevoDescuento = this.getDescuentoTotalItem(item.producto, Number(cantidad));
         return {
           ...item,
           cantidad: Number(cantidad),
@@ -328,7 +338,7 @@ export class PosService {
 
   actualizarCantidad(uid: string, cantidad: number) {
     this._carrito.update(items =>
-      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (i.producto.aplicaDescuento ? (Number(i.producto.descuento) || 0) * cantidad : 0) } : i)
+      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (this.getDescuentoTotalItem(i.producto, cantidad)) } : i)
     );
   }
 
@@ -467,3 +477,4 @@ export class PosService {
     return this.http.post<any>(`${this.API}/pos/cotizaciones/${idCotizacion}/facturar`, payload);
   }
 }
+
