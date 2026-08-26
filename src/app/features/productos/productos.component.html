@@ -231,11 +231,7 @@
                   <!-- Descuento -->
                   <td class="px-4 py-3 text-right">
                     @if (prod.aplicaDescuento && (prod.descuento || 0) > 0) {
-                      @if (prod.tipoDescuento === 'monto') {
-                        <span class="text-xs font-bold text-rose-500">-{{ prod.descuento | currency }}</span>
-                      } @else {
-                        <span class="text-xs font-bold text-rose-500">-{{ prod.descuento }}%</span>
-                      }
+                      <span class="text-xs font-bold text-rose-500">-{{ getDescuentoEfectivo(prod) | currency }}</span>
                     } @else {
                       <span class="text-xs text-slate-300">—</span>
                     }
