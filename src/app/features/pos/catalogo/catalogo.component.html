@@ -88,11 +88,11 @@
                     <td class="py-3 px-4 text-right">
                       @if ((producto.descuento || 0) > 0) {
                         <div class="flex flex-col items-end leading-tight">
-                          <span class="font-bold text-emerald-600 text-sm">{{ (producto.precioPublico || producto.precioUnitario || producto.precioVenta || 0) | currency }}</span>
+                          <span class="font-bold text-emerald-600 text-sm">{{ getPrecioBaseConIva(producto) | currency }}</span>
                           <span class="text-[11px] font-bold text-rose-500">Desc: -{{ getDescuentoMonetario(producto) | currency }}</span>
                         </div>
                       } @else {
-                        <span class="font-bold text-emerald-600 text-sm">{{ producto.precioVenta | currency }}</span>
+                        <span class="font-bold text-emerald-600 text-sm">{{ getPrecioBaseConIva(producto) | currency }}</span>
                       }
                     </td>
                     <td class="py-3 px-4 text-center">

@@ -23,6 +23,15 @@ export class CatalogoComponent implements OnInit {
     }
   }
 
+  getPrecioBaseConIva(producto: any): number {
+    const base = Number(producto.precioPublico) || Number(producto.precioUnitario) || Number(producto.precioVenta) || 0;
+    if (producto.aplicaIva !== false) {
+      const iva = producto.iva !== undefined ? Number(producto.iva) : 16;
+      return base * (1 + (iva / 100));
+    }
+    return base;
+  }
+
   getDescuentoMonetario(producto: any): number {
     if (!producto.aplicaDescuento) return 0;
     const desc = Number(producto.descuento) || 0;
@@ -176,4 +185,5 @@ export class CatalogoComponent implements OnInit {
     this.ultimosEscaneos.set([]);
   }
 }
+
 
