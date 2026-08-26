@@ -416,6 +416,28 @@ export class ProductosComponent implements OnInit {
     }
   }
 
+
+  getDescuentoEfectivo(prod: any): number {
+    if (!prod.aplicaDescuento || !prod.descuento) return 0;
+    const descVal = Number(prod.descuento);
+    if (prod.tipoDescuento === 'monto') {
+      return descVal;
+    }
+    return (Number(prod.precioPublico || 0) * descVal) / 100;
+  }
+
+  getPrecioVentaFinal(prod: any): number {
+    const base = Number(prod.precioPublico || 0) - this.getDescuentoEfectivo(prod);
+    const iva = prod.aplicaIva ? (base * (Number(prod.iva !== undefined ? prod.iva : 16) / 100)) : 0;
+    return base + iva;
+  }
+  
+  getPrecioVentaSinDescuento(prod: any): number {
+    const base = Number(prod.precioPublico || 0);
+    const iva = prod.aplicaIva ? (base * (Number(prod.iva !== undefined ? prod.iva : 16) / 100)) : 0;
+    return base + iva;
+  }
+
   calcularPrecios() {
     const pc = Number(this.nuevoProducto.precioCompra || 0);
     const util = Number(this.nuevoProducto.utilidad || 0);
@@ -424,6 +446,11 @@ export class ProductosComponent implements OnInit {
 
     const aplicaDesc = this.nuevoProducto.aplicaDescuento;
     const tipoDesc = this.nuevoProducto.tipoDescuento || 'porcentaje';
+
+    // Si se desmarca el descuento, limpiar el valor para evitar acumulaciones
+    if (!aplicaDesc) {
+      this.nuevoProducto.descuento = 0;
+    }
     const descVal = Number(this.nuevoProducto.descuento || 0);
 
     let descuentoEfectivo = 0;
@@ -435,6 +462,14 @@ export class ProductosComponent implements OnInit {
       }
     }
 
+    // Si se desmarca el IVA, limpiar el valor para evitar acumulaciones
+    if (!this.nuevoProducto.aplicaIva) {
+      this.nuevoProducto.iva = 0;
+    } else if (this.nuevoProducto.aplicaIva && (!this.nuevoProducto.iva || this.nuevoProducto.iva === 0)) {
+      // Si se vuelve a activar y el iva está en 0, restaurar el 16% por defecto
+      this.nuevoProducto.iva = 16;
+    }
+
     const baseIva = precioPublico - descuentoEfectivo;
     const ivaCalc = this.nuevoProducto.aplicaIva ? (baseIva * (Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16) / 100)) : 0;
     
@@ -443,18 +478,23 @@ export class ProductosComponent implements OnInit {
   }
 
   private guardarDatosGenerales(id: number) {
+    const aplicaIva = !!this.nuevoProducto.aplicaIva;
+    const aplicaDescuento = !!this.nuevoProducto.aplicaDescuento;
+
     const payload = {
       nombre: this.nuevoProducto.nombre,
       codigoBarras: this.nuevoProducto.codigoBarras,
       precioCompra: Number(this.nuevoProducto.precioCompra || 0),
       precioUnitario: Number(this.nuevoProducto.precioPublico || 0),
-        iva: Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16),
+      // Si aplicaIva está desactivado, siempre mandar iva=0 para limpiar en BD
+      iva: aplicaIva ? Number(this.nuevoProducto.iva !== undefined ? this.nuevoProducto.iva : 16) : 0,
       utilidad: Number(this.nuevoProducto.utilidad || 0),
       precioPublico: Number(this.nuevoProducto.precioPublico || 0),
-      aplicaDescuento: !!this.nuevoProducto.aplicaDescuento,
+      aplicaDescuento: aplicaDescuento,
       tipoDescuento: this.nuevoProducto.tipoDescuento || 'porcentaje',
-      descuento: Number(this.nuevoProducto.descuento || 0),
-      aplicaIva: !!this.nuevoProducto.aplicaIva,
+      // Si aplicaDescuento está desactivado, siempre mandar descuento=0 para limpiar en BD
+      descuento: aplicaDescuento ? Number(this.nuevoProducto.descuento || 0) : 0,
+      aplicaIva: aplicaIva,
       precioVenta: Number(this.nuevoProducto.precioVenta || 0),
       stockMinimo: Number(this.nuevoProducto.stockMinimo || 0),
       claveProdServ: this.nuevoProducto.claveProdServ,
