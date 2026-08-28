@@ -39,6 +39,7 @@ export class CotizacionesComponent implements OnInit {
   idCotizacionAFacturar = signal<number | null>(null);
   folioCotizacionAFacturar = signal('');
   conceptosCotizacionAFacturar = signal<any[]>([]);
+  cotizacionObjAFacturar = signal<any>(null);
 
   formData = {
     rfc: '',
@@ -142,6 +143,7 @@ export class CotizacionesComponent implements OnInit {
     this.idCotizacionAFacturar.set(idCotizacion);
     this.folioCotizacionAFacturar.set(cot.folio);
     this.conceptosCotizacionAFacturar.set(cot.detalles || []);
+    this.cotizacionObjAFacturar.set(cot);
     this.errorFactura.set('');
     
     // Limpiar formData

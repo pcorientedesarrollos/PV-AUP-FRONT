@@ -58,7 +58,7 @@
                     <button class="p-2 text-gray-400 hover:text-indigo-600 focus:outline-none transition-colors rounded-full hover:bg-indigo-50" title="Acciones">
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z"></path></svg>
                     </button>
-                    <div class="absolute right-0 w-48 bg-white border border-gray-200 divide-y divide-slate-100 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60]" [ngClass]="(i >= count - 2 && count > 3) ? 'bottom-full mb-1' : 'top-full mt-1'">
+                    <div class="absolute right-0 w-56 bg-white border border-gray-200 divide-y divide-slate-100 rounded-md shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60]" [ngClass]="(i >= count - 2 && count > 3) ? 'bottom-full mb-1' : 'top-full mt-1'">
                       <div class="py-1">
                         @if (cot.estatus === 'Borrador') {
                           <button (click)="convertirAVenta(cot.idCotizacion)" class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-colors">
@@ -122,7 +122,7 @@
 
 @if (mostrarModalFactura()) {
   <div class="modal-overlay">
-    <div class="modal-container">
+    <div class="modal-container !max-w-5xl">
       
       <div class="modal-header flex justify-between items-center">
         <div>
@@ -142,60 +142,111 @@
           </div>
         }
 
-        <div class="form-grid">
-          <div class="col-span-1 md:col-span-2">
-            <h3 class="section-title">Datos Fiscales del Cliente (Receptor)</h3>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-7">
+            <div class="form-grid">
+              <div class="col-span-1 md:col-span-2">
+                <h3 class="section-title">Datos Fiscales del Cliente (Receptor)</h3>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">RFC</label>
+                <input type="text" [(ngModel)]="formData.rfc" placeholder="EKU9003173C9" class="form-input uppercase">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Código Postal</label>
+                <input type="text" [(ngModel)]="formData.cp" placeholder="00000" class="form-input">
+              </div>
+
+              <div class="form-group md:col-span-2">
+                <label class="form-label">Razón Social (Exacta como en Constancia)</label>
+                <input type="text" [(ngModel)]="formData.razonSocial" placeholder="ESCUELA KEMPER URATE" class="form-input uppercase">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Régimen Fiscal</label>
+                <select [(ngModel)]="formData.regimen" class="form-input">
+                  @for (r of regimenes; track r.id) {
+                    <option [value]="r.id">{{ r.id }} - {{ r.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Uso de CFDI</label>
+                <select [(ngModel)]="formData.usoCfdi" class="form-input">
+                  @for (u of usos; track u.id) {
+                    <option [value]="u.id">{{ u.id }} - {{ u.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Forma de Pago</label>
+                <select [(ngModel)]="formData.formaPago" class="form-input">
+                  @for (fp of formasPago; track fp.id) {
+                    <option [value]="fp.id">{{ fp.id }} - {{ fp.nombre }}</option>
+                  }
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Método de Pago</label>
+                <select [(ngModel)]="formData.metodoPago" class="form-input">
+                  @for (mp of metodosPago; track mp.id) {
+                    <option [value]="mp.id">{{ mp.id }} - {{ mp.nombre }}</option>
+                  }
+                </select>
+              </div>
+            </div>
           </div>
           
-          <div class="form-group">
-            <label class="form-label">RFC</label>
-            <input type="text" [(ngModel)]="formData.rfc" placeholder="EKU9003173C9" class="form-input uppercase">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Código Postal</label>
-            <input type="text" [(ngModel)]="formData.cp" placeholder="00000" class="form-input">
-          </div>
-
-          <div class="form-group md:col-span-2">
-            <label class="form-label">Razón Social (Exacta como en Constancia)</label>
-            <input type="text" [(ngModel)]="formData.razonSocial" placeholder="ESCUELA KEMPER URATE" class="form-input uppercase">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Régimen Fiscal</label>
-            <select [(ngModel)]="formData.regimen" class="form-input">
-              @for (r of regimenes; track r.id) {
-                <option [value]="r.id">{{ r.id }} - {{ r.nombre }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Uso de CFDI</label>
-            <select [(ngModel)]="formData.usoCfdi" class="form-input">
-              @for (u of usos; track u.id) {
-                <option [value]="u.id">{{ u.id }} - {{ u.nombre }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Forma de Pago</label>
-            <select [(ngModel)]="formData.formaPago" class="form-input">
-              @for (fp of formasPago; track fp.id) {
-                <option [value]="fp.id">{{ fp.id }} - {{ fp.nombre }}</option>
-              }
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Método de Pago</label>
-            <select [(ngModel)]="formData.metodoPago" class="form-input">
-              @for (mp of metodosPago; track mp.id) {
-                <option [value]="mp.id">{{ mp.id }} - {{ mp.nombre }}</option>
-              }
-            </select>
+          <div class="lg:col-span-5 h-full">
+            <div class="border-2 border-indigo-100 rounded-xl overflow-hidden shadow-sm h-full flex flex-col">
+              <div class="bg-indigo-50 px-4 py-2 text-sm font-bold text-indigo-900 border-b border-indigo-100 flex items-center justify-between">
+                <span>Detalle de Cotización</span>
+                <span class="text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded text-xs">{{ cotizacionObjAFacturar()?.detalles?.length || 0 }} artículos</span>
+              </div>
+              
+              <div class="max-h-64 overflow-y-auto bg-white p-2 text-sm divide-y divide-slate-100 custom-scrollbar flex-1">
+                @if (cotizacionObjAFacturar()) {
+                  @for (item of cotizacionObjAFacturar().detalles; track item.idDetalle) {
+                    <div class="py-2 px-2 flex justify-between items-start gap-4 hover:bg-gray-50 transition-colors">
+                      <div class="flex-1">
+                        <span class="font-bold text-gray-800">{{ item.producto?.nombre || item.productoSnapshot?.nombre || item.concepto || item.nombreConcepto || 'Producto' }}</span>
+                        <span class="text-gray-500 block text-xs mt-0.5">{{ item.cantidad }} x {{ (item.precioUnitario || item.precio || (item.importe/item.cantidad)) | currency }}</span>
+                        @if ((item.descuento || 0) > 0) {
+                          <span class="text-amber-600 text-xs font-bold block mt-0.5">- Desc: {{ item.descuento | currency }}</span>
+                        }
+                      </div>
+                      <div class="text-right">
+                        <span class="font-bold text-indigo-700">{{ (item.importe || (item.cantidad * (item.precioUnitario || item.precio))) | currency }}</span>
+                      </div>
+                    </div>
+                  }
+                } @else {
+                  <div class="flex-1 bg-white flex flex-col items-center justify-center p-8 text-center text-gray-400">
+                    <p class="font-medium text-sm">Cargando detalles...</p>
+                  </div>
+                }
+              </div>
+              
+              <div class="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                <div class="flex justify-between items-center text-xs text-gray-600 mb-1">
+                  <span>Subtotal:</span>
+                  <span>{{ (cotizacionObjAFacturar()?.subtotal || 0) | currency }}</span>
+                </div>
+                <div class="flex justify-between items-center text-xs text-gray-600 mb-2">
+                  <span>IVA (16%):</span>
+                  <span>{{ (cotizacionObjAFacturar()?.totalIva || 0) | currency }}</span>
+                </div>
+                <div class="flex justify-between items-center text-lg font-black text-gray-900">
+                  <span>Total a facturar:</span>
+                  <span class="text-emerald-600">{{ (cotizacionObjAFacturar()?.total || 0) | currency }}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
