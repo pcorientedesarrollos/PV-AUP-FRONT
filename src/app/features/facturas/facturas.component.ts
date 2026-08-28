@@ -191,7 +191,13 @@ export class FacturasComponent implements OnInit {
     const ses = this.auth.sesion();
     if (ses) {
       this.idSucursalSesion = ses.idSucursal || 0;
-      this.cargarFacturas();
+      
+      if (this.modoVista() === 'facturas') {
+        this.cargarFacturas();
+      } else {
+        this.cargarVentasPorFacturar();
+      }
+      
       this.cargarClientes();
       
       this.route.queryParams.subscribe((params: any) => {

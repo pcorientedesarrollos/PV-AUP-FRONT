@@ -687,6 +687,13 @@ export class HistorialComponent implements OnInit {
       return;
     }
     
+    const sesion = this.auth.sesion();
+    const empresaNombre = sesion?.empresa?.nombre || 'Tu Empresa S.A. de C.V.';
+    const logoUrl = sesion?.empresa?.logoUrl || '';
+    const colorPrincipal = sesion?.empresa?.colorPrincipal || '#2c3e50';
+    const direccion = sesion?.sucursalNombre || 'Dirección no especificada'; // O si hay direccion real
+    const telefono = 'N/A'; // O ajustar si la sucursal tiene tel
+
     const clienteNombre = venta.cliente ? venta.cliente.nombreCompleto : (venta.nombreClienteTemporal || 'Público General');
     
     let html = `
@@ -705,7 +712,7 @@ export class HistorialComponent implements OnInit {
               .company-info { text-align: right; font-size: 12px; }
               
               /* Titulo y Datos */
-              .quote-title { font-size: 28px; color: ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; font-weight: bold; margin-bottom: 10px; }
+              .quote-title { font-size: 28px; color: ${colorPrincipal}; font-weight: bold; margin-bottom: 10px; }
               .meta-table { width: 100%; margin-bottom: 20px; }
               .meta-table td { vertical-align: top; }
               
@@ -715,7 +722,7 @@ export class HistorialComponent implements OnInit {
               
               /* Tabla de Productos */
               .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-              .items-table th { background: ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; color: white; padding: 10px; text-align: left; font-size: 13px; }
+              .items-table th { background: ${colorPrincipal}; color: white; padding: 10px; text-align: left; font-size: 13px; }
               .items-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
               .items-table tr:nth-child(even) { background: #fafafa; }
               
@@ -723,7 +730,7 @@ export class HistorialComponent implements OnInit {
               .totals-wrapper { width: 100%; }
               .totals-table { float: right; width: 30%; min-width: 200px; }
               .totals-table td { padding: 5px; text-align: right; font-size: 13px; }
-              .total-row { font-weight: bold; font-size: 16px; color: ${venta.sucursal?.empresa?.colorPrincipal || '#e74c3c'}; }
+              .total-row { font-weight: bold; font-size: 16px; color: ${colorPrincipal}; }
 
               .text-right { text-align: right; }
           </style>
@@ -734,19 +741,18 @@ export class HistorialComponent implements OnInit {
           <table class="header">
               <tr>
                   <td>
-                      ${venta.sucursal?.empresa?.logoUrl 
-                        ? '<img src="' + venta.sucursal.empresa.logoUrl + '" alt="Logo" class="logo">' 
-                        : '<h2>' + (venta.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.') + '</h2>'}
+                      ${logoUrl 
+                        ? '<img src="' + logoUrl + '" alt="Logo" class="logo">' 
+                        : '<h2>' + empresaNombre + '</h2>'}
                   </td>
                   <td class="company-info">
-                      <strong>${venta.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.'}</strong><br>
-                      ${venta.sucursal?.direccion || 'Dirección no especificada'}<br>
-                      Tel: ${venta.sucursal?.telefono || 'N/A'}<br>
+                      <strong>${empresaNombre}</strong><br>
+                      Sucursal: ${direccion}<br>
                   </td>
               </tr>
           </table>
 
-          <hr style="border: 0; border-top: 2px solid ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; margin-bottom: 20px;">
+          <hr style="border: 0; border-top: 2px solid ${colorPrincipal}; margin-bottom: 20px;">
 
           <!-- Titulo y Datos -->
           <table class="meta-table">
@@ -829,7 +835,10 @@ export class HistorialComponent implements OnInit {
           </div>
       </div>
       <script>
-          window.onload = function() { window.print(); }
+          window.onload = function() { 
+              setTimeout(function() { window.print(); }, 500); 
+          }
+          window.onafterprint = function() { window.close(); }
       </script>
       </body>
       </html>
@@ -838,7 +847,6 @@ export class HistorialComponent implements OnInit {
     printWindow.document.write(html);
     printWindow.document.close();
   }
-
   exportarPDF() {
     const headers = ['ID', 'Fecha', 'Total', 'Pago', 'Estatus', 'Cajero', 'Cliente'];
     const data = this.ventasFiltradas().map((v: any) => [

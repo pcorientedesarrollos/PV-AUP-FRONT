@@ -208,13 +208,18 @@ export class CotizacionesComponent implements OnInit {
     const cot = this.cotizaciones().find(c => c.idCotizacion === idCotizacion);
     if (!cot) return;
     
-    // Crear una ventana de impresión nativa (funciona para Imprimir y Guardar como PDF)
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
       this.toast.show('Por favor permite las ventanas emergentes (pop-ups)', 'error');
       return;
     }
     
+    const sesion = this.auth.sesion();
+    const empresaNombre = sesion?.empresa?.nombre || 'Tu Empresa S.A. de C.V.';
+    const logoUrl = sesion?.empresa?.logoUrl || '';
+    const colorPrincipal = sesion?.empresa?.colorPrincipal || '#2c3e50';
+    const direccion = sesion?.sucursalNombre || 'Dirección no especificada';
+
     const clienteNombre = cot.cliente ? cot.cliente.nombreCompleto : (cot.nombreClienteTemporal || 'Público General');
     
     let html = `
@@ -227,13 +232,8 @@ export class CotizacionesComponent implements OnInit {
               body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
               .container { padding: 40px; }
               
-              /* Encabezado */
-              .header { width: 100%; margin-bottom: 30px; }
-              .logo { max-width: 150px; max-height: 80px; }
-              .company-info { text-align: right; font-size: 12px; }
-              
-              /* Título y Datos de la Cotización */
-              .quote-title { font-size: 28px; color: ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; font-weight: bold; margin-bottom: 10px; }
+              /* Titulo y Datos */
+              .quote-title { font-size: 28px; color: ${colorPrincipal}; font-weight: bold; margin-bottom: 10px; }
               .meta-table { width: 100%; margin-bottom: 20px; }
               .meta-table td { vertical-align: top; }
               
@@ -243,7 +243,7 @@ export class CotizacionesComponent implements OnInit {
               
               /* Tabla de Productos */
               .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
-              .items-table th { background: ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; color: white; padding: 10px; text-align: left; font-size: 13px; }
+              .items-table th { background: ${colorPrincipal}; color: white; padding: 10px; text-align: left; font-size: 13px; }
               .items-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
               .items-table tr:nth-child(even) { background: #fafafa; }
               
@@ -251,9 +251,9 @@ export class CotizacionesComponent implements OnInit {
               .totals-wrapper { width: 100%; }
               .totals-table { float: right; width: 30%; min-width: 200px; }
               .totals-table td { padding: 5px; text-align: right; font-size: 13px; }
-              .total-row { font-weight: bold; font-size: 16px; color: ${cot.sucursal?.empresa?.colorPrincipal || '#e74c3c'}; }
+              .total-row { font-weight: bold; font-size: 16px; color: ${colorPrincipal}; }
 
-              /* Términos y Condiciones */
+              /* Terminos y Condiciones */
               .terms { margin-top: 50px; font-size: 10px; color: #7f8c8d; border-top: 1px solid #eee; padding-top: 10px; }
               
               .text-right { text-align: right; }
@@ -265,21 +265,20 @@ export class CotizacionesComponent implements OnInit {
           <table class="header">
               <tr>
                   <td>
-                      ${cot.sucursal?.empresa?.logoUrl 
-                        ? '<img src="' + cot.sucursal.empresa.logoUrl + '" alt="Logo" class="logo">' 
-                        : '<h2>' + (cot.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.') + '</h2>'}
+                      ${logoUrl 
+                        ? '<img src="' + logoUrl + '" alt="Logo" class="logo">' 
+                        : '<h2>' + empresaNombre + '</h2>'}
                   </td>
-                  <td class="company-info">
-                      <strong>${cot.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.'}</strong><br>
-                      ${cot.sucursal?.direccion || 'Dirección no especificada'}<br>
-                      Tel: ${cot.sucursal?.telefono || 'N/A'}<br>
+                  <td class="company-info" style="text-align: right; font-size: 12px;">
+                      <strong>${empresaNombre}</strong><br>
+                      Sucursal: ${direccion}<br>
                   </td>
               </tr>
           </table>
 
-          <hr style="border: 0; border-top: 2px solid ${cot.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; margin-bottom: 20px;">
+          <hr style="border: 0; border-top: 2px solid ${colorPrincipal}; margin-bottom: 20px;">
 
-          <!-- Título y Datos -->
+          <!-- Titulo y Datos -->
           <table class="meta-table">
               <tr>
                   <td>
@@ -297,14 +296,13 @@ export class CotizacionesComponent implements OnInit {
                           <div class="client-label">CLIENTE:</div>
                           <strong>${clienteNombre}</strong><br>
                           ${cot.cliente?.direccion || 'Dirección no registrada'}<br>
-                          RFC: ${cot.cliente?.rfc || 'XAXX010101000'}<br>
-                          Tel: ${cot.cliente?.telefono || 'N/A'}
+                          RFC: ${cot.cliente?.rfc || 'XAXX010101000'}
                       </div>
                   </td>
               </tr>
           </table>
 
-          <!-- Tabla de Ítems -->
+          <!-- Tabla de Items -->
           <table class="items-table">
               <thead>
                   <tr>
@@ -337,7 +335,7 @@ export class CotizacionesComponent implements OnInit {
               </tbody>
           </table>
 
-          <!-- Sección de Totales -->
+          <!-- Seccion de Totales -->
           <div class="totals-wrapper">
               <table class="totals-table">
                   <tr>
@@ -357,32 +355,30 @@ export class CotizacionesComponent implements OnInit {
 
           <div style="clear: both;"></div>
 
-          <!-- Notas y Términos -->
+          <!-- Terminos -->
           <div class="terms">
-              <strong>TÉRMINOS Y CONDICIONES:</strong>
-              <ol>
-                  <li>Esta cotización tiene una vigencia de ${cot.vigenciaDias} días naturales.</li>
-                  <li>Los precios y tiempos de entrega están sujetos a cambios sin previo aviso.</li>
-                  <li>Esta cotización no representa una factura ni un comprobante fiscal.</li>
-              </ol>
+              <p><strong>Condiciones Comerciales:</strong></p>
+              <ul>
+                  <li>Precios sujetos a cambio sin previo aviso.</li>
+                  <li>Vigencia de la cotización: ${cot.vigenciaDias} días a partir de la fecha de emisión.</li>
+                  ${cot.observaciones ? '<li>Notas: ' + cot.observaciones + '</li>' : ''}
+              </ul>
           </div>
       </div>
-
+      <script>
+          window.onload = function() { 
+              setTimeout(function() { window.print(); }, 500); 
+          }
+          window.onafterprint = function() { window.close(); }
+      </script>
       </body>
       </html>
     `;
-    
+
     printWindow.document.write(html);
     printWindow.document.close();
-    printWindow.focus();
-    
-    // Llamar a print inmediatamente
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 250);
   }
-
+  
   enviarCorreo(cot: any) {
     const clienteNombre = cot.cliente ? cot.cliente.nombreCompleto : (cot.nombreClienteTemporal || 'Público General');
     const email = cot.cliente?.email || '';
