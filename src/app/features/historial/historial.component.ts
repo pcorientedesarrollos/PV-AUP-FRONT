@@ -679,6 +679,166 @@ export class HistorialComponent implements OnInit {
     }
   }
 
+
+  imprimirNotaVenta(venta: any) {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) {
+      alert('Por favor permite las ventanas emergentes (pop-ups)');
+      return;
+    }
+    
+    const clienteNombre = venta.cliente ? venta.cliente.nombreCompleto : (venta.nombreClienteTemporal || 'Público General');
+    
+    let html = `
+      <!DOCTYPE html>
+      <html lang="es">
+      <head>
+          <meta charset="UTF-8">
+          <title>Nota de Venta ${venta.folio || venta.idCajaChica}</title>
+          <style>
+              body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
+              .container { padding: 40px; }
+              
+              /* Encabezado */
+              .header { width: 100%; margin-bottom: 30px; }
+              .logo { max-width: 150px; max-height: 80px; }
+              .company-info { text-align: right; font-size: 12px; }
+              
+              /* Titulo y Datos */
+              .quote-title { font-size: 28px; color: ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; font-weight: bold; margin-bottom: 10px; }
+              .meta-table { width: 100%; margin-bottom: 20px; }
+              .meta-table td { vertical-align: top; }
+              
+              /* Datos del Cliente */
+              .client-box { background: #f9f9f9; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+              .client-label { font-weight: bold; color: #7f8c8d; font-size: 10px; text-transform: uppercase; }
+              
+              /* Tabla de Productos */
+              .items-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+              .items-table th { background: ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; color: white; padding: 10px; text-align: left; font-size: 13px; }
+              .items-table td { padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+              .items-table tr:nth-child(even) { background: #fafafa; }
+              
+              /* Totales */
+              .totals-wrapper { width: 100%; }
+              .totals-table { float: right; width: 30%; min-width: 200px; }
+              .totals-table td { padding: 5px; text-align: right; font-size: 13px; }
+              .total-row { font-weight: bold; font-size: 16px; color: ${venta.sucursal?.empresa?.colorPrincipal || '#e74c3c'}; }
+
+              .text-right { text-align: right; }
+          </style>
+      </head>
+      <body>
+      <div class="container">
+          <!-- Encabezado -->
+          <table class="header">
+              <tr>
+                  <td>
+                      ${venta.sucursal?.empresa?.logoUrl 
+                        ? '<img src="' + venta.sucursal.empresa.logoUrl + '" alt="Logo" class="logo">' 
+                        : '<h2>' + (venta.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.') + '</h2>'}
+                  </td>
+                  <td class="company-info">
+                      <strong>${venta.sucursal?.empresa?.nombre || 'Tu Empresa S.A. de C.V.'}</strong><br>
+                      ${venta.sucursal?.direccion || 'Dirección no especificada'}<br>
+                      Tel: ${venta.sucursal?.telefono || 'N/A'}<br>
+                  </td>
+              </tr>
+          </table>
+
+          <hr style="border: 0; border-top: 2px solid ${venta.sucursal?.empresa?.colorPrincipal || '#2c3e50'}; margin-bottom: 20px;">
+
+          <!-- Titulo y Datos -->
+          <table class="meta-table">
+              <tr>
+                  <td>
+                      <div class="quote-title">NOTA DE VENTA</div>
+                      <p>Folio: <strong>${venta.folio || venta.idCajaChica}</strong><br>
+                      Fecha: ${new Date(venta.fechaEmision || venta.fecha).toLocaleDateString()}<br>
+                      Vendedor: ${venta.usuario?.nombre || 'Vendedor'}</p>
+                  </td>
+                  <td width="50%">
+                      <div class="client-box">
+                          <div class="client-label">CLIENTE:</div>
+                          <strong>${clienteNombre}</strong><br>
+                          ${venta.cliente?.direccion || 'Dirección no registrada'}<br>
+                          RFC: ${venta.cliente?.rfc || 'XAXX010101000'}
+                      </div>
+                  </td>
+              </tr>
+          </table>
+
+          <!-- Tabla de Items -->
+          <table class="items-table">
+              <thead>
+                  <tr>
+                      <th>Descripción</th>
+                      <th width="10%" class="text-right">Cant.</th>
+                      <th width="15%" class="text-right">Precio Unit.</th>
+                      <th width="15%" class="text-right">Total</th>
+                  </tr>
+              </thead>
+              <tbody>
+    `;
+
+    if (venta.detalles && venta.detalles.length > 0) {
+      venta.detalles.forEach((d: any) => {
+        const pUnitario = Number(d.precioConUtilidad || d.precioVenta || d.precioUnitario || 0);
+        const total = pUnitario * Number(d.cantidad);
+        html += `
+          <tr>
+            <td>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</td>
+            <td class="text-right">${d.cantidad}</td>
+            <td class="text-right">$${pUnitario.toFixed(2)}</td>
+            <td class="text-right">$${total.toFixed(2)}</td>
+          </tr>
+        `;
+      });
+    } else {
+      html += `<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-style: italic;">Sin conceptos registrados</td></tr>`;
+    }
+
+    html += `
+              </tbody>
+          </table>
+
+          <!-- Seccion de Totales -->
+          <div class="totals-wrapper">
+              <table class="totals-table">
+                  <tr>
+                      <td>Subtotal:</td>
+                      <td>$${Number(venta.subtotal || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                      <td>IVA:</td>
+                      <td>$${Number(venta.totalIva || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                      <td>Descuento:</td>
+                      <td>$${Number(venta.descuento || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr class="total-row">
+                      <td>TOTAL:</td>
+                      <td>$${Number(venta.total).toFixed(2)}</td>
+                  </tr>
+              </table>
+          </div>
+          
+          <div style="clear: both; padding-top: 50px; text-align: center; font-size: 12px; color: #888;">
+             Este documento es una representación impresa de una nota de venta y no tiene validez fiscal.
+          </div>
+      </div>
+      <script>
+          window.onload = function() { window.print(); }
+      </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
+  }
+
   exportarPDF() {
     const headers = ['ID', 'Fecha', 'Total', 'Pago', 'Estatus', 'Cajero', 'Cliente'];
     const data = this.ventasFiltradas().map((v: any) => [
@@ -693,4 +853,3 @@ export class HistorialComponent implements OnInit {
     this.exportService.exportToPdf(headers, data, 'Historial de Ventas', 'Historial_Ventas', 'l');
   }
 }
-
