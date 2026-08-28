@@ -63,6 +63,7 @@ export class CatalogoComponent implements OnInit {
   escaneandoConCamara = signal(false);
   ultimosEscaneos = signal<{texto: string, exito: boolean, hora: Date}[]>([]);
   categorias = signal<any[]>([]);
+  colorMap = signal<Record<number, string>>({});
 
   productosFiltrados = signal<Producto[]>([]);
   paginaActual = signal(1);
@@ -85,7 +86,14 @@ export class CatalogoComponent implements OnInit {
 
   cargarCategorias() {
     this.pos.getCategorias().subscribe({
-      next: (data) => this.categorias.set(data),
+      next: (data) => {
+        this.categorias.set(data);
+        const map: Record<number, string> = {};
+        data.forEach((c: any) => {
+          map[c.idCategoria] = c.color || 'bg-amber-500';
+        });
+        this.colorMap.set(map);
+      },
       error: (err) => console.error('Error cargando categorias', err)
     });
   }

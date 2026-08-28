@@ -38,6 +38,7 @@ export class CotizacionesComponent implements OnInit {
   errorFactura = signal('');
   idCotizacionAFacturar = signal<number | null>(null);
   folioCotizacionAFacturar = signal('');
+  conceptosCotizacionAFacturar = signal<any[]>([]);
 
   formData = {
     rfc: '',
@@ -103,11 +104,11 @@ export class CotizacionesComponent implements OnInit {
   }
 
   duplicarCotizacion(cot: any) {
-    this.router.navigate(['/pos'], { queryParams: { duplicarCotizacion: cot.idCotizacion } });
+    this.router.navigate(['/cotizaciones/nueva'], { queryParams: { duplicarCotizacion: cot.idCotizacion } });
   }
 
   editarCotizacion(cot: any) {
-    this.router.navigate(['/pos'], { queryParams: { editarCotizacion: cot.idCotizacion } });
+    this.router.navigate(['/cotizaciones/nueva'], { queryParams: { editarCotizacion: cot.idCotizacion } });
   }
 
   nuevaCotizacion() {
@@ -140,6 +141,7 @@ export class CotizacionesComponent implements OnInit {
     
     this.idCotizacionAFacturar.set(idCotizacion);
     this.folioCotizacionAFacturar.set(cot.folio);
+    this.conceptosCotizacionAFacturar.set(cot.detalles || []);
     this.errorFactura.set('');
     
     // Limpiar formData

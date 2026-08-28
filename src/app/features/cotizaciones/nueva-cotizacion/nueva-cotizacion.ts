@@ -3,7 +3,7 @@ import { Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { PosService } from '../../../core/services/pos.service';
@@ -19,6 +19,7 @@ import { ClienteRapidoComponent } from '../../pos/cliente-rapido/cliente-rapido.
 export class NuevaCotizacionComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
   private posService = inject(PosService);
@@ -46,11 +47,66 @@ export class NuevaCotizacionComponent implements OnInit {
   buscandoConceptos = signal<boolean>(false);
   
   guardando = signal(false);
+  isEditMode = signal(false);
+  idCotizacionEdit = signal<number | null>(null);
 
   ngOnInit() {
     this.cargarClientes();
     this.cargarTipoCambio();
-    }
+    
+    this.route.queryParams.subscribe(params => {
+      if (params['duplicarCotizacion']) {
+        this.cargarDesdeHistorial(params['duplicarCotizacion'], false);
+      } else if (params['editarCotizacion']) {
+        this.cargarDesdeHistorial(params['editarCotizacion'], true);
+      }
+    });
+  }
+
+  cargarDesdeHistorial(idOrFolio: string | number, isEditar: boolean) {
+    this.posService.getCotizaciones().subscribe({
+      next: (cotizaciones) => {
+        const cot = cotizaciones.find((c: any) => c.idCotizacion == idOrFolio || c.folio == idOrFolio);
+        if (cot) {
+          if (isEditar) {
+            this.isEditMode.set(true);
+            this.idCotizacionEdit.set(cot.idCotizacion);
+          }
+          if (cot.cliente) {
+            this.idCliente.set(cot.cliente.idCliente);
+            this.clienteBuscado.set(cot.cliente.nombreCompleto);
+          }
+          this.titulo.set(cot.titulo || '');
+          this.observaciones.set(cot.observaciones || '');
+          
+          if (cot.detalles && cot.detalles.length > 0) {
+            const nuevoCarrito = cot.detalles.map((d: any) => {
+              return {
+                tempId: Date.now() + Math.random(),
+                idProducto: d.producto?.idProducto || null,
+                nombre: d.producto?.nombre || null,
+                nombreConcepto: d.nombreConcepto || d.producto?.nombre,
+                cantidad: Number(d.cantidad) || 1,
+                precioCompra: Number(d.precioUnitario) || Number(d.producto?.precioVenta) || 0,
+                aplicaIva: d.aplicaIva || false,
+                iva: this.configService.config().ivaPorDefecto || 16,
+                moneda: d.moneda || 'MXN',
+                tipoCambio: this.tipoCambio(),
+                utilidadPorcentaje: Number(d.utilidadPorcentaje) || 0,
+                ganancia: Number(d.utilidadValor) || 0,
+                precioVenta: Number(d.precioConUtilidad) || Number(d.precioUnitario),
+                showSearch: false,
+                searchResults: []
+              };
+            });
+            this.carrito.set(nuevoCarrito);
+            this.revisarEstadoGlobalIva();
+          }
+        }
+      }
+    });
+  }
+
 
   cargarClientes(search: string = '') {
     this.posService.getClientes(1, 20, search).subscribe((res: any) => {
@@ -339,16 +395,29 @@ export class NuevaCotizacionComponent implements OnInit {
       }))
     };
 
-    this.posService.crearCotizacion(payload).subscribe({
-      next: (res) => {
-        this.toast.show('Cotización creada exitosamente', 'success');
-        this.router.navigate(['/cotizaciones']);
-      },
-      error: (err) => {
-        this.toast.show('Error al crear la cotización', 'error');
-        this.guardando.set(false);
-      }
-    });
+    if (this.isEditMode() && this.idCotizacionEdit()) {
+      this.posService.actualizarCotizacion(this.idCotizacionEdit()!, payload).subscribe({
+        next: (res) => {
+          this.toast.show('Cotización actualizada exitosamente', 'success');
+          this.router.navigate(['/cotizaciones']);
+        },
+        error: (err) => {
+          this.toast.show('Error al actualizar la cotización', 'error');
+          this.guardando.set(false);
+        }
+      });
+    } else {
+      this.posService.crearCotizacion(payload).subscribe({
+        next: (res) => {
+          this.toast.show('Cotización creada exitosamente', 'success');
+          this.router.navigate(['/cotizaciones']);
+        },
+        error: (err) => {
+          this.toast.show('Error al crear la cotización', 'error');
+          this.guardando.set(false);
+        }
+      });
+    }
   }
 
   cancelar() {

@@ -426,22 +426,13 @@ export class PosService {
     this._productoAdvertenciaStock.set(null);
   }
 
-  cargarDesdeHistorial(idOrFolio: string | number, isEditar: boolean, tipo: 'venta' | 'cotizacion') {
+  cargarDesdeHistorial(idOrFolio: string | number, isEditar: boolean, tipo: 'venta') {
     if (tipo === 'venta') {
       this.http.get<any[]>(`${this.API}/pos/ventas?folio=${idOrFolio}`).subscribe({
         next: (ventas) => {
           const venta = ventas.find((v: any) => v.folio == idOrFolio || v.idCajaChica == idOrFolio);
           if (venta) {
             this.poblarCarritoCon(venta.detalles, venta.cliente);
-          }
-        }
-      });
-    } else if (tipo === 'cotizacion') {
-      this.getCotizaciones().subscribe({
-        next: (cotizaciones) => {
-          const cot = cotizaciones.find((c: any) => c.idCotizacion == idOrFolio || c.folio == idOrFolio);
-          if (cot) {
-            this.poblarCarritoCon(cot.detalles, cot.cliente, cot.nombreClienteTemporal);
           }
         }
       });
@@ -514,6 +505,10 @@ export class PosService {
 
   convertirCotizacionAVenta(idCotizacion: number) {
     return this.http.patch<any>(`${this.API}/pos/cotizaciones/${idCotizacion}/convertir`, {});
+  }
+
+  actualizarCotizacion(idCotizacion: number, payload: any) {
+    return this.http.patch<any>(`${this.API}/pos/cotizaciones/${idCotizacion}`, payload);
   }
 
   cambiarEstatusCotizacion(idCotizacion: number, estatus: string) {

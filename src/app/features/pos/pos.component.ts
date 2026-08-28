@@ -130,10 +130,6 @@ export class PosComponent implements OnInit {
         this.pos.cargarDesdeHistorial(params['duplicarVenta'], false, 'venta');
       } else if (params['editarVenta']) {
         this.pos.cargarDesdeHistorial(params['editarVenta'], true, 'venta');
-      } else if (params['duplicarCotizacion']) {
-        this.pos.cargarDesdeHistorial(params['duplicarCotizacion'], false, 'cotizacion');
-      } else if (params['editarCotizacion']) {
-        this.pos.cargarDesdeHistorial(params['editarCotizacion'], true, 'cotizacion');
       }
     });
 
