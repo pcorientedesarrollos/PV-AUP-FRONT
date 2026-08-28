@@ -661,6 +661,14 @@ export class HistorialComponent implements OnInit {
     this.exportService.exportToExcel(data, 'Historial_Ventas');
   }
 
+  duplicarVenta(venta: any) {
+    this.router.navigate(['/pos'], { queryParams: { duplicarVenta: venta.folio || venta.idCajaChica } });
+  }
+
+  editarVenta(venta: any) {
+    this.router.navigate(['/pos'], { queryParams: { editarVenta: venta.folio || venta.idCajaChica } });
+  }
+
   descargarPdf(url: string) {
     if(url) {
       if (url.startsWith('/pos/facturas')) {

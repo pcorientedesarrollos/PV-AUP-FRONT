@@ -96,6 +96,20 @@ export class CotizacionesComponent implements OnInit {
     });
   }
 
+  calcularVencimiento(fechaStr: string, dias: number): Date {
+    const d = new Date(fechaStr);
+    d.setDate(d.getDate() + (dias || 0));
+    return d;
+  }
+
+  duplicarCotizacion(cot: any) {
+    this.router.navigate(['/pos'], { queryParams: { duplicarCotizacion: cot.idCotizacion } });
+  }
+
+  editarCotizacion(cot: any) {
+    this.router.navigate(['/pos'], { queryParams: { editarCotizacion: cot.idCotizacion } });
+  }
+
   nuevaCotizacion() {
     this.router.navigate(['/cotizaciones/nueva']);
   }
@@ -106,7 +120,11 @@ export class CotizacionesComponent implements OnInit {
         next: (res) => {
           if (res.success) {
             this.toast.show('Cotización convertida a venta exitosamente', 'success');
-            this.cargarCotizaciones();
+            if (res.venta && (res.venta.folio || res.venta.idVenta)) {
+              this.router.navigate(['/facturas'], { queryParams: { facturarVenta: res.venta.folio || res.venta.idVenta, returnToHistorial: 'true' } });
+            } else {
+              this.cargarCotizaciones();
+            }
           }
         },
         error: (err) => {

@@ -426,6 +426,53 @@ export class PosService {
     this._productoAdvertenciaStock.set(null);
   }
 
+  cargarDesdeHistorial(idOrFolio: string | number, isEditar: boolean, tipo: 'venta' | 'cotizacion') {
+    if (tipo === 'venta') {
+      this.http.get<any[]>(`${this.API}/pos/ventas?folio=${idOrFolio}`).subscribe({
+        next: (ventas) => {
+          const venta = ventas.find((v: any) => v.folio == idOrFolio || v.idCajaChica == idOrFolio);
+          if (venta) {
+            this.poblarCarritoCon(venta.detalles, venta.cliente);
+          }
+        }
+      });
+    } else if (tipo === 'cotizacion') {
+      this.getCotizaciones().subscribe({
+        next: (cotizaciones) => {
+          const cot = cotizaciones.find((c: any) => c.idCotizacion == idOrFolio || c.folio == idOrFolio);
+          if (cot) {
+            this.poblarCarritoCon(cot.detalles, cot.cliente, cot.nombreClienteTemporal);
+          }
+        }
+      });
+    }
+  }
+
+  poblarCarritoCon(detalles: any[], cliente: any, nombreClienteTemporal?: string) {
+    this._carrito.set([]); // Limpiar
+    const nuevoCarrito = detalles.map(d => {
+      const cantidad = Number(d.cantidad) || 1;
+      const precioUnitario = Number(d.precioUnitario) || Number(d.producto?.precioVenta) || 0;
+      const importe = cantidad * precioUnitario;
+      const utilidad = d.producto ? (precioUnitario - (Number(d.producto?.precioCosto) || 0)) * cantidad : 0;
+      
+      return {
+        uid: Date.now().toString(36) + Math.random().toString(36).substr(2),
+        producto: d.producto,
+        cantidad: cantidad,
+        precioUnitario: precioUnitario,
+        importe: importe,
+        subtotal: importe,
+        utilidad: utilidad,
+        descuento: d.descuento || 0
+      };
+    });
+    this._carrito.set(nuevoCarrito);
+    if (cliente) {
+      this._clienteSeleccionado.set(cliente);
+    }
+  }
+
   // ─── Caja ─────────────────────────────────────────────────────────────────────
   getTurnoActivo(idUsuario: number) {
     return this.http.get<any>(`${this.API}/pos/turno-activo/${idUsuario}`);

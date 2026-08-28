@@ -1,6 +1,6 @@
 import { Component, signal, OnInit, ViewChild, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { PosService } from '../../core/services/pos.service';
 import { ThemeService } from '../../core/services/theme.service';
@@ -44,7 +44,8 @@ export class PosComponent implements OnInit {
     public pos: PosService, 
     private router: Router, 
     public theme: ThemeService,
-    public config: ConfigService
+    public config: ConfigService,
+    private route: ActivatedRoute
   ) {}
 
   @HostListener('document:keydown', ['$event'])
@@ -123,6 +124,18 @@ export class PosComponent implements OnInit {
       }
     }
     this.turnoAbierto.set(this.auth.turnoAbierto());
+
+    this.route.queryParams.subscribe(params => {
+      if (params['duplicarVenta']) {
+        this.pos.cargarDesdeHistorial(params['duplicarVenta'], false, 'venta');
+      } else if (params['editarVenta']) {
+        this.pos.cargarDesdeHistorial(params['editarVenta'], true, 'venta');
+      } else if (params['duplicarCotizacion']) {
+        this.pos.cargarDesdeHistorial(params['duplicarCotizacion'], false, 'cotizacion');
+      } else if (params['editarCotizacion']) {
+        this.pos.cargarDesdeHistorial(params['editarCotizacion'], true, 'cotizacion');
+      }
+    });
 
     const checkTurno = setInterval(() => {
       if (this.auth.turnoAbierto()) {

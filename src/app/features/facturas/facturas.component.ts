@@ -29,7 +29,7 @@ export class FacturasComponent implements OnInit {
   cargando = signal(false);
   idSucursalSesion = 0;
 
-  modoVista = signal<'facturas' | 'porFacturar'>('facturas');
+  modoVista = signal<'facturas' | 'porFacturar'>('porFacturar');
 
   // Filtros
   filtroAnio = signal<string>('');
@@ -570,6 +570,12 @@ export class FacturasComponent implements OnInit {
         if (res && res.urlPdf) {
           this.descargarPdf(res.urlPdf);
         }
+          const returnToHistorial = this.route.snapshot.queryParamMap.get('returnToHistorial');
+          if (returnToHistorial === 'true') {
+            setTimeout(() => {
+              this.router.navigate(['/historial']);
+            }, 1000);
+          }
       },
       error: (err) => {
         this.facturando.set(false);
