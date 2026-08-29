@@ -275,7 +275,7 @@
           <div class="border-t border-dashed border-gray-300 my-4"></div>
           
           <div class="space-y-3">
-            @for (item of ventaSeleccionada().detalles; track item.idDetalle) {
+            @for (item of (ventaSeleccionada().detalles || []); track item.idDetalle) {
               <div class="flex justify-between items-start gap-4">
                 <div class="flex-1">
                   <p class="font-medium text-gray-800 text-sm">{{ item.cantidad }}x {{ item.concepto }}</p>
@@ -410,7 +410,7 @@
           <p class="text-sm text-gray-600 mb-4">Indica la cantidad a devolver de cada producto. Los artículos devueltos regresarán al inventario y el dinero se descontará del ticket.</p>
           
           <div class="space-y-3">
-            @for (item of ventaADevolverParcial().detalles; track item.idDetalle) {
+            @for (item of (ventaADevolverParcial().detalles || []); track item.idDetalle) {
               <div class="flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                 <div class="flex-1">
                   <p class="font-medium text-gray-800 text-sm leading-tight">{{ item.concepto }}</p>
@@ -572,7 +572,7 @@
               
               @if (ventaAFacturar()) {
                 <div class="max-h-48 overflow-y-auto bg-white p-2 text-sm divide-y divide-slate-100 custom-scrollbar flex-1">
-                  @for (item of ventaAFacturar().detalles; track item.idDetalle) {
+                  @for (item of (ventaAFacturar().detalles || []); track item.idDetalle) {
                     <div class="py-2 px-2 flex justify-between items-start gap-4 hover:bg-gray-50 transition-colors">
                       <div class="flex-1">
                         <span class="font-bold text-gray-800">{{ item.producto?.nombre || item.productoSnapshot?.nombre || item.concepto || 'Producto' }}</span>

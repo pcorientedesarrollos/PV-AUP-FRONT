@@ -210,12 +210,6 @@ export class CotizacionesComponent implements OnInit {
     const cot = this.cotizaciones().find(c => c.idCotizacion === idCotizacion);
     if (!cot) return;
     
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      this.toast.show('Por favor permite las ventanas emergentes (pop-ups)', 'error');
-      return;
-    }
-    
     const sesion = this.auth.sesion();
     const empresaNombre = sesion?.empresa?.nombre || 'Tu Empresa S.A. de C.V.';
     const logoUrl = sesion?.empresa?.logoUrl || '';
@@ -234,6 +228,11 @@ export class CotizacionesComponent implements OnInit {
               body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; line-height: 1.5; margin: 0; padding: 0; }
               .container { padding: 40px; }
               
+              /* Encabezado */
+              .header { width: 100%; margin-bottom: 30px; }
+              .logo { max-width: 150px; max-height: 80px; }
+              .company-info { text-align: right; font-size: 12px; }
+
               /* Titulo y Datos */
               .quote-title { font-size: 28px; color: ${colorPrincipal}; font-weight: bold; margin-bottom: 10px; }
               .meta-table { width: 100%; margin-bottom: 20px; }
@@ -319,13 +318,14 @@ export class CotizacionesComponent implements OnInit {
 
     if (cot.detalles && cot.detalles.length > 0) {
       cot.detalles.forEach((d: any) => {
-        const unitarioFinal = Number(d.importe) / Number(d.cantidad);
+        const unitarioFinal = Number(d.precioUnitario || d.precio || (d.importe ? d.importe/d.cantidad : 0));
+          const importeFinal = Number(d.importe || (d.cantidad * unitarioFinal));
         html += `
           <tr>
             <td>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</td>
             <td class="text-right">${d.cantidad}</td>
             <td class="text-right">$${unitarioFinal.toFixed(2)}</td>
-            <td class="text-right">$${Number(d.importe).toFixed(2)}</td>
+            <td class="text-right">$${importeFinal.toFixed(2)}</td>
           </tr>
         `;
       });
@@ -357,28 +357,36 @@ export class CotizacionesComponent implements OnInit {
 
           <div style="clear: both;"></div>
 
-          <!-- Terminos -->
-          <div class="terms">
-              <p><strong>Condiciones Comerciales:</strong></p>
-              <ul>
-                  <li>Precios sujetos a cambio sin previo aviso.</li>
-                  <li>Vigencia de la cotización: ${cot.vigenciaDias} días a partir de la fecha de emisión.</li>
-                  ${cot.observaciones ? '<li>Notas: ' + cot.observaciones + '</li>' : ''}
-              </ul>
-          </div>
+          
       </div>
       <script>
-          window.onload = function() { 
-              setTimeout(function() { window.print(); }, 500); 
-          }
-          window.onafterprint = function() { window.close(); }
-      </script>
-      </body>
-      </html>
-    `;
+            window.onload = function() { 
+                setTimeout(function() { window.print(); }, 500); 
+            }
+        </script>
+        </body>
+        </html>
+      `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+      let iframe = document.getElementById('printFrame') as HTMLIFrameElement;
+      if (!iframe) {
+        iframe = document.createElement('iframe') as HTMLIFrameElement;
+        iframe.id = 'printFrame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+      }
+      
+      const doc = iframe.contentWindow?.document;
+      if (!doc) return;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
   }
   
   enviarCorreo(cot: any) {

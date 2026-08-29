@@ -681,12 +681,6 @@ export class HistorialComponent implements OnInit {
 
 
   imprimirNotaVenta(venta: any) {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) {
-      alert('Por favor permite las ventanas emergentes (pop-ups)');
-      return;
-    }
-    
     const sesion = this.auth.sesion();
     const empresaNombre = sesion?.empresa?.nombre || 'Tu Empresa S.A. de C.V.';
     const logoUrl = sesion?.empresa?.logoUrl || '';
@@ -761,7 +755,7 @@ export class HistorialComponent implements OnInit {
                       <div class="quote-title">NOTA DE VENTA</div>
                       <p>Folio: <strong>${venta.folio || venta.idCajaChica}</strong><br>
                       Fecha: ${new Date(venta.fechaEmision || venta.fecha).toLocaleDateString()}<br>
-                      Vendedor: ${venta.usuario?.nombre || 'Vendedor'}</p>
+                      Vendedor: ${venta.usuario?.nombre || venta.usuarioNombre || 'No Registrado'}</p>
                   </td>
                   <td width="50%">
                       <div class="client-box">
@@ -781,6 +775,7 @@ export class HistorialComponent implements OnInit {
                       <th>Descripción</th>
                       <th width="10%" class="text-right">Cant.</th>
                       <th width="15%" class="text-right">Precio Unit.</th>
+                        <th width="15%" class="text-right">Desc.</th>
                       <th width="15%" class="text-right">Total</th>
                   </tr>
               </thead>
@@ -788,22 +783,27 @@ export class HistorialComponent implements OnInit {
     `;
 
     if (venta.detalles && venta.detalles.length > 0) {
-      venta.detalles.forEach((d: any) => {
-        const pUnitario = Number(d.precioConUtilidad || d.precioVenta || d.precioUnitario || 0);
-        const total = pUnitario * Number(d.cantidad);
-        html += `
-          <tr>
-            <td>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</td>
-            <td class="text-right">${d.cantidad}</td>
-            <td class="text-right">$${pUnitario.toFixed(2)}</td>
-            <td class="text-right">$${total.toFixed(2)}</td>
-          </tr>
-        `;
+        venta.detalles.forEach((d: any) => {
+          const pUnitario = Number(d.precioConUtilidad || d.precioVenta || d.precioUnitario || 0);
+          const desc = Number(d.descuento || 0);
+          const total = pUnitario * Number(d.cantidad);
+          
+          html += `
+            <tr>
+              <td>${d.producto?.nombre || d.nombreConcepto || 'Producto / Servicio'}</td>
+              <td class="text-right">${d.cantidad}</td>
+              <td class="text-right">$${pUnitario.toFixed(2)}</td>
+              <td class="text-right">$${desc.toFixed(2)}</td>
+              <td class="text-right">$${total.toFixed(2)}</td>
+            </tr>
+          `;
       });
     } else {
-      html += `<tr><td colspan="4" style="text-align: center; color: #94a3b8; font-style: italic;">Sin conceptos registrados</td></tr>`;
+      html += `<tr><td colspan="5" style="text-align: center; color: #94a3b8; font-style: italic;">Sin conceptos registrados</td></tr>`;
     }
 
+    const totalDesc = (venta.detalles || []).reduce((acc: number, d: any) => acc + Number(d.descuento || 0), 0) + Number(venta.descuento || 0);
+    
     html += `
               </tbody>
           </table>
@@ -816,12 +816,12 @@ export class HistorialComponent implements OnInit {
                       <td>$${Number(venta.subtotal || 0).toFixed(2)}</td>
                   </tr>
                   <tr>
-                      <td>IVA:</td>
-                      <td>$${Number(venta.totalIva || 0).toFixed(2)}</td>
+                      <td>Descuento:</td>
+                      <td>$${totalDesc.toFixed(2)}</td>
                   </tr>
                   <tr>
-                      <td>Descuento:</td>
-                      <td>$${Number(venta.descuento || 0).toFixed(2)}</td>
+                      <td>IVA:</td>
+                      <td>$${Number(venta.totalIva || 0).toFixed(2)}</td>
                   </tr>
                   <tr class="total-row">
                       <td>TOTAL:</td>
@@ -835,17 +835,33 @@ export class HistorialComponent implements OnInit {
           </div>
       </div>
       <script>
-          window.onload = function() { 
-              setTimeout(function() { window.print(); }, 500); 
-          }
-          window.onafterprint = function() { window.close(); }
-      </script>
-      </body>
-      </html>
-    `;
+            window.onload = function() { 
+                setTimeout(function() { window.print(); }, 500); 
+            }
+        </script>
+        </body>
+        </html>
+      `;
 
-    printWindow.document.write(html);
-    printWindow.document.close();
+      let iframe = document.getElementById('printFrame') as HTMLIFrameElement;
+      if (!iframe) {
+        iframe = document.createElement('iframe') as HTMLIFrameElement;
+        iframe.id = 'printFrame';
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+      }
+      
+      const doc = iframe.contentWindow?.document;
+      if (!doc) return;
+      doc.open();
+      doc.write(html);
+      doc.close();
+
   }
   exportarPDF() {
     const headers = ['ID', 'Fecha', 'Total', 'Pago', 'Estatus', 'Cajero', 'Cliente'];
