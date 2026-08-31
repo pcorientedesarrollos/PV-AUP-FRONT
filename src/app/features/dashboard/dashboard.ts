@@ -48,7 +48,15 @@ export class DashboardComponent implements OnInit {
       legend: { display: true, position: 'top' },
       tooltip: {
         callbacks: {
-          label: function(context) {
+          title: function(tooltipItems: any) {
+              const item = tooltipItems[0];
+              const dataset = item.dataset;
+              if (dataset.fechasReales) {
+                return dataset.fechasReales[item.dataIndex];
+              }
+              return item.label;
+            },
+            label: function(context) {
             let label = context.dataset.label || '';
             if (label) {
                 label += ': ';
@@ -139,7 +147,7 @@ export class DashboardComponent implements OnInit {
             labels: data.graficaDias.map((d: any) => d.fecha),
             datasets: [
               { data: data.graficaDias.map((d: any) => d.total), label: 'Esta Semana', backgroundColor: 'rgba(234, 179, 8, 0.8)', borderRadius: 4, hoverBackgroundColor: 'rgba(234, 179, 8, 1)' },
-              { data: data.graficaDiasAnterior ? data.graficaDiasAnterior.map((d: any) => d.total) : [], label: 'Semana Anterior', backgroundColor: 'rgba(156, 163, 175, 0.5)', borderRadius: 4, hoverBackgroundColor: 'rgba(156, 163, 175, 0.8)' }
+              { data: data.graficaDiasAnterior ? data.graficaDiasAnterior.map((d: any) => d.total) : [], label: 'Semana Anterior', backgroundColor: 'rgba(156, 163, 175, 0.5)', borderRadius: 4, hoverBackgroundColor: 'rgba(156, 163, 175, 0.8)', fechasReales: data.graficaDiasAnterior ? data.graficaDiasAnterior.map((d: any) => d.fecha) : [] } as any
             ]
           };
         }
