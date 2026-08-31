@@ -657,7 +657,13 @@ export class ProductosComponent implements OnInit {
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      const q = this.satProductQuery ? encodeURIComponent(this.satProductQuery) : '';
+      let searchStr = this.satProductQuery;
+      if (showDefault && searchStr.includes(' - ')) {
+        searchStr = '';
+      } else if (searchStr.includes(' - ')) {
+        searchStr = searchStr.split(' - ')[0];
+      }
+      const q = searchStr ? encodeURIComponent(searchStr) : '';
       this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${q}`).subscribe({
         next: (data) => this.satProductsResults = data || [],
         error: (err) => console.error('Error searching SAT products', err)
@@ -671,14 +677,20 @@ export class ProductosComponent implements OnInit {
     this.satProductsResults = [];
   }
 
-    onSatUnitSearch(showDefault = false) {
+  onSatUnitSearch(showDefault = false) {
     clearTimeout(this.searchTimeout);
     if (!this.satUnitQuery && !showDefault) {
       this.satUnitsResults = [];
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      const q = this.satUnitQuery ? encodeURIComponent(this.satUnitQuery) : '';
+      let searchStr = this.satUnitQuery;
+      if (showDefault && searchStr.includes(' - ')) {
+        searchStr = '';
+      } else if (searchStr.includes(' - ')) {
+        searchStr = searchStr.split(' - ')[0];
+      }
+      const q = searchStr ? encodeURIComponent(searchStr) : '';
       this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${q}`).subscribe({
         next: (data) => this.satUnitsResults = data || [],
         error: (err) => console.error('Error searching SAT units', err)
