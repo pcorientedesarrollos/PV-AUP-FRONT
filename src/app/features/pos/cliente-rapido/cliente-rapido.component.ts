@@ -112,27 +112,56 @@ export class ClienteRapidoComponent {
     this.error.set('');
 
     if (this.form.idAModificar) {
-      // Actualizar cliente existente
-      this.http.patch<Cliente>(`${environment.apiUrl}/pos/clientes/${this.form.idAModificar}`, this.form).subscribe({
+      // Actualizar cliente existente (solo enviar campos válidos)
+      const payload = {
+        nombreCompleto: this.form.nombreCompleto,
+        rfc: this.form.rfc,
+        correo: this.form.correo || '',
+        telefono: this.form.telefono || '',
+        direccion: this.form.domicilio || this.form.direccion || '',
+        cp: this.form.cp || '',
+        regimenFiscal: this.form.regimenFiscal || '',
+        usoCfdi: this.form.usoCfdi || 'G03',
+        formaPago: this.form.formaPago || '01',
+        metodoPago: this.form.metodoPago || 'PUE'
+      };
+
+      this.http.patch<Cliente>(`${environment.apiUrl}/pos/clientes/${this.form.idAModificar}`, payload).subscribe({
         next: (cliente) => {
           this.cargando.set(false);
           this.clienteCreado.emit(cliente);
         },
-        error: () => {
+        error: (err) => {
           this.cargando.set(false);
-          this.error.set('No se pudo actualizar el cliente. Intenta de nuevo.');
+          const msg = err.error?.message || err.error?.error || 'No se pudo actualizar el cliente. Intenta de nuevo.';
+          const finalMsg = Array.isArray(msg) ? msg.join(', ') : msg;
+          this.error.set(finalMsg);
         },
       });
     } else {
       // Crear nuevo cliente
-      this.pos.altaRapidaCliente(this.form).subscribe({
+      const payloadAlta = {
+        nombreCompleto: this.form.nombreCompleto,
+        rfc: this.form.rfc,
+        correo: this.form.correo || '',
+        telefono: this.form.telefono || '',
+        direccion: this.form.domicilio || this.form.direccion || '',
+        cp: this.form.cp || '',
+        regimenFiscal: this.form.regimenFiscal || '',
+        usoCfdi: this.form.usoCfdi || 'G03',
+        formaPago: this.form.formaPago || '01',
+        metodoPago: this.form.metodoPago || 'PUE'
+      };
+      this.pos.altaRapidaCliente(payloadAlta).subscribe({
         next: (cliente) => {
           this.cargando.set(false);
           this.clienteCreado.emit(cliente);
         },
-        error: () => {
+        error: (err) => {
           this.cargando.set(false);
-          this.error.set('No se pudo registrar el cliente. Intenta de nuevo.');
+          const msg = err.error?.message || err.error?.error || 'No se pudo registrar el cliente. Intenta de nuevo.';
+          const finalMsg = Array.isArray(msg) ? msg.join(', ') : msg;
+          this.error.set(finalMsg);
         },
       });
     }
