@@ -47,25 +47,49 @@ export class ClienteRapidoComponent {
       next: (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {
-          this.form.rfc = res.rfc || this.form.rfc;
-          this.form.nombreCompleto = res.nombre || this.form.nombreCompleto;
-          
-          if (res.cp) {
-            this.form.cp = res.cp;
-          }
-          if (res.regimenFiscal) {
-            this.form.regimenFiscal = res.regimenFiscal;
-            if (res.regimenFiscal === '616') {
-              this.form.usoCfdi = 'S01';
+          if (res.clienteExistente) {
+            const cl = res.clienteData;
+            // Verificar si ya tiene datos fiscales completos
+            if (cl.cp && cl.regimenFiscal) {
+              alert(`Este cliente (${cl.nombreCompleto}) ya está registrado y tiene sus datos completos.`);
+              this.clienteCreado.emit(cl);
+              return;
             } else {
-              this.form.usoCfdi = 'G03';
+              if (confirm(`El cliente ${cl.nombreCompleto} ya existe, pero sus datos fiscales están incompletos. ¿Deseas actualizarlos?`)) {
+                this.form = { ...cl, ...res };
+                this.form.nombreCompleto = res.nombre || cl.nombreCompleto;
+                this.form.domicilio = res.direccion || cl.direccion || cl.domicilio || '';
+                if (!this.form.formaPago) this.form.formaPago = '01';
+                if (!this.form.metodoPago) this.form.metodoPago = 'PUE';
+                if (!this.form.usoCfdi && res.regimenFiscal === '616') this.form.usoCfdi = 'S01';
+                else if (!this.form.usoCfdi) this.form.usoCfdi = 'G03';
+                this.form.idAModificar = cl.idCliente;
+              } else {
+                this.clienteCreado.emit(cl);
+                return;
+              }
             }
-          }
-          this.form.formaPago = '01';
-          this.form.metodoPago = 'PUE';
-          
-          if (res.direccion) {
-            this.form.domicilio = res.direccion;
+          } else {
+            this.form.rfc = res.rfc || this.form.rfc;
+            this.form.nombreCompleto = res.nombre || this.form.nombreCompleto;
+            
+            if (res.cp) {
+              this.form.cp = res.cp;
+            }
+            if (res.regimenFiscal) {
+              this.form.regimenFiscal = res.regimenFiscal;
+              if (res.regimenFiscal === '616') {
+                this.form.usoCfdi = 'S01';
+              } else {
+                this.form.usoCfdi = 'G03';
+              }
+            }
+            this.form.formaPago = '01';
+            this.form.metodoPago = 'PUE';
+            
+            if (res.direccion) {
+              this.form.domicilio = res.direccion;
+            }
           }
           
         } else {
@@ -87,15 +111,30 @@ export class ClienteRapidoComponent {
     this.cargando.set(true);
     this.error.set('');
 
-    this.pos.altaRapidaCliente(this.form).subscribe({
-      next: (cliente) => {
-        this.cargando.set(false);
-        this.clienteCreado.emit(cliente);
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.error.set('No se pudo registrar el cliente. Intenta de nuevo.');
-      },
-    });
+    if (this.form.idAModificar) {
+      // Actualizar cliente existente
+      this.http.patch<Cliente>(`${environment.apiUrl}/pos/clientes/${this.form.idAModificar}`, this.form).subscribe({
+        next: (cliente) => {
+          this.cargando.set(false);
+          this.clienteCreado.emit(cliente);
+        },
+        error: () => {
+          this.cargando.set(false);
+          this.error.set('No se pudo actualizar el cliente. Intenta de nuevo.');
+        },
+      });
+    } else {
+      // Crear nuevo cliente
+      this.pos.altaRapidaCliente(this.form).subscribe({
+        next: (cliente) => {
+          this.cargando.set(false);
+          this.clienteCreado.emit(cliente);
+        },
+        error: () => {
+          this.cargando.set(false);
+          this.error.set('No se pudo registrar el cliente. Intenta de nuevo.');
+        },
+      });
+    }
   }
 }
