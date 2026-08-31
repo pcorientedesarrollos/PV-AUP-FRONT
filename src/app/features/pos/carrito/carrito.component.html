@@ -215,14 +215,21 @@
           <div class="space-y-2 mb-2 relative z-10 pt-2">
             
             <div class="flex justify-between items-center text-sm font-bold text-slate-500">
-              <span>Subtotal</span>
-              <span class="text-gray-900">{{ (pos.subtotal() - pos.totalDescuentos()) | currency }}</span>
-            </div>
-
-            <div class="flex justify-between items-center text-sm font-bold text-slate-500">
-              <span>IVA</span>
-              <span class="text-gray-900">{{ pos.totalIva() | currency }}</span>
-            </div>
+                <span>Subtotal:</span>
+                <span class="text-gray-900">{{ pos.subtotal() | currency }}</span>
+              </div>
+              
+              @if (pos.totalDescuentos() > 0) {
+              <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+                <span>Descuento:</span>
+                <span class="text-gray-900">{{ pos.totalDescuentos() | currency }}</span>
+              </div>
+              }
+  
+              <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+                <span>IVA:</span>
+                <span class="text-gray-900">{{ pos.totalIva() | currency }}</span>
+              </div>
 
             <div class="pt-3 border-t border-dashed border-gray-300 flex justify-between items-end mt-2">
               <span class="text-sm font-black text-gray-900 uppercase tracking-widest">Total</span>
