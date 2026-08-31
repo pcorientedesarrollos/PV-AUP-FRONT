@@ -704,6 +704,18 @@ export class ProductosComponent implements OnInit {
     this.satUnitsResults = [];
   }
 
+  onSatProductBlur() {
+    setTimeout(() => {
+      this.satProductsResults = [];
+    }, 200);
+  }
+
+  onSatUnitBlur() {
+    setTimeout(() => {
+      this.satUnitsResults = [];
+    }, 200);
+  }
+
   exportarExcel() {
     const data = this.productosFiltrados().map((p: any) => ({
       'Código': p.codigoBarras || 'N/A',

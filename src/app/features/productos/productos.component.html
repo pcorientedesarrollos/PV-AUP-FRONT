@@ -606,6 +606,7 @@
               <input type="text" [(ngModel)]="satProductQuery" 
                      (input)="onSatProductSearch()" 
                      (focus)="onSatProductSearch(true)"
+                     (blur)="onSatProductBlur()"
                      placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
               
@@ -632,6 +633,7 @@
               <input type="text" [(ngModel)]="satUnitQuery" 
                      (input)="onSatUnitSearch()"
                      (focus)="onSatUnitSearch(true)"
+                     (blur)="onSatUnitBlur()"
                      placeholder="🔍 Buscar unidad..."
                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
               
