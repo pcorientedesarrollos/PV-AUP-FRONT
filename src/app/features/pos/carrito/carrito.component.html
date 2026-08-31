@@ -189,10 +189,12 @@
                     }
                   </p>
                   <p class="text-[10px] text-slate-500 font-medium whitespace-nowrap group-hover:text-slate-700">
-                    @if (item.producto.aplicaIva !== false) {
-                      {{ (item.subtotal - (item.descuento || 0)) | currency }} + {{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) | currency }} IVA
-                    }
-                  </p>
+                      @if (item.producto.aplicaIva !== false) {
+                        {{ item.subtotal | currency }} base + {{ ((item.subtotal - (item.descuento || 0)) * ((item.producto.iva !== undefined ? item.producto.iva : 16) / 100)) | currency }} IVA
+                      } @else {
+                        {{ item.subtotal | currency }} base
+                      }
+                    </p>
                 </div>
             </div>
           }

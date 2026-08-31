@@ -238,26 +238,32 @@ export class PosService {
 
     const price = this.getPrecioActivo(producto, cantidadAumentada);
     this._carrito.update((items) => {
-      const idx = items.findIndex((i) => {
-          const expectedDesc = this.getDescuentoTotalItem(i.producto, i.cantidad);
-          const isCustomDiscount = i.descuento !== expectedDesc;
-          return i.producto.idProducto === producto.idProducto && !isCustomDiscount;
-        });
-
-        if (idx >= 0) {
-          const updated = [...items];
-          const qty = updated[idx].cantidad + 1;
-          const newPrice = this.getPrecioActivo(producto, qty);
-          
-          updated[idx] = {
-            ...updated[idx],
-            producto: producto, // Update product info in case price/discount changed in DB
-            cantidad: qty,
-            subtotal: qty * newPrice,
-            descuento: (this.getDescuentoTotalItem(producto, qty)),
-          };
-          return updated;
-        }
+      const idx = items.findIndex((i) => i.producto.idProducto === producto.idProducto);
+  
+          if (idx >= 0) {
+            const updated = [...items];
+            const oldItem = updated[idx];
+            const qty = oldItem.cantidad + 1;
+            const newPrice = this.getPrecioActivo(producto, qty);
+            const newSubtotal = qty * newPrice;
+            
+            const oldSubtotal = oldItem.subtotal || 1;
+            const prevDescRatio = (oldItem.descuento || 0) / oldSubtotal;
+            let nuevoDescuento = this.getDescuentoTotalItem(producto, qty);
+            
+            if (prevDescRatio > 0) {
+              nuevoDescuento = newSubtotal * prevDescRatio;
+            }
+            
+            updated[idx] = {
+              ...oldItem,
+              producto: producto,
+              cantidad: qty,
+              subtotal: newSubtotal,
+              descuento: nuevoDescuento,
+            };
+            return updated;
+          }
       return [
         ...items,
         { uid: Math.random().toString(36).substr(2, 9), producto, cantidad: 1, subtotal: price, descuento: this.getDescuentoTotalItem(producto, 1) }
@@ -291,15 +297,24 @@ export class PosService {
         .map((item) => {
           if (item.uid !== uid) return item;
           const nuevaCantidad = item.cantidad + delta;
-          if (nuevaCantidad <= 0) return null;
-          const price = this.getPrecioActivo(item.producto, nuevaCantidad);
-          const nuevoDescuento = this.getDescuentoTotalItem(item.producto, nuevaCantidad);
-          return {
-            ...item,
-            cantidad: nuevaCantidad,
-            subtotal: nuevaCantidad * price,
-            descuento: nuevoDescuento,
-          };
+            if (nuevaCantidad <= 0) return null;
+            const price = this.getPrecioActivo(item.producto, nuevaCantidad);
+            const newSubtotal = nuevaCantidad * price;
+            
+            const oldSubtotal = item.subtotal || 1;
+            const prevDescRatio = (item.descuento || 0) / oldSubtotal;
+            let nuevoDescuento = this.getDescuentoTotalItem(item.producto, nuevaCantidad);
+            
+            if (prevDescRatio > 0) {
+              nuevoDescuento = newSubtotal * prevDescRatio;
+            }
+            
+            return {
+              ...item,
+              cantidad: nuevaCantidad,
+              subtotal: newSubtotal,
+              descuento: nuevoDescuento,
+            };
         })
         .filter((item): item is ItemCarrito => item !== null)
     );
@@ -319,13 +334,22 @@ export class PosService {
       items.map((item) => {
         if (item.uid !== uid) return item;
         const price = this.getPrecioActivo(item.producto, Number(cantidad));
-        const nuevoDescuento = this.getDescuentoTotalItem(item.producto, Number(cantidad));
-        return {
-          ...item,
-          cantidad: Number(cantidad),
-          subtotal: Number(cantidad) * price,
-          descuento: nuevoDescuento,
-        };
+          const newSubtotal = Number(cantidad) * price;
+          
+          const oldSubtotal = item.subtotal || 1;
+          const prevDescRatio = (item.descuento || 0) / oldSubtotal;
+          let nuevoDescuento = this.getDescuentoTotalItem(item.producto, Number(cantidad));
+          
+          if (prevDescRatio > 0) {
+            nuevoDescuento = newSubtotal * prevDescRatio;
+          }
+          
+          return {
+            ...item,
+            cantidad: Number(cantidad),
+            subtotal: newSubtotal,
+            descuento: nuevoDescuento,
+          };
       })
     );
   }
@@ -338,7 +362,20 @@ export class PosService {
 
   actualizarCantidad(uid: string, cantidad: number) {
     this._carrito.update(items =>
-      items.map(i => i.uid === uid ? { ...i, cantidad, subtotal: this.getPrecioActivo(i.producto, cantidad) * cantidad, descuento: (this.getDescuentoTotalItem(i.producto, cantidad)) } : i)
+      items.map(i => {
+          if (i.uid === uid) {
+            const price = this.getPrecioActivo(i.producto, cantidad);
+            const newSubtotal = price * cantidad;
+            const oldSubtotal = i.subtotal || 1;
+            const prevDescRatio = (i.descuento || 0) / oldSubtotal;
+            let nuevoDescuento = this.getDescuentoTotalItem(i.producto, cantidad);
+            if (prevDescRatio > 0) {
+              nuevoDescuento = newSubtotal * prevDescRatio;
+            }
+            return { ...i, cantidad, subtotal: newSubtotal, descuento: nuevoDescuento };
+          }
+          return i;
+        })
     );
   }
 
