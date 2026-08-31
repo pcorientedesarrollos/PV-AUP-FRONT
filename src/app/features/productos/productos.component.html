@@ -577,8 +577,12 @@
 
           <hr class="border-slate-100">
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <div class="relative">
+          
+          <!-- GRUPO: DATOS INTERNOS -->
+          <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 uppercase tracking-wider">Datos Internos</h3>
+          
+          <div class="grid grid-cols-1 gap-5 mb-5">
+            <div class="relative">
             <label class="block font-semibold text-slate-700 text-sm mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
             <input type="text" [(ngModel)]="nuevoProducto.nombre"
                    class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
@@ -595,36 +599,9 @@
               <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Ya existe un producto idéntico con este nombre.</p>
             }
           </div>
-
-          <div class="relative">
-            <label class="block font-semibold text-slate-700 text-sm mb-1">Clave</label>
-            <input type="text" [(ngModel)]="satProductQuery" 
-                   (input)="onSatProductSearch()" 
-                   (focus)="onSatProductSearch(true)"
-                   placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-            
-            @if (satProductQuery.length > 0 && satProductQuery.length < 3) {
-              <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Escribe 3 o más caracteres para buscar en la base de datos del SAT.
-              </div>
-            }
-
-            @if (satProductsResults.length > 0) {
-              <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
-                @for (prod of satProductsResults; track prod.product_key) {
-                  <li (click)="selectSatProduct(prod)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
-                    <span class="font-bold text-amber-600">{{ prod.product_key }}</span> - {{ prod.description }}
-                  </li>
-                }
-              </ul>
-            }
-          </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
             <div class="flex-1">
               <label class="block font-semibold text-slate-700 text-sm mb-1">Categoría</label>
               <select [(ngModel)]="nuevoProducto.idCategoria"
@@ -635,7 +612,6 @@
                 }
               </select>
             </div>
-
             <div class="flex-1 relative">
               <label class="block font-semibold text-slate-700 text-sm mb-1">Código de Barras</label>
               <input type="text" [(ngModel)]="nuevoProducto.codigoBarras"
@@ -654,35 +630,6 @@
                 <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Este código exacto ya está registrado.</p>
               }
             </div>
-
-            <div class="flex-1 relative">
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Clave de Unidad</label>
-              <input type="text" [(ngModel)]="satUnitQuery" 
-                     (input)="onSatUnitSearch()"
-                     (focus)="onSatUnitSearch(true)"
-                     placeholder="🔍 Buscar unidad..."
-                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-              
-              @if (satUnitQuery.length > 0 && satUnitQuery.length < 2) {
-                <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  Escribe 2 o más caracteres.
-                </div>
-              }
-
-              @if (satUnitsResults.length > 0) {
-                <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
-                  @for (unit of satUnitsResults; track unit.unit_key) {
-                    <li (click)="selectSatUnit(unit)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
-                      <span class="font-bold text-amber-600">{{ unit.unit_key }}</span> - {{ unit.name }}
-                    </li>
-                  }
-                </ul>
-              }
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
             <div>
               <label class="block font-semibold text-slate-700 text-sm mb-1">Tipo de Artículo</label>
               <select [(ngModel)]="nuevoProducto.tipoArticulo"
@@ -708,6 +655,66 @@
               </datalist>
             </div>
           </div>
+
+          <!-- GRUPO: DATOS SAT -->
+          <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 uppercase tracking-wider flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+            Datos de Facturación (SAT)
+          </h3>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+            <div class="relative">
+            <label class="block font-semibold text-slate-700 text-sm mb-1">Clave del SAT</label>
+            <input type="text" [(ngModel)]="satProductQuery" 
+                   (input)="onSatProductSearch()" 
+                   (focus)="onSatProductSearch(true)"
+                   placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
+                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+            
+            @if (satProductQuery.length > 0 && satProductQuery.length < 3) {
+              <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Escribe 3 o más caracteres para buscar en la base de datos del SAT.
+              </div>
+            }
+
+            @if (satProductsResults.length > 0) {
+              <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
+                @for (prod of satProductsResults; track prod.product_key) {
+                  <li (click)="selectSatProduct(prod)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
+                    <span class="font-bold text-amber-600">{{ prod.product_key }}</span> - {{ prod.description }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+            <div class="flex-1 relative">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Clave de Unidad del SAT</label>
+              <input type="text" [(ngModel)]="satUnitQuery" 
+                     (input)="onSatUnitSearch()"
+                     (focus)="onSatUnitSearch(true)"
+                     placeholder="🔍 Buscar unidad..."
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              
+              @if (satUnitQuery.length > 0 && satUnitQuery.length < 2) {
+                <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Escribe 2 o más caracteres.
+                </div>
+              }
+
+              @if (satUnitsResults.length > 0) {
+                <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  @for (unit of satUnitsResults; track unit.unit_key) {
+                    <li (click)="selectSatUnit(unit)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
+                      <span class="font-bold text-amber-600">{{ unit.unit_key }}</span> - {{ unit.name }}
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+
 
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <!-- 1. Precio Compra -->
