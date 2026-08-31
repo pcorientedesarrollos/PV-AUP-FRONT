@@ -658,7 +658,7 @@ export class ProductosComponent implements OnInit {
     }
     this.searchTimeout = setTimeout(() => {
       const q = this.satProductQuery ? encodeURIComponent(this.satProductQuery) : '';
-      this.http.get<any[]>(${environment.apiUrl}/pos/catalogo-sat/productos?q=).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${q}`).subscribe({
         next: (data) => this.satProductsResults = data || [],
         error: (err) => console.error('Error searching SAT products', err)
       });
@@ -679,7 +679,7 @@ export class ProductosComponent implements OnInit {
     }
     this.searchTimeout = setTimeout(() => {
       const q = this.satUnitQuery ? encodeURIComponent(this.satUnitQuery) : '';
-      this.http.get<any[]>(${environment.apiUrl}/pos/catalogo-sat/unidades?q=).subscribe({
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${q}`).subscribe({
         next: (data) => this.satUnitsResults = data || [],
         error: (err) => console.error('Error searching SAT units', err)
       });
