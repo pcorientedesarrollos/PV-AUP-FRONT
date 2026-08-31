@@ -8,6 +8,7 @@ import { TicketPrinterService } from '../../../core/services/ticket-printer.serv
 import { HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { ConfigService } from '../../../core/services/config.service';
 import { Router } from '@angular/router';
 
@@ -20,6 +21,7 @@ import { Router } from '@angular/router';
 export class CarritoComponent implements OnInit {
   nuevoCliente = output<void>();
   toast = inject(ToastService);
+  confirmService = inject(ConfirmService);
   configService = inject(ConfigService);
 
   clientes = signal<Cliente[]>([]);
@@ -150,9 +152,10 @@ export class CarritoComponent implements OnInit {
     this.seleccionarClienteDropdown(String(cliente.idCliente));
   }
 
-  limpiarCarrito() {
+  async limpiarCarrito() {
     if (this.pos.carrito().length > 0) {
-      if (!confirm('¿Estás seguro de que deseas vaciar el carrito?')) return;
+      const confirmed = await this.confirmService.confirm({ title: 'Vaciar Carrito', message: '¿Estás seguro de que deseas vaciar el carrito?', confirmText: 'Sí, vaciar', cancelText: 'Cancelar', isDanger: true });
+    if (!confirmed) return;
     }
     this.pos.limpiarCarrito();
     this.clienteSeleccionadoId.set('');
@@ -162,7 +165,7 @@ export class CarritoComponent implements OnInit {
   // --- Descuentos ---
   abrirModalDescuento() {
     if (this.auth.sesion()?.idPerfil !== 1) {
-      alert('Solo los administradores pueden aplicar descuentos.');
+      this.toast.show('Solo los administradores pueden aplicar descuentos.', 'error');
       return;
     }
     this.inputTipoDescuento.set(this.tipoDescuento());
@@ -177,7 +180,7 @@ export class CarritoComponent implements OnInit {
   aplicarDescuento() {
     const desc = this.inputDescuento() || 0;
     if (desc < 0) {
-      alert('El descuento no puede ser negativo.');
+      this.toast.show('El descuento no puede ser negativo.', 'warning');
       return;
     }
 
@@ -193,7 +196,7 @@ export class CarritoComponent implements OnInit {
     let descuentoMonto = desc;
     if (this.inputTipoDescuento() === 'porcentaje') {
       if (desc > 100) {
-        alert('El descuento no puede ser mayor al 100%.');
+        this.toast.show('El descuento no puede ser mayor al 100%.', 'warning');
         return;
       }
       descuentoMonto = (this.pos.totalPagar() * desc) / 100;
@@ -217,7 +220,7 @@ export class CarritoComponent implements OnInit {
 
   abrirModalDescuentoItem(uid: string, descuentoActual: number) {
     if (this.auth.sesion()?.idPerfil !== 1) {
-      alert('Solo los administradores pueden aplicar descuentos.');
+      this.toast.show('Solo los administradores pueden aplicar descuentos.', 'error');
       return;
     }
     this.itemDescuentoSeleccionadoId.set(uid);
@@ -237,7 +240,7 @@ export class CarritoComponent implements OnInit {
     
     let desc = this.inputDescuentoItemValor() || 0;
     if (desc < 0) {
-      alert('El descuento no puede ser negativo.');
+      this.toast.show('El descuento no puede ser negativo.', 'warning');
       return;
     }
 
@@ -252,7 +255,7 @@ export class CarritoComponent implements OnInit {
     let descMonto = desc;
     if (this.inputTipoDescuentoItem() === 'porcentaje') {
       if (desc > 100) {
-        alert('El descuento no puede ser mayor al 100%.');
+        this.toast.show('El descuento no puede ser mayor al 100%.', 'warning');
         return;
       }
       descMonto = (desc / 100) * (pPublico * qty); // Convierte porcentaje a cantidad monetaria
@@ -283,9 +286,10 @@ export class CarritoComponent implements OnInit {
     this.modalPausadasAbierto.set(false);
   }
 
-  recuperarVentaPausada(id: number) {
+  async recuperarVentaPausada(id: number) {
     if (this.pos.carrito().length > 0) {
-      if (!confirm('Tienes una venta activa. ¿Deseas reemplazarla?')) return;
+      const confirmed = await this.confirmService.confirm({ title: 'Venta Activa', message: 'Tienes una venta activa. ¿Deseas reemplazarla con esta venta pausada?', confirmText: 'Reemplazar', cancelText: 'Cancelar' });
+      if (!confirmed) return;
     }
     this.pos.recuperarVenta(id);
     const c = this.pos.clienteSeleccionado();
@@ -294,8 +298,9 @@ export class CarritoComponent implements OnInit {
     this.cerrarModalPausadas();
   }
 
-  eliminarVentaPausada(id: number) {
-    if (!confirm('¿Estás seguro de eliminar esta venta pausada?')) return;
+  async eliminarVentaPausada(id: number) {
+    const confirmed = await this.confirmService.confirm({ title: 'Eliminar Venta Pausada', message: '¿Estás seguro de eliminar esta venta pausada?', confirmText: 'Eliminar', cancelText: 'Cancelar', isDanger: true });
+    if (!confirmed) return;
     this.pos.eliminarVentaPausada(id);
   }
 

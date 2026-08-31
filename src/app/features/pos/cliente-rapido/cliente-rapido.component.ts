@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { PosService } from '../../../core/services/pos.service';
+import { ToastService } from '../../../core/services/toast.service';
+import { ConfirmService } from '../../../core/services/confirm.service';
 import { Cliente } from '../../../core/interfaces';
 
 @Component({
@@ -33,7 +35,7 @@ export class ClienteRapidoComponent {
   subiendoCsf = signal(false);
 
   private http = inject(HttpClient);
-  constructor(private pos: PosService) {}
+  constructor(private pos: PosService, public toast: ToastService, public confirmService: ConfirmService) {}
 
   onCsfSelected(event: any) {
     const file = event.target.files[0];
@@ -44,18 +46,19 @@ export class ClienteRapidoComponent {
     fd.append('file', file);
 
     this.http.post<any>(`${environment.apiUrl}/pos/utils/parse-csf`, fd).subscribe({
-      next: (res) => {
+      next: async (res) => {
         this.subiendoCsf.set(false);
         if (res.success) {
           if (res.clienteExistente) {
             const cl = res.clienteData;
             // Verificar si ya tiene datos fiscales completos
-            if (cl.cp && cl.regimenFiscal) {
-              alert(`Este cliente (${cl.nombreCompleto}) ya está registrado y tiene sus datos completos.`);
+            if (cl.rfc && cl.cp && cl.regimenFiscal) {
+              this.toast.show(`Este cliente ya está registrado y tiene sus datos completos.`, 'info', 4000);
               this.clienteCreado.emit(cl);
               return;
             } else {
-              if (confirm(`El cliente ${cl.nombreCompleto} ya existe, pero sus datos fiscales están incompletos. ¿Deseas actualizarlos?`)) {
+              const wantsUpdate = await this.confirmService.confirm({ title: 'Cliente Incompleto', message: `El cliente ya existe, pero sus datos fiscales están incompletos. ¿Deseas actualizarlos?`, confirmText: 'Actualizar', cancelText: 'No' });
+                  if (wantsUpdate) {
                 this.form = { ...cl, ...res };
                 this.form.nombreCompleto = res.nombre || cl.nombreCompleto;
                 this.form.domicilio = res.direccion || cl.direccion || cl.domicilio || '';

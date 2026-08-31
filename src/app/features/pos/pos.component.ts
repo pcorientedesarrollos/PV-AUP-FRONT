@@ -4,6 +4,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { PosService } from '../../core/services/pos.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { ToastService } from '../../core/services/toast.service';
 import { ConfigService } from '../../core/services/config.service';
 import { CatalogoComponent } from './catalogo/catalogo.component';
 import { CarritoComponent } from './carrito/carrito.component';
@@ -41,7 +42,8 @@ export class PosComponent implements OnInit {
 
   constructor(
     public auth: AuthService, 
-    public pos: PosService, 
+    public pos: PosService,
+      public toast: ToastService, 
     private router: Router, 
     public theme: ThemeService,
     public config: ConfigService,
@@ -118,7 +120,7 @@ export class PosComponent implements OnInit {
     // Tienen que cerrar sesión e iniciar de nuevo por seguridad.
     if (typeof window !== 'undefined' && window.sessionStorage) {
       if (sessionStorage.getItem('corteRealizadoEnSesion') === 'true') {
-        alert("La caja ha sido cerrada correctamente. Por seguridad, debes cerrar sesión y volver a iniciar para abrir una nueva caja.");
+        this.toast.show(`La caja ha sido cerrada correctamente. Por seguridad, debes cerrar sesión y volver a iniciar para abrir una nueva caja.`, 'warning', 5000);
         this.auth.logout();
         return;
       }

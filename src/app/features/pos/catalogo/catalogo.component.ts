@@ -79,9 +79,7 @@ export class CatalogoComponent implements OnInit {
 
   getColorFamilia(idCategoria: number | undefined): string {
     if (!idCategoria) return 'bg-slate-600';
-    const cat = this.categorias().find(c => c.idCategoria === idCategoria);
-    if (cat && cat.color) return cat.color;
-    return 'bg-amber-500';
+    return this.colorMap()[idCategoria] || 'bg-amber-500';
   }
 
   cargarCategorias() {

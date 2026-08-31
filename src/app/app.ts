@@ -8,11 +8,12 @@ import { ThemeService } from './core/services/theme.service';
 import { filter } from 'rxjs/operators';
 
 import { ToastComponent } from './shared/components/toast/toast.component';
+import { ConfirmModalComponent } from './shared/components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, ToastComponent],
+  imports: [RouterOutlet, ToastComponent, ConfirmModalComponent],
   template: `
     @if (auth.isImpersonating()) {
       <div class="bg-orange-500 text-white px-4 py-2 flex items-center justify-between text-sm font-bold shadow-md z-50 relative">
@@ -21,11 +22,12 @@ import { ToastComponent } from './shared/components/toast/toast.component';
           <span>Modo Suplantación: Operando en la sucursal "{{ auth.sesion()?.sucursalNombre || 'N/A' }}" de "{{ auth.sesion()?.empresa?.nombre || 'N/A' }}"</span>
         </div>
         <button (click)="auth.restaurarSesion()" class="bg-white/20 hover:bg-white/30 px-3 py-1 rounded transition-colors text-xs uppercase tracking-wider border border-white/40">
-          ❌ Volver a mi sesión original
+          🔙 Volver a mi sesión original
         </button>
       </div>
     }
     <app-toast></app-toast>
+    <app-confirm-modal></app-confirm-modal>
     <router-outlet />
   `,
 })
