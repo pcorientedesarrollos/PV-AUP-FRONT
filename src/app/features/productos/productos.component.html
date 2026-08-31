@@ -559,6 +559,26 @@
       <div class="modal-body flex-1 overflow-y-auto p-6 space-y-4 max-h-[70vh]">
         <div class="flex flex-col gap-6">
 
+          <div class="flex gap-4 items-start">
+            <div class="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
+              @if (imagenPreview()) {
+                <img [src]="imagenPreview()!" class="w-full h-full object-cover rounded-xl">
+              } @else {
+                <span class="text-3xl">📷</span>
+              }
+            </div>
+            <div class="flex-1">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Imagen del Producto</label>
+              <input type="file" accept="image/*" (change)="onFileSelected($event)"
+                     class="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer">
+              <p class="text-xs text-slate-400 mt-1">PNG, JPG, WEBP. Recomendado: cuadrado.</p>
+            </div>
+          </div>
+
+          <hr class="border-slate-100">
+
+
+
           
                     <div class="grid grid-cols-1 gap-5 mb-5">
             <div class="relative">

@@ -361,7 +361,30 @@ export class ProductosComponent implements OnInit {
   this.satProductsResults = [];
   this.satUnitsResults = [];
   this.mostrarModal.set(true);
-}
+
+    // Fetch descriptions for SAT codes so they display nicely
+    if (this.satProductQuery) {
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${encodeURIComponent(this.satProductQuery)}`).subscribe({
+        next: (data) => {
+          if (data && data.length > 0) {
+            const match = data.find((d: any) => String(d.product_key) === String(this.nuevoProducto.claveProdServ));
+            if (match) this.satProductQuery = `${match.product_key} - ${match.description}`;
+          }
+        }
+      });
+    }
+    
+    if (this.satUnitQuery) {
+      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${encodeURIComponent(this.satUnitQuery)}`).subscribe({
+        next: (data) => {
+          if (data && data.length > 0) {
+            const match = data.find((d: any) => String(d.unit_key) === String(this.nuevoProducto.claveUnidad));
+            if (match) this.satUnitQuery = `${match.unit_key} - ${match.name}`;
+          }
+        }
+      });
+    }
+  }
 
   abrirModalNuevo() {
     this.esNuevoProducto.set(true);
