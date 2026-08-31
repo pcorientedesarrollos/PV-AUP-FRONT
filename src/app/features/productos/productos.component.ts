@@ -650,22 +650,19 @@ export class ProductosComponent implements OnInit {
   }
 
   // --- SAT Catalog Logic ---
-  onSatProductSearch(showDefault = false) {
+    onSatProductSearch(showDefault = false) {
     clearTimeout(this.searchTimeout);
-    if (!this.satProductQuery) {
-      this.satProductsResults = showDefault ? this.defaultSatProducts : [];
-      return;
-    }
-    if (this.satProductQuery.length < 3) {
-      this.satProductsResults = this.defaultSatProducts.filter(p => p.description.toLowerCase().includes(this.satProductQuery.toLowerCase()) || p.product_key.includes(this.satProductQuery));
+    if (!this.satProductQuery && !showDefault) {
+      this.satProductsResults = [];
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/productos?q=${encodeURIComponent(this.satProductQuery)}`).subscribe({
+      const q = this.satProductQuery ? encodeURIComponent(this.satProductQuery) : '';
+      this.http.get<any[]>(${environment.apiUrl}/pos/catalogo-sat/productos?q=).subscribe({
         next: (data) => this.satProductsResults = data || [],
-        error: (err) => (function(...args: any[]){})('Error searching SAT products', err)
+        error: (err) => console.error('Error searching SAT products', err)
       });
-    }, 500);
+    }, 300);
   }
 
   selectSatProduct(prod: any) {
@@ -674,22 +671,19 @@ export class ProductosComponent implements OnInit {
     this.satProductsResults = [];
   }
 
-  onSatUnitSearch(showDefault = false) {
+    onSatUnitSearch(showDefault = false) {
     clearTimeout(this.searchTimeout);
-    if (!this.satUnitQuery) {
-      this.satUnitsResults = showDefault ? this.defaultSatUnits : [];
-      return;
-    }
-    if (this.satUnitQuery.length < 2) {
-      this.satUnitsResults = this.defaultSatUnits.filter(u => u.name.toLowerCase().includes(this.satUnitQuery.toLowerCase()) || u.unit_key.toLowerCase().includes(this.satUnitQuery.toLowerCase()));
+    if (!this.satUnitQuery && !showDefault) {
+      this.satUnitsResults = [];
       return;
     }
     this.searchTimeout = setTimeout(() => {
-      this.http.get<any[]>(`${environment.apiUrl}/pos/catalogo-sat/unidades?q=${encodeURIComponent(this.satUnitQuery)}`).subscribe({
+      const q = this.satUnitQuery ? encodeURIComponent(this.satUnitQuery) : '';
+      this.http.get<any[]>(${environment.apiUrl}/pos/catalogo-sat/unidades?q=).subscribe({
         next: (data) => this.satUnitsResults = data || [],
-        error: (err) => (function(...args: any[]){})('Error searching SAT units', err)
+        error: (err) => console.error('Error searching SAT units', err)
       });
-    }, 500);
+    }, 300);
   }
 
   selectSatUnit(unit: any) {
