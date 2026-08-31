@@ -559,136 +559,55 @@
       <div class="modal-body flex-1 overflow-y-auto p-6 space-y-4 max-h-[70vh]">
         <div class="flex flex-col gap-6">
 
-          <div class="flex gap-4 items-start">
-            <div class="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden">
-              @if (imagenPreview()) {
-                <img [src]="imagenPreview()!" class="w-full h-full object-cover rounded-xl">
-              } @else {
-                <span class="text-3xl">📷</span>
-              }
-            </div>
-            <div class="flex-1">
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Imagen del Producto</label>
-              <input type="file" accept="image/*" (change)="onFileSelected($event)"
-                     class="w-full text-sm text-slate-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-amber-50 file:text-amber-700 hover:file:bg-amber-100 cursor-pointer">
-              <p class="text-xs text-slate-400 mt-1">PNG, JPG, WEBP. Recomendado: cuadrado.</p>
-            </div>
-          </div>
-
-          <hr class="border-slate-100">
-
           
-          <!-- GRUPO: DATOS INTERNOS -->
-          <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 uppercase tracking-wider">Datos Internos</h3>
-          
-          <div class="grid grid-cols-1 gap-5 mb-5">
+                    <div class="grid grid-cols-1 gap-5 mb-5">
             <div class="relative">
-            <label class="block font-semibold text-slate-700 text-sm mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
-            <input type="text" [(ngModel)]="nuevoProducto.nombre"
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-            @if (coincidenciasNombre().length > 0) {
-              <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
-                @for (item of coincidenciasNombre(); track item.idProducto) {
-                  <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
-                    {{ item.nombre }}
-                  </li>
-                }
-              </ul>
-            }
-            @if (duplicadoNombre()) {
-              <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Ya existe un producto idéntico con este nombre.</p>
-            }
-          </div>
-          </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-            <div class="flex-1">
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Categoría</label>
-              <select [(ngModel)]="nuevoProducto.idCategoria"
-                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-                <option [ngValue]="null">Sin categoría</option>
-                @for (cat of categoriasFiltradas(); track cat.idCategoria) {
-                  <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
-                }
-              </select>
-            </div>
-            <div class="flex-1 relative">
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Código de Barras</label>
-              <input type="text" [(ngModel)]="nuevoProducto.codigoBarras"
-                     placeholder="Escanea o escribe el código"
-                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 font-mono">
-              @if (coincidenciasCodigo().length > 0) {
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Nombre del Producto <span class="text-red-500">*</span></label>
+              <input type="text" [(ngModel)]="nuevoProducto.nombre"
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              @if (coincidenciasNombre().length > 0) {
                 <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
-                  @for (item of coincidenciasCodigo(); track item.idProducto) {
+                  @for (item of coincidenciasNombre(); track item.idProducto) {
                     <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
-                      <span class="font-mono text-amber-600 font-semibold">{{ item.codigoBarras }}</span> &mdash; {{ item.nombre }}
+                      {{ item.nombre }}
                     </li>
                   }
                 </ul>
               }
-              @if (duplicadoCodigo()) {
-                <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Este código exacto ya está registrado.</p>
+              @if (duplicadoNombre()) {
+                <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Ya existe un producto idéntico con este nombre.</p>
               }
             </div>
-            <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Tipo de Artículo</label>
-              <select [(ngModel)]="nuevoProducto.tipoArticulo"
-                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-                <option value="Terminado">Terminado (Para venta)</option>
-                <option value="Materia Prima">Materia Prima</option>
-                <option value="General">General</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-semibold text-slate-700 text-sm mb-1">Unidad de Medida</label>
-              <input type="text" [(ngModel)]="nuevoProducto.unidadMedida"
-                     placeholder="Ej. Pza, Kg, Lts"
-                     list="unidadesList"
-                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-              <datalist id="unidadesList">
-                <option value="Pza"></option>
-                <option value="Kg"></option>
-                <option value="Lts"></option>
-                <option value="Gr"></option>
-                <option value="Caja"></option>
-                <option value="Paquete"></option>
-              </datalist>
-            </div>
           </div>
 
-          <!-- GRUPO: DATOS SAT -->
-          <h3 class="text-sm font-bold text-slate-800 mb-4 pb-2 border-b border-slate-200 uppercase tracking-wider flex items-center gap-2">
-            <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
-            Datos de Facturación (SAT)
-          </h3>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-5">
             <div class="relative">
-            <label class="block font-semibold text-slate-700 text-sm mb-1">Clave del SAT</label>
-            <input type="text" [(ngModel)]="satProductQuery" 
-                   (input)="onSatProductSearch()" 
-                   (focus)="onSatProductSearch(true)"
-                   placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
-                   class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
-            
-            @if (satProductQuery.length > 0 && satProductQuery.length < 3) {
-              <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Escribe 3 o más caracteres para buscar en la base de datos del SAT.
-              </div>
-            }
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Clave del SAT</label>
+              <input type="text" [(ngModel)]="satProductQuery" 
+                     (input)="onSatProductSearch()" 
+                     (focus)="onSatProductSearch(true)"
+                     placeholder="🔍 Escribe para buscar entre 52,000+ claves SAT..."
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              
+              @if (satProductQuery.length > 0 && satProductQuery.length < 3) {
+                <div class="text-xs text-amber-600 mt-1 font-semibold flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Escribe 3 o más caracteres para buscar en la base de datos del SAT.
+                </div>
+              }
 
-            @if (satProductsResults.length > 0) {
-              <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
-                @for (prod of satProductsResults; track prod.product_key) {
-                  <li (click)="selectSatProduct(prod)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
-                    <span class="font-bold text-amber-600">{{ prod.product_key }}</span> - {{ prod.description }}
-                  </li>
-                }
-              </ul>
-            }
-          </div>
-            <div class="flex-1 relative">
+              @if (satProductsResults.length > 0) {
+                <ul class="absolute z-10 w-full bg-white border border-slate-200 shadow-lg rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  @for (prod of satProductsResults; track prod.product_key) {
+                    <li (click)="selectSatProduct(prod)" class="px-3 py-2 hover:bg-amber-50 cursor-pointer text-sm border-b last:border-0">
+                      <span class="font-bold text-amber-600">{{ prod.product_key }}</span> - {{ prod.description }}
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+
+            <div class="relative">
               <label class="block font-semibold text-slate-700 text-sm mb-1">Clave de Unidad del SAT</label>
               <input type="text" [(ngModel)]="satUnitQuery" 
                      (input)="onSatUnitSearch()"
@@ -715,6 +634,63 @@
             </div>
           </div>
 
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-5 mb-5">
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Categoría</label>
+              <select [(ngModel)]="nuevoProducto.idCategoria"
+                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                <option [ngValue]="null">Sin categoría</option>
+                @for (cat of categoriasFiltradas(); track cat.idCategoria) {
+                  <option [ngValue]="cat.idCategoria">{{ cat.nombre }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="relative">
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Código de Barras</label>
+              <input type="text" [(ngModel)]="nuevoProducto.codigoBarras"
+                     placeholder="Escanea o escribe el código"
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500 font-mono">
+              @if (coincidenciasCodigo().length > 0) {
+                <ul class="absolute z-50 w-full bg-white border border-slate-200 shadow-xl rounded-lg mt-1 max-h-48 overflow-y-auto">
+                  @for (item of coincidenciasCodigo(); track item.idProducto) {
+                    <li class="px-4 py-2.5 text-sm border-b border-slate-100 last:border-0 text-slate-700 hover:bg-slate-50/80 transition-colors">
+                      <span class="font-mono text-amber-600 font-semibold">{{ item.codigoBarras }}</span> &mdash; {{ item.nombre }}
+                    </li>
+                  }
+                </ul>
+              }
+              @if (duplicadoCodigo()) {
+                <p class="text-xs text-rose-500 mt-1 font-semibold flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>Este código exacto ya está registrado.</p>
+              }
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Tipo de Artículo</label>
+              <select [(ngModel)]="nuevoProducto.tipoArticulo"
+                      class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+                <option value="Terminado">Terminado (Para venta)</option>
+                <option value="Materia Prima">Materia Prima</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block font-semibold text-slate-700 text-sm mb-1">Unidad de Medida</label>
+              <input type="text" [(ngModel)]="nuevoProducto.unidadMedida"
+                     placeholder="Ej. Pza, Kg, Lts"
+                     list="unidadesList"
+                     class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-amber-500 focus:border-amber-500">
+              <datalist id="unidadesList">
+                <option value="Pza"></option>
+                <option value="Kg"></option>
+                <option value="Lts"></option>
+                <option value="Gr"></option>
+                <option value="Caja"></option>
+                <option value="Paquete"></option>
+              </datalist>
+            </div>
+          </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
             <!-- 1. Precio Compra -->
