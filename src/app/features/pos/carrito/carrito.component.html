@@ -220,9 +220,9 @@
               </div>
               
               @if (pos.totalDescuentos() > 0) {
-              <div class="flex justify-between items-center text-sm font-bold text-slate-500">
+              <div class="flex justify-between items-center text-sm font-bold text-red-500">
                 <span>Descuento:</span>
-                <span class="text-gray-900">{{ pos.totalDescuentos() | currency }}</span>
+                <span>-{{ pos.totalDescuentos() | currency }}</span>
               </div>
               }
   
