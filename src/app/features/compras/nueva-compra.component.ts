@@ -68,7 +68,9 @@ export class NuevaCompraComponent implements OnInit {
   }
 
   cargarCatalogo() {
-    this.http.get<any[]>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe(data => this.catalogoProductos.set(data));
+    this.http.get<any>(`${environment.apiUrl}/pos/productos?limit=10000`).subscribe(res => {
+      this.catalogoProductos.set(res.data || res);
+    });
   }
 
   productosFiltrados = computed(() => {

@@ -166,6 +166,7 @@ export class ProductosComponent implements OnInit {
   esNuevoProducto = signal(false);
   guardando = signal(false);
   nuevoProducto: any = {};
+  productoOriginal: any = null;
   archivoImagen: File | null = null;
   imagenPreview = signal<string | null>(null);
   categorias = signal<any[]>([]);
@@ -398,9 +399,17 @@ export class ProductosComponent implements OnInit {
     this.mostrarModal.set(true);
   }
 
-  cerrarModal() {
+  cerrarModal(forzar = false) {
+    if (!forzar && this.productoOriginal && this.mostrarModal()) {
+      if (JSON.stringify(this.nuevoProducto) !== JSON.stringify(this.productoOriginal)) {
+        if (!confirm('¿Estás seguro que deseas salir? Tienes cambios sin guardar.')) {
+          return;
+        }
+      }
+    }
     this.mostrarModal.set(false);
     this.nuevoProducto = {};
+    this.productoOriginal = null;
     this.archivoImagen = null;
     this.imagenPreview.set(null);
     this.satProductsResults = [];
@@ -556,7 +565,7 @@ export class ProductosComponent implements OnInit {
       next: () => {
         this.guardando.set(false);
         this.cargarProductos();
-        this.cerrarModal();
+        this.cerrarModal(true);
       },
       error: (err) => {
         (function(...args: any[]){})('Error al guardar:', err);
@@ -595,7 +604,7 @@ export class ProductosComponent implements OnInit {
     const guardar = (imagenUrl?: string) => {
       if (imagenUrl) payload.imagenUrl = imagenUrl;
       this.http.post(`${environment.apiUrl}/pos/productos`, payload).subscribe({
-        next: () => { this.guardando.set(false); this.cargarProductos(); this.cerrarModal(); },
+        next: () => { this.guardando.set(false); this.cargarProductos(); this.cerrarModal(true); },
         error: (err) => { (function(...args: any[]){})('Error al crear producto:', err); this.guardando.set(false); }
       });
     };

@@ -146,7 +146,7 @@
 <!-- MODAL PROVEEDOR                                         -->
 <!-- ════════════════════════════════════════════════════════ -->
 @if (mostrarModalProveedor()) {
-  <div class="modal-overlay" (click)="mostrarModalProveedor.set(false)">
+  <div class="modal-overlay" (click)="cerrarModalProveedor()">
     <div class="modal-container" (click)="$event.stopPropagation()">
       <div class="modal-header flex justify-between items-center">
         <h2 class="modal-title">{{ modoProveedor() === 'crear' ? 'Nuevo Proveedor' : 'Editar Proveedor' }}</h2>
@@ -267,7 +267,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button (click)="mostrarModalProveedor.set(false)" class="btn-cancel">Cancelar</button>
+        <button (click)="cerrarModalProveedor()" class="btn-cancel">Cancelar</button>
         <button (click)="guardarProveedor()" class="btn-submit">Guardar</button>
       </div>
     </div>

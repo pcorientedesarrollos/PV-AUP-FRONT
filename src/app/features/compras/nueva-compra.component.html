@@ -66,7 +66,7 @@
           <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           </span>
-          <input type="text" [(ngModel)]="busquedaProducto" class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50" placeholder="Escribe el nombre, clave o escanea el código de barras...">
+          <input type="text" [ngModel]="busquedaProducto()" (ngModelChange)="busquedaProducto.set($event)" class="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-slate-50" placeholder="Escribe el nombre, clave o escanea el código de barras...">
         </div>
         
         @if (busquedaProducto().length > 0) {
@@ -107,7 +107,6 @@
                 <th class="px-6 py-3">Producto</th>
                 <th class="px-6 py-3 text-center">Cantidad</th>
                 <th class="px-6 py-3 text-right">Costo Unit.</th>
-                <th class="px-4 py-3 text-center" title="Actualizar costo en catálogo">Act. Catál.</th>
                 <th class="px-6 py-3 text-right">Subtotal</th>
                 <th class="px-4 py-3"></th>
               </tr>
@@ -131,12 +130,6 @@
                       <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500 font-bold">$</span>
                       <input type="number" [(ngModel)]="item.precioCosto" class="w-full pl-7 p-2 text-right bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" min="0" step="0.01">
                     </div>
-                  </td>
-                  <td class="px-4 py-4 text-center">
-                    <label class="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" [(ngModel)]="item.actualizarCosto" class="sr-only peer">
-                      <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
                   </td>
                   <td class="px-6 py-4 text-right font-black text-slate-900">
                     {{ (item.cantidad * item.precioCosto) | currency:'MXN' }}
@@ -178,7 +171,7 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Proveedor <span class="text-red-500">*</span></label>
-            <select [(ngModel)]="idProveedor" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <select [ngModel]="idProveedor()" (ngModelChange)="idProveedor.set($event)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none">
               <option [ngValue]="null" disabled>Selecciona a quién le compras...</option>
               @for (prov of proveedores(); track prov.idProveedor) {
                 <option [ngValue]="prov.idProveedor">{{ prov.nombre }}</option>
@@ -187,11 +180,11 @@
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Folio / Factura</label>
-            <input type="text" [(ngModel)]="folioFactura" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej. A-5492">
+            <input type="text" [ngModel]="folioFactura()" (ngModelChange)="folioFactura.set($event)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ej. A-5492">
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Concepto / Notas</label>
-            <textarea [(ngModel)]="notas" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" rows="2" placeholder="Notas internas..."></textarea>
+            <textarea [ngModel]="notas()" (ngModelChange)="notas.set($event)" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" rows="2" placeholder="Notas internas..."></textarea>
           </div>
         </div>
       </div>

@@ -68,6 +68,7 @@ export class ProveedoresComponent implements OnInit {
   // Modal Proveedor
   mostrarModalProveedor = signal(false);
   modoProveedor = signal<'crear' | 'editar'>('crear');
+  proveedorOriginal: any = null;
 
   regimenes = [
     { id: '601', nombre: 'General de Ley Personas Morales' },
@@ -217,6 +218,29 @@ export class ProveedoresComponent implements OnInit {
     fd.append('file', file);
     this.http.post<any>(`${this.API}/utils/parse-csf`, fd, { headers: this.headers }).subscribe({
       next: (data) => {
+        this.cargandoConstancia.set(false);
+        if (!data.rfc) return;
+
+        // Verificar si ya existe el proveedor por RFC
+        const rfcExtraido = data.rfc.trim().toUpperCase();
+        const existente = this.proveedores().find(p => p.rfc?.trim().toUpperCase() === rfcExtraido);
+
+        if (existente && this.modoProveedor() === 'crear') {
+           const tieneDatosFiscales = existente.rfc && existente.nombre && existente.regimenFiscal && existente.cp;
+           if (tieneDatosFiscales) {
+              this.toast.show(`El proveedor ya existe y tiene sus datos fiscales completos (${existente.nombre}).`, 'success');
+              this.cerrarModalProveedor(true);
+              event.target.value = '';
+              return;
+           } else {
+              this.toast.show(`Proveedor encontrado, cargando datos faltantes...`, 'info');
+              // Cambiar a modo edición y cargar sus datos previos para mezclar con la CSF
+              this.modoProveedor.set('editar');
+              this.proveedorActual = { ...existente };
+           }
+        }
+
+        // Llenar o sobreescribir con los datos de la constancia
         if (data.rfc) this.proveedorActual.rfc = data.rfc;
         if (data.nombre) this.proveedorActual.nombre = data.nombre;
         if (data.direccion) this.proveedorActual.direccion = data.direccion;
@@ -232,10 +256,10 @@ export class ProveedoresComponent implements OnInit {
             this.proveedorActual.usoCfdi = 'G03';
           }
         }
-        this.proveedorActual.formaPago = '01';
-        this.proveedorActual.metodoPago = 'PUE';
+        if (!this.proveedorActual.formaPago) this.proveedorActual.formaPago = '01';
+        if (!this.proveedorActual.metodoPago) this.proveedorActual.metodoPago = 'PUE';
 
-        this.cargandoConstancia.set(false);
+        event.target.value = '';
       },
       error: () => {
         this.cargandoConstancia.set(false);
@@ -244,12 +268,26 @@ export class ProveedoresComponent implements OnInit {
     });
   }
 
+  
+  cerrarModalProveedor(forzar = false) {
+    if (!forzar && this.proveedorOriginal && this.mostrarModalProveedor()) {
+      if (JSON.stringify(this.proveedorActual) !== JSON.stringify(this.proveedorOriginal)) {
+        if (!confirm('¿Estás seguro que deseas salir? Tienes cambios sin guardar.')) {
+          return;
+        }
+      }
+    }
+    this.cerrarModalProveedor(true);
+  }
+
   abrirModalCrear() {
     this.modoProveedor.set('crear');
     this.proveedorActual = { 
       nombre: '', contacto: '', telefono: '', correo: '', rfc: '', direccion: '', 
       cp: '', regimenFiscal: '601', usoCfdi: 'G03', formaPago: '01', metodoPago: 'PUE' 
     };
+    this.proveedorOriginal = JSON.parse(JSON.stringify(this.proveedorActual));
+    this.proveedorOriginal = JSON.parse(JSON.stringify(this.proveedorActual));
     this.mostrarModalProveedor.set(true);
   }
 
@@ -263,6 +301,8 @@ export class ProveedoresComponent implements OnInit {
       formaPago: p.formaPago || '01',
       metodoPago: p.metodoPago || 'PUE'
     };
+    this.proveedorOriginal = JSON.parse(JSON.stringify(this.proveedorActual));
+    this.proveedorOriginal = JSON.parse(JSON.stringify(this.proveedorActual));
     this.mostrarModalProveedor.set(true);
   }
 
@@ -292,7 +332,7 @@ export class ProveedoresComponent implements OnInit {
     obs.subscribe({ 
       next: () => { 
         this.toast.show(`Proveedor guardado exitosamente.`, 'success');
-        this.mostrarModalProveedor.set(false); 
+        this.cerrarModalProveedor(true); 
         this.cargarProveedores(); 
       }, 
       error: (err: HttpErrorResponse) => {

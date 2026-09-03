@@ -176,6 +176,8 @@ export class ClientesComponent implements OnInit {
     return this.clientesOriginales().some(c => c.rfc?.toLowerCase().trim() === rfc && c.idCliente !== this.clienteActual.idCliente);
   }
 
+  clienteOriginal: any = null;
+
   clienteActual = {
     idCliente: 0,
     nombre: '',
@@ -340,6 +342,7 @@ export class ClientesComponent implements OnInit {
   abrirModalCrear() {
     this.modoModal.set('crear');
     this.clienteActual = { idCliente: 0, nombre: '', telefono: '', domicilio: '', correo: '', rfc: '', cp: '', regimenFiscal: '601', usoCfdi: 'G03', formaPago: '01', metodoPago: 'PUE' };
+    this.clienteOriginal = JSON.parse(JSON.stringify(this.clienteActual));
     this.mostrarModal.set(true);
   }
 
@@ -361,7 +364,14 @@ export class ClientesComponent implements OnInit {
     this.mostrarModal.set(true);
   }
 
-  cerrarModal() {
+  cerrarModal(forzar = false) {
+    if (!forzar && this.clienteOriginal && this.mostrarModal()) {
+      if (JSON.stringify(this.clienteActual) !== JSON.stringify(this.clienteOriginal)) {
+        if (!confirm('¿Estás seguro que deseas salir? Tienes cambios sin guardar.')) {
+          return;
+        }
+      }
+    }
     this.mostrarModal.set(false);
   }
 
@@ -402,7 +412,7 @@ export class ClientesComponent implements OnInit {
       this.http.post(`${environment.apiUrl}/pos/clientes/alta-rapida`, payload).subscribe({
         next: () => {
           this.toast.show('Cliente registrado con éxito', 'success');
-          this.cerrarModal();
+          this.cerrarModal(true);
           this.cargarClientes();
         },
         error: (err: HttpErrorResponse) => {
@@ -417,7 +427,7 @@ export class ClientesComponent implements OnInit {
       this.http.patch(`${environment.apiUrl}/pos/clientes/${this.clienteActual.idCliente}`, payload).subscribe({
         next: () => {
           this.toast.show('Cliente actualizado con éxito', 'success');
-          this.cerrarModal();
+          this.cerrarModal(true);
           this.cargarClientes();
         },
         error: (err: HttpErrorResponse) => {

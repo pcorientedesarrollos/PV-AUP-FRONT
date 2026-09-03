@@ -233,6 +233,7 @@ export class CategoriasComponent implements OnInit {
   });
   modalAbierto = signal(false);
   catActual = signal<any>(null);
+  categoriaOriginal: any = null;
   cargando = signal(false);
   error = signal('');
   vistaTarjetas = signal(false);
@@ -292,10 +293,19 @@ export class CategoriasComponent implements OnInit {
         activo: true
       };
     }
+    this.categoriaOriginal = JSON.parse(JSON.stringify(this.catActual() || { nombre: "", descripcion: "" }));
     this.modalAbierto.set(true);
   }
 
-  cerrarModal() {
+  cerrarModal(forzar = false) {
+    if (!forzar && this.categoriaOriginal && this.modalAbierto()) {
+      const current = JSON.parse(JSON.stringify(this.catActual() || { nombre: "", descripcion: "" }));
+      if (JSON.stringify(current) !== JSON.stringify(this.categoriaOriginal)) {
+        if (!confirm('¿Estás seguro que deseas salir? Tienes cambios sin guardar.')) {
+          return;
+        }
+      }
+    }
     this.modalAbierto.set(false);
   }
 
@@ -314,7 +324,7 @@ export class CategoriasComponent implements OnInit {
     peticion.subscribe({
       next: () => {
         this.cargar();
-        this.cerrarModal();
+        this.cerrarModal(true);
         this.cargando.set(false);
       },
       error: (err) => {
