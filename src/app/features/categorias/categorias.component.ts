@@ -3,6 +3,7 @@ import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { PosService } from '../../core/services/pos.service';
 import { AuthService } from '../../core/services/auth.service';
 import { PaginacionComponent } from '../../shared/components/paginacion/paginacion.component';
@@ -260,13 +261,17 @@ export class CategoriasComponent implements OnInit {
     activo: true
   };
 
-  constructor(private posService: PosService, private http: HttpClient, public auth: AuthService) {}
+  constructor(private posService: PosService, private http: HttpClient, public auth: AuthService, private router: Router) {}
 
   ngOnInit() {
     this.cargar();
     if (this.isSoporte()) {
       this.http.get<any[]>(`${environment.apiUrl}/pos/empresas`).subscribe(res => this.empresas.set(res));
     }
+  }
+
+  verProductos(idCategoria: number) {
+    this.router.navigate(['/productos'], { queryParams: { categoria: idCategoria } });
   }
 
   cargar() {
