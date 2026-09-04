@@ -17,7 +17,62 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
               PDF
             </button>
+          
+  <!-- Modal de Edición Administrativa -->
+  @if (modalEdicionVisible()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
+      <div class="bg-white rounded-xl shadow-xl w-full max-w-lg overflow-hidden flex flex-col">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+          <h2 class="text-xl font-bold text-gray-800">Editar Administrativo</h2>
+          <button (click)="cerrarModalEdicion()" class="text-gray-400 hover:text-red-500 transition-colors focus:outline-none">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 space-y-4">
+          <div class="bg-blue-50 border border-blue-100 text-blue-800 text-sm p-3 rounded-lg flex items-start gap-2 mb-2">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <p><strong>Nota:</strong> Sólo puedes modificar el proveedor y datos del comprobante. No es posible alterar productos, cantidades o costos para proteger la integridad del inventario.</p>
           </div>
+
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Proveedor (Opcional)</label>
+            <select [ngModel]="editIdProveedor()" (ngModelChange)="editIdProveedor.set($event)" class="form-input w-full rounded-md border-gray-300 shadow-sm">
+              <option [ngValue]="null">-- Sin Proveedor (Compra Informal) --</option>
+              @for (prov of proveedores(); track prov.idProveedor) {
+                <option [ngValue]="prov.idProveedor">{{ prov.nombre || prov.rfc }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Folio de Factura o Remisión</label>
+            <input type="text" [ngModel]="editFolioFactura()" (ngModelChange)="editFolioFactura.set($event)" class="form-input w-full rounded-md border-gray-300 shadow-sm" placeholder="Ej. F-1234">
+          </div>
+
+          <div class="form-group">
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Notas</label>
+            <textarea [ngModel]="editNotas()" (ngModelChange)="editNotas.set($event)" rows="3" class="form-input w-full rounded-md border-gray-300 shadow-sm" placeholder="Opcional..."></textarea>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
+          <button (click)="cerrarModalEdicion()" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">Cancelar</button>
+          <button (click)="guardarEdicion()" [disabled]="guardandoEdicion()" class="px-5 py-2 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-lg shadow disabled:opacity-50 flex items-center gap-2 transition-colors">
+            @if (guardandoEdicion()) {
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            }
+            Guardar Cambios
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
+
         </div>
         <p class="page-subtitle">Control de mercancía y relación con proveedores</p>
       </div>
@@ -212,10 +267,16 @@
                     <p class="text-xl font-black text-amber-900">{{ compraDetalle().total | currency:'MXN':'symbol':'1.2-2' }}</p>
                   </div>
                 </div>
+                              <div class="mt-4">
+                  <button (click)="abrirModalEdicion(compraDetalle())" class="w-full py-2 bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-semibold rounded-lg flex items-center justify-center gap-2 transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Editar Datos Administrativos
+                  </button>
+                </div>
               </div>
             }
           </div>
-        }
+          }
       </div>
     }
 

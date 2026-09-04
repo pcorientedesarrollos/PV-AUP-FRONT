@@ -258,8 +258,9 @@ export class NuevaCompraComponent implements OnInit {
 
   finalizarCompra() {
     if (!this.idProveedor()) {
-      this.toast.show('Debes seleccionar un proveedor.', 'warning');
-      return;
+      if (!confirm('No has seleccionado un proveedor. ¿Deseas registrar esta compra de forma informal / sin comprobante?')) {
+        return;
+      }
     }
     if (this.carrito().length === 0) {
       this.toast.show('El carrito está vacío.', 'warning');

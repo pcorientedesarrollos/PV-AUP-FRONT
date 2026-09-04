@@ -31,6 +31,16 @@ export class ComprasComponent implements OnInit {
 
   compras = signal<any[]>([]);
   busqueda = signal('');
+  
+  // Edicion Admin
+  proveedores = signal<any[]>([]);
+  modalEdicionVisible = signal(false);
+  compraEditando = signal<any | null>(null);
+  editIdProveedor = signal<number | null>(null);
+  editFolioFactura = signal<string>('');
+  editNotas = signal<string>('');
+  guardandoEdicion = signal(false);
+
   compraDetalle = signal<any | null>(null);
   cargandoDetalle = signal(false);
 
@@ -135,6 +145,58 @@ export class ComprasComponent implements OnInit {
       'Factura': c.folioFacturaProveedor || 'N/A'
     }));
     this.exportService.exportToExcel(data, 'Compras');
+  }
+
+  
+  cargarProveedores() {
+    this.http.get<any[]>(`${environment.apiUrl}/pos/proveedores`).subscribe({
+      next: (data) => this.proveedores.set(data),
+      error: (err) => console.error('Error al cargar proveedores', err)
+    });
+  }
+
+  abrirModalEdicion(compra: any) {
+    this.compraEditando.set(compra);
+    this.editIdProveedor.set(compra.proveedor?.idProveedor || null);
+    this.editFolioFactura.set(compra.folioFacturaProveedor || '');
+    this.editNotas.set(compra.notas || '');
+    this.modalEdicionVisible.set(true);
+    if (this.proveedores().length === 0) {
+      this.cargarProveedores();
+    }
+  }
+
+  cerrarModalEdicion() {
+    this.modalEdicionVisible.set(false);
+    this.compraEditando.set(null);
+  }
+
+  guardarEdicion() {
+    const compra = this.compraEditando();
+    if (!compra) return;
+
+    this.guardandoEdicion.set(true);
+    const payload = {
+      idProveedor: this.editIdProveedor(),
+      folioFacturaProveedor: this.editFolioFactura(),
+      notas: this.editNotas()
+    };
+
+    this.http.patch(`${environment.apiUrl}/pos/compras/${compra.idCompra}/administrativo`, payload).subscribe({
+      next: () => {
+        this.guardandoEdicion.set(false);
+        this.cerrarModalEdicion();
+        this.cargarCompras(); 
+        if (this.compraDetalle()?.idCompra === compra.idCompra) {
+          // recargar detalle si estaba abierto
+          this.http.get<any>(`${environment.apiUrl}/pos/compras/${compra.idCompra}`).subscribe(d => this.compraDetalle.set(d));
+        }
+      },
+      error: (err) => {
+        console.error('Error editando compra', err);
+        this.guardandoEdicion.set(false);
+      }
+    });
   }
 
   exportarPDF() {
