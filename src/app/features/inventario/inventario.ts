@@ -456,20 +456,23 @@ export class InventarioComponent implements OnInit {
   }
 
   // 2. Eliminar / Anular
-  eliminarMovimiento(item: any) {
-    if (!confirm('¿Estás seguro de que deseas anular/eliminar este movimiento? Esto afectará el stock general permanentemente.')) return;
+  reversarMovimiento(item: any) {
+    this.menuAbiertoId.set(null);
+    if (!confirm('¿Estás seguro de que deseas REVERSAR este movimiento? Se creará una contra-partida que afectará el inventario actual.')) return;
     
     const id = item.idMovimiento || this.getId(item);
     const tabId = this.pestanaActiva();
-    const endpoint = `${environment.apiUrl}/pos/inventario/movimiento`;
-
-    this.http.delete(`${endpoint}/${id}`).subscribe({
+    
+    this.http.post(`${environment.apiUrl}/pos/inventario/movimiento/${id}/reversar`, {}).subscribe({
       next: () => {
-         if (tabId !== null) this.cargarDatos(tabId);
+        alert('Movimiento reversado exitosamente.');
+        if (tabId !== null) this.cargarDatos(tabId);
       },
-      error: (err) => alert('Error al eliminar el registro.')
+      error: (err) => {
+        console.error('Error al reversar', err);
+        alert(err.error?.message || 'Error al reversar el registro.');
+      }
     });
-    this.menuAbiertoId.set(null);
   }
 
   imprimirVale(item: any) {
