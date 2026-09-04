@@ -74,8 +74,27 @@
           </div>
         </div>
         
-        <div class="filter-control">
-          <label class="filter-label">Tipo</label>
+        
+          <div class="filter-control">
+            <label class="filter-label">Filtro Producto</label>
+            <select [(ngModel)]="filtroProducto" (change)="aplicarFiltrosKardex()" class="filter-input w-full">
+              <option [ngValue]="null">-- Todos --</option>
+              @for (p of productosStockFiltrados(); track p.idProducto) {
+                <option [ngValue]="p.idProducto">{{ p.nombre || p.codigoBarras }}</option>
+              }
+            </select>
+          </div>
+          <div class="filter-control">
+            <label class="filter-label">Desde</label>
+            <input type="date" [(ngModel)]="filtroFechaInicio" (change)="aplicarFiltrosKardex()" class="filter-input w-full">
+          </div>
+          <div class="filter-control">
+            <label class="filter-label">Hasta</label>
+            <input type="date" [(ngModel)]="filtroFechaFin" (change)="aplicarFiltrosKardex()" class="filter-input w-full">
+          </div>
+
+          <div class="filter-control">
+            <label class="filter-label">Tipo</label>
           <select [(ngModel)]="filtroTipo" class="filter-select w-full md:min-w-[150px]">
             <option value="todos">Todos los Tipos</option>
             <option value="entrada">Entradas</option>
@@ -147,9 +166,7 @@
                     <!-- Dropdown Menú -->
                     @if (menuAbiertoId() === getId(item)) {
                       <div class="absolute right-10 sm:right-8 top-10 mt-1 w-48 bg-white rounded-md shadow-lg z-50 border border-gray-200 overflow-hidden text-left">
-                        <button (click)="abrirEditar(item)" class="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50/80 transition-colors text-left flex items-center gap-2">
-                          <span></span> Editar Movimiento
-                        </button>
+                        
                         <button (click)="imprimirVale(item)" class="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50/80 transition-colors text-left flex items-center gap-2">
                           <span></span> Imprimir Vale
                         </button>
@@ -160,9 +177,7 @@
                           <span></span> Ir al Catálogo
                         </button>
                         <div class="border-t border-gray-100"></div>
-                        <button (click)="eliminarMovimiento(item)" class="w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 text-left flex items-center gap-2 font-medium">
-                          <span></span> Anular / Eliminar
-                        </button>
+                        
                       </div>
                     }
                   </div>

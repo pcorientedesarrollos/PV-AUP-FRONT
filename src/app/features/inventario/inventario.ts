@@ -25,6 +25,17 @@ export class InventarioComponent implements OnInit {
 
   // Filtros
   busqueda = signal('');
+  filtroFechaInicio = signal<string>('');
+  filtroFechaFin = signal<string>('');
+  filtroProducto = signal<number | null>(null);
+
+  aplicarFiltrosKardex() {
+    const activeTab = this.pestanaActiva();
+    if (activeTab !== null) {
+      this.cargarDatos(activeTab);
+    }
+  }
+
   filtroTipo = signal<string>('todos');
 
   registrosFiltrados = computed(() => {
@@ -316,8 +327,14 @@ export class InventarioComponent implements OnInit {
 
   cargarDatos(tabId: number | 'todos') {
     this.cargando.set(true);
+    let params = [];
+    if (this.filtroFechaInicio()) params.push(`fechaInicio=${this.filtroFechaInicio()}`);
+    if (this.filtroFechaFin()) params.push(`fechaFin=${this.filtroFechaFin()}`);
+    if (this.filtroProducto()) params.push(`idProducto=${this.filtroProducto()}`);
 
-    this.http.get<any[]>(`${environment.apiUrl}/pos/inventario`).subscribe({
+    const qs = params.length > 0 ? '?' + params.join('&') : '';
+
+    this.http.get<any[]>(`${environment.apiUrl}/pos/inventario${qs}`).subscribe({
       next: (data) => {
         const formateados = data.map(mov => ({
           ...mov,
@@ -327,7 +344,8 @@ export class InventarioComponent implements OnInit {
           cantidad: mov.cantidad,
           movimiento: mov.tipoMovimiento,
           idCategoria: mov.producto?.categoria?.idCategoria,
-          codigoBarras: mov.producto?.codigoBarras
+          codigoBarras: mov.producto?.codigoBarras,
+          existenciaDespues: mov.existenciaDespues
         }));
 
         // Filtrar en el frontend por la categoría activa (pestaña) si no es 'todos'
@@ -339,7 +357,7 @@ export class InventarioComponent implements OnInit {
         this.cargando.set(false);
       },
       error: (err) => {
-        (function(...args: any[]){})('Error al cargar datos de inventario', err);
+        console.error('Error al cargar datos de inventario', err);
         this.registros.set([]);
         this.cargando.set(false);
       }
