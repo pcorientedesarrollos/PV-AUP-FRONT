@@ -29,6 +29,57 @@ export class InventarioComponent implements OnInit {
   filtroFechaFin = signal<string>('');
   filtroProducto = signal<number | null>(null);
 
+  resumenPeriodo = computed(() => {
+    if (!this.filtroProducto()) return null;
+    const movs = this.registros();
+    if (movs.length === 0) return null;
+
+    const masAntiguo = movs[movs.length - 1];
+    const masReciente = movs[0];
+
+    const cantAntiguo = Number(masAntiguo.cantidad || 0);
+    const tipoAntiguo = (masAntiguo.movimiento || '').toLowerCase();
+    
+    let factorAntiguo = 0;
+    if (tipoAntiguo.includes('entrada') || tipoAntiguo.includes('compra') || tipoAntiguo.includes('ajuste (entrada)') || tipoAntiguo === 'traspaso_in' || tipoAntiguo === 'fraccionamiento_in' || tipoAntiguo === 'produccion_in' || tipoAntiguo === 'devolución (stock)') {
+      factorAntiguo = 1;
+    } else if (tipoAntiguo.includes('salida') || tipoAntiguo.includes('venta') || tipoAntiguo.includes('merma') || tipoAntiguo.includes('ajuste (salida)') || tipoAntiguo === 'traspaso_out' || tipoAntiguo === 'fraccionamiento_out' || tipoAntiguo === 'produccion_out') {
+      if (!tipoAntiguo.includes('devolución (merma)')) {
+        factorAntiguo = -1;
+      }
+    }
+    
+    const stockInicial = Number(masAntiguo.existenciaDespues || 0) - (cantAntiguo * factorAntiguo);
+    const stockFinal = Number(masReciente.existenciaDespues || 0);
+
+    let totalEntradas = 0;
+    let totalSalidas = 0;
+
+    movs.forEach(mov => {
+      const tipo = (mov.movimiento || '').toLowerCase();
+      const cant = Number(mov.cantidad || 0);
+      
+      let factor = 0;
+      if (tipo.includes('entrada') || tipo.includes('compra') || tipo.includes('ajuste (entrada)') || tipo === 'traspaso_in' || tipo === 'fraccionamiento_in' || tipo === 'produccion_in' || tipo === 'devolución (stock)') {
+        factor = 1;
+      } else if (tipo.includes('salida') || tipo.includes('venta') || tipo.includes('merma') || tipo.includes('ajuste (salida)') || tipo === 'traspaso_out' || tipo === 'fraccionamiento_out' || tipo === 'produccion_out') {
+        if (!tipo.includes('devolución (merma)')) {
+          factor = -1;
+        }
+      }
+
+      if (factor === 1) totalEntradas += cant;
+      if (factor === -1) totalSalidas += cant;
+    });
+
+    return {
+      stockInicial,
+      totalEntradas,
+      totalSalidas,
+      stockFinal
+    };
+  });
+
   aplicarFiltrosKardex() {
     const activeTab = this.pestanaActiva();
     if (activeTab !== null) {
@@ -518,29 +569,35 @@ export class InventarioComponent implements OnInit {
   }
 
   exportarExcel() {
-    const data = this.productosStockFiltrados().map((p: any) => ({
-      'Código': p.codigoBarras || 'N/A',
-      'Producto': p.nombre || 'N/A',
-      'Categoría': p.categoria?.nombre || 'N/A',
-      'Stock Actual': p.stockActual || 0,
-      'Precio Público': p.precioPublico || 0,
-      'Costo': p.precioUnitario || 0,
-      'Sucursal': p.sucursal?.nombre || 'N/A'
+    const data = this.registros().map((mov: any) => ({
+      'Fecha': mov.fecha ? new Date(mov.fecha).toLocaleString() : 'N/A',
+      'Concepto': mov.concepto || 'N/A',
+      'Descripción': mov.descripcion || 'N/A',
+      'Cantidad': mov.cantidad || 0,
+      'Tipo': mov.movimiento || 'N/A',
+      'Usuario': mov.usuario?.nombreUsuario || 'AdminPOS',
+      'Costo U.': mov.costoUnitario || mov.precioUnitario || 0,
+      'Total': (mov.cantidad || 0) * (mov.costoUnitario || mov.precioUnitario || 0),
+      'Existencia Posterior': mov.existenciaDespues !== null && mov.existenciaDespues !== undefined ? mov.existenciaDespues : 'N/A'
     }));
-    this.exportService.exportToExcel(data, 'Kardex_Inventario');
+    this.exportService.exportToExcel(data, 'Kardex_Movimientos');
   }
 
   exportarPDF() {
-    const headers = ['Código', 'Producto', 'Categoría', 'Stock', 'Precio', 'Costo', 'Sucursal'];
-    const data = this.productosStockFiltrados().map((p: any) => [
-      p.codigoBarras || 'N/A',
-      p.nombre || 'N/A',
-      p.categoria?.nombre || 'N/A',
-      p.stockActual?.toString() || '0',
-      `$${p.precioPublico || 0}`,
-      `$${p.precioUnitario || 0}`,
-      p.sucursal?.nombre || 'N/A'
+    const headers = ['Fecha', 'Concepto', 'Descripción', 'Cant.', 'Tipo', 'Existencia'];
+    const data = this.registros().map((mov: any) => [
+      mov.fecha ? new Date(mov.fecha).toLocaleDateString() : 'N/A',
+      mov.concepto || 'N/A',
+      mov.descripcion || 'N/A',
+      mov.cantidad || 0,
+      mov.movimiento || 'N/A',
+      mov.existenciaDespues !== null && mov.existenciaDespues !== undefined ? mov.existenciaDespues : 'N/A'
     ]);
-    this.exportService.exportToPdf(headers, data, 'Reporte de Inventario (Kardex)', 'Kardex_Inventario', 'l');
+
+    this.exportService.exportToPdf(
+      headers,
+      data,
+      'Kardex de Movimientos',
+      'Kardex_Movimientos', 'l');
   }
 }

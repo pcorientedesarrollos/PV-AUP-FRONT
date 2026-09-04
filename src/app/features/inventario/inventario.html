@@ -108,6 +108,29 @@
       </div>
     </div>
 
+    
+    <!-- Cinta de Resumen del Periodo -->
+    @if (resumenPeriodo(); as resumen) {
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+          <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider">Inventario Inicial</p>
+          <p class="text-2xl font-bold text-slate-800">{{ resumen.stockInicial }}</p>
+        </div>
+        <div class="bg-green-50 p-4 rounded-xl shadow-sm border border-green-100">
+          <p class="text-xs text-green-600 font-semibold uppercase tracking-wider">Total Entradas</p>
+          <p class="text-2xl font-bold text-green-700">+{{ resumen.totalEntradas }}</p>
+        </div>
+        <div class="bg-red-50 p-4 rounded-xl shadow-sm border border-red-100">
+          <p class="text-xs text-red-600 font-semibold uppercase tracking-wider">Total Salidas</p>
+          <p class="text-2xl font-bold text-red-700">-{{ resumen.totalSalidas }}</p>
+        </div>
+        <div class="bg-blue-50 p-4 rounded-xl shadow-sm border border-blue-100">
+          <p class="text-xs text-blue-600 font-semibold uppercase tracking-wider">Inventario Final</p>
+          <p class="text-2xl font-bold text-blue-700">{{ resumen.stockFinal }}</p>
+        </div>
+      </div>
+    }
+
     <!-- Tablas -->
     <div class="honey-table-container flex-1">
       <div class="overflow-x-auto rounded-xl border border-slate-200 shadow-sm">
